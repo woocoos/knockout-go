@@ -68,7 +68,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: Run go generate on integration directory
         working-directory: integration
-        run: go download && go generate ./... && go mod tidy
+        run: go mod download && go generate ./... && go mod tidy
       - name: Run tests on integration directory
         working-directory: integration
         run: go test ./...
