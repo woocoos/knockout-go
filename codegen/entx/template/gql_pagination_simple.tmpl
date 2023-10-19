@@ -1,0 +1,438 @@
+{{/* gotype: entgo.io/ent/entc/gen.Graph */}}
+
+{{ define "gql_pagination/helper/paginate" }}
+	{{- $node := $.Scope.Node }}
+	{{- $r := $.Scope.Query }}
+	{{- $names := nodePaginationNames $node }}
+	{{- $name := $names.Node }}
+	{{- $order := $names.Order }}
+	{{- $edge := $names.Edge }}
+	{{- $conn := $names.Connection }}
+	{{- $newPager := print "new" $name "Pager" -}}
+
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := {{ $newPager }}(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if {{ $r }}, err = pager.applyFilter({{ $r }}); err != nil {
+		return nil, err
+	}
+	{{- /* Ensure the "edges" field is marshaled as "[]" in case it is empty. */}}
+	conn := &{{ $conn }}{Edges: []*{{ $edge }}{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := {{ $r }}.Clone()
+			{{- /* Clear the selection fields before counting to avoid generating invalid queries. */}}
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+		{{- /* TotalCount will be settled by conn.build() */}}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if {{ $r }}, err = pager.applyCursors({{ $r }}, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		{{ $r }}.Limit(limit)
+	}
+	if sp,ok := pagination.SimplePaginationFromContext(ctx);ok {
+        if first != nil {
+            {{ $r }}.Offset((sp.PageIndex - sp.CurrentIndex - 1) * *first)
+        }
+        if last != nil {
+            {{ $r }}.Offset((sp.CurrentIndex - sp.PageIndex - 1) * *last)
+        }
+    }
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := {{ $r }}.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	{{ $r }} = pager.applyOrder({{ $r }})
+	nodes, err := {{ $r }}.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+{{ end }}
+
+{{ define "gql_collection" }}
+{{ template "header" $ }}
+
+{{ template "import" $ }}
+
+{{ $gqlNodes := $.Nodes }}
+{{ $gqlNodes = filterNodes $.Nodes (skipMode "type") }}
+
+import (
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/woocoos/knockout-go/pkg/pagination"
+	{{- range $n := $gqlNodes }}
+		{{ $n.PackageAlias }} "{{ $n.Config.Package }}/{{ $n.PackageDir }}"
+	{{- end }}
+)
+
+{{ range $node := $gqlNodes }}
+{{ $names := nodePaginationNames $node }}
+{{ $name := $names.Node }}
+
+{{ $receiver := $node.Receiver }}
+{{ $query := $node.QueryName }}
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func ({{ $receiver }} *{{ $query }}) CollectFields(ctx context.Context, satisfies ...string) (*{{ $query }}, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return {{ $receiver }}, nil
+	}
+	if err := {{ $receiver }}.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return {{ $receiver }}, nil
+}
+
+func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	{{- $fields := filterFields $node.Fields (skipMode "type") }}
+	{{- $collects := fieldCollections (filterEdges $node.Edges (skipMode "type")) }}
+	{{- if or $collects $fields }}
+		{{- if $fields }}
+		var (
+			unknownSeen bool
+			fieldSeen = make(map[string]struct{}, len({{ $node.Package }}.Columns))
+			selectedFields =
+			{{- if $node.HasOneFieldID -}}
+				[]string{ {{ $node.Package }}.{{ $node.ID.Constant }} }
+			{{- else -}}
+				make([]string, 0, len({{ $node.Package }}.Columns))
+			{{- end }}
+		)
+		{{- end }}
+		for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+			switch field.Name {
+				{{- range $i, $fc := $collects }}
+					{{- $e := $fc.Edge }}
+					case {{ range $i, $value := $fc.Mapping }}{{ if $i }}, {{ end }}"{{ $value }}"{{ end }}:
+						var (
+							alias = field.Alias
+							path  = append(path, alias)
+							query = (&{{ $e.Type.ClientName }}{config: {{ $receiver }}.config}).Query()
+						)
+						{{- if isRelayConn $e }}
+							{{- $tnames := nodePaginationNames $e.Type }}
+							{{- $tname := $tnames.Node }}
+							{{- $edgeArgsFunc := print "new" $tname "PaginateArgs" }}
+							args := {{ $edgeArgsFunc }}(fieldArgs(ctx, {{ if and (hasTemplate "gql_where_input") (hasWhereInput $e) }}new({{ $tnames.WhereInput }}){{ else }}nil{{ end }}, path...))
+							if err := validateFirstLast(args.first, args.last); err != nil {
+								return fmt.Errorf("validate first and last in path %q: %w", path, err)
+							}
+							{{- $newPager := print "new" $tname "Pager" }}
+							pager, err := {{ $newPager }}(args.opts, args.last != nil)
+							if err != nil {
+								return fmt.Errorf("create new pager in path %q: %w", path, err)
+							}
+							if query, err = pager.applyFilter(query); err != nil {
+								return err
+							}
+							ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+							if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+								{{- /* Only add loadTotal query when needs */}}
+								hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+								if hasPagination || ignoredEdges {
+									{{- with extend $node "Edge" $e "Index" $i "Receiver" $receiver }}
+										{{- template "gql_pagination/helper/load_total" . }}
+									{{- end -}}
+								} else {
+									{{- /* All records will be loaded, so just count it */}}
+									{{ $receiver }}.loadTotal = append({{ $receiver }}.loadTotal, func(_ context.Context, nodes []*{{ $node.Name }}) error {
+										for i := range nodes {
+											n := len(nodes[i].Edges.{{ $e.StructField }})
+											if nodes[i].Edges.totalCount[{{ $i }}] == nil {
+												nodes[i].Edges.totalCount[{{ $i }}] = make(map[string]int)
+											}
+											nodes[i].Edges.totalCount[{{ $i }}][alias] = n
+										}
+										return nil
+									})
+								}
+							}
+							if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+								{{- /* Skip querying edges if "edges" "node" was not required. */}}
+								continue
+							}
+							if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+								return err
+							}
+							path = append(path, edgesField, nodeField)
+							if field := collectedField(ctx, path...); field != nil {
+								if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, {{ nodeImplementorsVar $e.Type }})...); err != nil {
+									return err
+								}
+							}
+							if limit := paginateLimit(args.first, args.last); limit > 0 {
+								{{- $fk := print $node.Package "." $fc.Edge.ColumnConstant }}
+								{{- if $e.M2M }}
+									{{- $i := 0 }}{{ if $e.IsInverse }}{{ $i = 1 }}{{ end }}
+									{{- $fk = print $node.Package "." $e.PKConstant "[" $i "]" }}
+								{{- end }}
+								modify := limitRows(ctx, {{ $fk }}, limit, args.first, args.last,pager.orderExpr(query))
+								query.modifiers = append(query.modifiers, modify)
+							} else {
+								query = pager.applyOrder(query)
+							}
+						{{- else }}
+							if err := query.collectField(ctx, opCtx, field, path, mayAddCondition(satisfies, {{ nodeImplementorsVar $e.Type }})...); err != nil {
+								return err
+							}
+						{{- end }}
+						{{- if $e.Unique }}
+							{{ $receiver }}.{{ $e.EagerLoadField }} = query
+						{{- else }}
+							{{ $receiver }}.WithNamed{{ $e.StructField }}(alias, func (wq *{{ $e.Type.QueryName }}) {
+								*wq = *query
+							})
+						{{- end }}
+						{{- with $e.Field }}
+							if _, ok := fieldSeen[{{ $node.Package }}.{{ .Constant }}]; !ok {
+								selectedFields = append(selectedFields, {{ $node.Package }}.{{ .Constant }})
+								fieldSeen[{{ $node.Package }}.{{ .Constant }}] = struct{}{}
+							}
+						{{- end }}
+				{{- end }}
+				{{- range $f := $fields }}
+					{{- with fieldMapping $f }}
+						case {{ range $i, $m := . }}{{ if $i }}, {{ end }}"{{ $m }}"{{ end }}:
+							if _, ok := fieldSeen[{{ $node.Package }}.{{ $f.Constant }}]; !ok {
+								selectedFields = append(selectedFields, {{ $node.Package }}.{{ $f.Constant }})
+								fieldSeen[{{ $node.Package }}.{{ $f.Constant }}] = struct{}{}
+							}
+					{{- end }}
+				{{- end }}
+				{{- if $fields }}
+					{{- if $node.HasOneFieldID -}}
+						{{- with fieldMapping $node.ID }}
+						case {{ range $i, $m := . }}{{ if $i }}, {{ end }}"{{ $m }}"{{ end }}:
+						{{- end }}
+					{{- end -}}
+				case "__typename":
+				default:
+					unknownSeen = true
+				{{- end }}
+			}
+		}
+		{{- if $fields }}
+			{{- /* In case the schema was extended, a non-selected field might be used by a custom resolver. */}}
+			if !unknownSeen {
+				{{ $receiver }}.Select(selectedFields...)
+			}
+		{{- end }}
+	{{- end }}
+	return nil
+}
+
+{{ $order := $names.Order }}
+{{ $multiOrder := $node.Annotations.EntGQL.MultiOrder }}
+{{ $orderField := $names.OrderField }}
+{{ $filter := print "With" $name "Filter" }}
+{{ $paginateArg := print (camel $name) "PaginateArgs" }}
+{{ $newPaginateArg := print "new" $name "PaginateArgs" }}
+
+type {{ $paginateArg }} struct {
+	first, last *int
+	after, before *Cursor
+	opts []{{ print $name "PaginateOption" }}
+}
+
+func {{ $newPaginateArg }}(rv map[string]any) *{{ $paginateArg }} {
+	args := &{{ $paginateArg }}{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	{{- with orderFields $node }}
+		if v, ok := rv[orderByField]; ok {
+			switch v := v.(type) {
+			{{- if $multiOrder }}
+				case []*{{ $order }}:
+					args.opts = append(args.opts, {{ print "With" $order }}(v))
+				case []any:
+					var orders []*{{ $order }}
+					for i := range v {
+						mv, ok := v[i].(map[string]any)
+						if !ok {
+							continue
+						}
+						var (
+							err1, err2 error
+							order = &{{ $order }}{Field: &{{ $orderField }}{}, Direction: entgql.OrderDirectionAsc}
+						)
+						if d, ok := mv[directionField]; ok {
+							err1 = order.Direction.UnmarshalGQL(d)
+						}
+						if f, ok := mv[fieldField]; ok {
+							err2 = order.Field.UnmarshalGQL(f)
+						}
+						if err1 == nil && err2 == nil {
+							orders = append(orders, order)
+						}
+					}
+					args.opts = append(args.opts, {{ print "With" $order }}(orders))
+			{{- else }}
+				case map[string]any:
+					var (
+						err1, err2 error
+						order = &{{ $order }}{Field: &{{ $orderField }}{}, Direction: entgql.OrderDirectionAsc}
+					)
+					if d, ok := v[directionField]; ok {
+						err1 = order.Direction.UnmarshalGQL(d)
+					}
+					if f, ok := v[fieldField]; ok {
+						err2 = order.Field.UnmarshalGQL(f)
+					}
+					if err1 == nil && err2 == nil {
+						args.opts = append(args.opts, {{ print "With" $order }}(order))
+					}
+				case *{{ $order }}:
+					if v != nil {
+						args.opts = append(args.opts, {{ print "With" $order }}(v))
+					}
+			{{- end }}
+			}
+		}
+	{{- end }}
+	{{- if hasTemplate "gql_where_input" }}
+		{{- $withWhere := true }}{{ with $node.Annotations.EntGQL }}{{ if isSkipMode .Skip "where_input" }}{{ $withWhere = false }}{{ end }}{{ end }}
+		{{- if $withWhere }}
+			{{- $where := $names.WhereInput }}
+			if v, ok := rv[whereField].(*{{ $where }}); ok {
+				args.opts = append(args.opts, {{ $filter }}(v.Filter))
+			}
+		{{- end }}
+	{{- end }}
+	return args
+}
+{{ end }}
+
+const (
+	{{- range $field := list "after" "first" "before" "last" "orderBy" "direction" "field" "where" }}
+		{{ $field }}Field = "{{ $field }}"
+	{{- end }}
+)
+
+func fieldArgs(ctx context.Context, whereInput any, path ...string) map[string]any {
+	field := collectedField(ctx, path...)
+	if field == nil || field.Arguments == nil {
+		return nil
+	}
+	oc := graphql.GetOperationContext(ctx)
+	args := field.ArgumentMap(oc.Variables)
+	return unmarshalArgs(ctx, whereInput, args)
+}
+
+// unmarshalArgs allows extracting the field arguments from their raw representation.
+func unmarshalArgs(ctx context.Context, whereInput any, args map[string]any) map[string]any {
+	for _, k := range []string{firstField, lastField} {
+		v, ok := args[k]
+		if !ok {
+			continue
+		}
+		i, err := graphql.UnmarshalInt(v)
+		if err == nil {
+			args[k] = &i
+		}
+	}
+	for _, k := range []string{beforeField, afterField} {
+		v, ok := args[k]
+		if !ok {
+			continue
+		}
+		c := &Cursor{}
+		if c.UnmarshalGQL(v) == nil {
+			args[k] = c
+		}
+	}
+	if v, ok := args[whereField]; ok && whereInput != nil {
+		if err := graphql.UnmarshalInputFromContext(ctx, v, whereInput); err == nil {
+			args[whereField] = whereInput
+		}
+	}
+
+	return args
+}
+
+func limitRows(ctx context.Context, partitionBy string, limit int, first,last *int,orderBy ...sql.Querier) func(s *sql.Selector) {
+	offset := 0
+	if sp,ok := pagination.SimplePaginationFromContext(ctx);ok {
+		if first != nil {
+			offset = (sp.PageIndex - sp.CurrentIndex - 1) * *first
+		}
+		if last != nil {
+			offset = (sp.CurrentIndex - sp.PageIndex - 1) * *last
+		}
+	}
+	return func(s *sql.Selector) {
+		d := sql.Dialect(s.Dialect())
+		s.SetDistinct(false)
+		with := d.With("src_query").
+			As(s.Clone()).
+			With("limited_query").
+			As(
+				d.Select("*").
+					AppendSelectExprAs(
+						sql.RowNumber().PartitionBy(partitionBy).OrderExpr(orderBy...),
+						"row_number",
+					).
+					From(d.Table("src_query")),
+			)
+		t := d.Table("limited_query").As(s.TableName())
+		if offset != 0 {
+			*s = *d.Select(s.UnqualifiedColumns()...).
+				From(t).
+				Where(sql.GT(t.C("row_number"), offset)).Limit(limit).
+				Prefix(with)
+		} else {
+			*s = *d.Select(s.UnqualifiedColumns()...).
+				From(t).
+				Where(sql.LTE(t.C("row_number"), limit)).
+				Prefix(with)
+		}
+	}
+}
+
+// mayAddCondition appends another type condition to the satisfies list
+// if condition is enabled (Node/Nodes) and it does not exist in the list.
+func mayAddCondition(satisfies []string, typeCond []string) []string {
+Cond:
+	for _, c := range typeCond {
+		for _, s := range satisfies {
+			if c == s {
+				continue Cond
+			}
+		}
+		satisfies = append(satisfies, c)
+	}
+	return satisfies
+}
+{{ end }}

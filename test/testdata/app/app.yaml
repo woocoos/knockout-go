@@ -1,0 +1,7 @@
+withCache:
+  cache:
+    redis:
+      driverName: redis
+    local:
+      size: 1000
+      ttl: 100s

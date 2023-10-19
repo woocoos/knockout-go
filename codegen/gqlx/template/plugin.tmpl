@@ -1,0 +1,38 @@
+{{- /*gotype: github.com/99designs/gqlgen/codegen.Field*/ -}}
+{{- define "ent-create" -}}
+    return ent.FromContext(ctx).{{ .FieldDefinition.Type.NamedType }}.Create().SetInput({{findCreateEntArg .}}).Save(ctx)
+{{- end -}}
+{{- define "ent-update" -}}
+    {{- $input := findUpdateEntArg . -}}
+    {{- $first:= index .Args 0 -}}
+    return ent.FromContext(ctx).{{ .FieldDefinition.Type.NamedType }}.UpdateOneID({{$first.VarName}}).SetInput({{$input}}).Save(ctx)
+{{- end -}}
+{{- define "ent-delete" -}}
+    {{- $first:= index .Args 0 -}}
+    {{- $type := trimPrefix .GoFieldName "Delete" -}}
+    err := ent.FromContext(ctx).{{ $type }}.DeleteOneID({{$first.VarName}}).Exec(ctx)
+    return err == nil, err
+{{- end -}}
+{{- define "node" -}}
+    {{- $first:= index .Args 0 -}}
+    return r.client.Noder(ctx, {{$first.VarName}})
+{{- end -}}
+{{- define "nodes" -}}
+    {{- $first:= index .Args 0 -}}
+    return r.client.Noders(ctx, {{$first.VarName}})
+{{- end -}}
+{{- define "node-ex" -}}
+    {{- $first:= index .Args 0 -}}
+    return r.client.NoderEx(ctx, {{$first.VarName}})
+{{- end -}}
+{{- define "nodes-ex" -}}
+    {{- $first:= index .Args 0 -}}
+    return r.client.NodersEx(ctx, {{$first.VarName}})
+{{- end -}}
+{{- define "pagination" -}}
+    {{- $enty:= trimSuffix .FieldDefinition.Type.NamedType "Connection" -}}
+    {{- $pkg:= toLower $enty -}}
+    return r.client.{{$enty}}.Query().Paginate(ctx, after, first, before, last,
+        ent.With{{$enty}}Order(orderBy),
+        ent.With{{$enty}}Filter(where.Filter))
+{{- end -}}

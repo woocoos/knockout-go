@@ -1,0 +1,47 @@
+{{- /*gotype: github.com/99designs/gqlgen/codegen/config.Config*/ -}}
+{{ define "resolver" }}
+package {{ .Resolver.Package}}
+
+import (
+    "github.com/99designs/gqlgen/graphql"
+    {{- if not (eq .Resolver.Package .Exec.ImportPath) }}
+        "{{.Exec.ImportPath}}"
+    {{- end }}
+)
+
+// This file will not be regenerated automatically.
+//
+// It serves as dependency injection for your app, add any dependencies you require here.
+
+type Resolver struct{ client *ent.Client }
+
+type Option func(*Resolver)
+
+// WithEntClient sets the ent client on the resolver.
+func WithEntClient(client *ent.Client) Option {
+    return func(r *Resolver) {
+        r.client = client
+    }
+}
+
+// NewResolver creates a new resolver with the given options.
+func NewResolver(opts ...Option) *Resolver {
+    r := &Resolver{}
+    for _, opt := range opts {
+        opt(r)
+    }
+    return r
+}
+
+// NewSchema creates a graphql executable schema.
+func NewSchema(opts ...Option) graphql.ExecutableSchema {
+    {{- $pkg := "" }}
+    {{- if not (eq .Resolver.Package .Exec.ImportPath) }}
+        {{- $pkg = printf "%s%s" .Exec.Package "."}}
+    {{- end }}
+    return {{$pkg}}NewExecutableSchema({{$pkg}}Config{
+        Resolvers: NewResolver(opts...),
+    })
+}
+
+{{ end }}

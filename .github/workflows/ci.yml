@@ -1,0 +1,74 @@
+name: GoTest
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - 'cmd/**'
+      - '.github/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - 'cmd/**'
+      - '.github/**'
+jobs:
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Run linters
+#        uses: golangci/golangci-lint-action@v2.5.2
+#        with:
+#          version: v1.45.2
+
+  build:
+    runs-on: ubuntu-latest
+    services:
+      otel:
+        image: otel/opentelemetry-collector-contrib:0.79.0
+        ports:
+          - "4317:4317"
+          - "4318:4318"
+          - "8888:8888"
+          - "8889:8889"
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ['1.19','1.20','1.21']
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go }}
+
+    - uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    - name: Run tests
+      run: go test -race ./...
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run go generate on integration directory
+        working-directory: integration
+        run: go generate ./... && go mod tidy
+      - name: Run tests on integration directory
+        working-directory: integration
+        run: go test ./...
