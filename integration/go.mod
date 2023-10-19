@@ -2,8 +2,6 @@ module github.com/woocoos/knockout-go/integration
 
 go 1.21
 
-toolchain go1.21.3
-
 replace github.com/woocoos/knockout-go => ../
 
 require (
