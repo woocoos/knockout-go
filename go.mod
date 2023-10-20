@@ -16,7 +16,7 @@ require (
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4
 	github.com/tsingsun/woocoo v0.4.2-0.20231015152503-8a4e63e6e2b8
-	github.com/tsingsun/woocoo/contrib/gql v0.0.0-20231012062453-74c77e6e1535
+	github.com/tsingsun/woocoo/contrib/gql v0.0.0-20231020013458-23888f008da8
 	github.com/tsingsun/woocoo/contrib/telemetry v0.1.2
 	github.com/vektah/gqlparser/v2 v2.5.10
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230404005858-cd33f1b0b92e
@@ -110,8 +110,8 @@ require (
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sync v0.4.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230711160842-782d3b101e98 // indirect
