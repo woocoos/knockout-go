@@ -5,5 +5,5 @@ knockout application sdk for go
 ## Install
 
 ```bash
-go get github.com/arsmn/knockout-go
+go get github.com/woocoos/knockout-go
 ```
