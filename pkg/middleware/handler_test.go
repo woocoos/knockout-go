@@ -15,6 +15,7 @@ import (
 func TestTenantIDMiddleware(t *testing.T) {
 	t.Run("ginContext", func(t *testing.T) {
 		router := gin.New()
+		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
 			tid, err := identity.TenantIDFromContext(c)
@@ -49,6 +50,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 	})
 	t.Run("not int", func(t *testing.T) {
 		router := gin.New()
+		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
 			tid, err := identity.TenantIDFromContext(c)
@@ -64,6 +66,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 	})
 	t.Run("hots", func(t *testing.T) {
 		router := gin.New()
+		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.NewFromStringMap(map[string]any{
 			"lookup":     "host",
 			"rootDomain": "woocoo.com",
@@ -82,6 +85,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 	})
 	t.Run("validate err", func(t *testing.T) {
 		router := gin.New()
+		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
 			c.String(200, "test")
