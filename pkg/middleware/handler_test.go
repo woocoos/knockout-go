@@ -1,10 +1,12 @@
-package identity
+package middleware
 
 import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsingsun/woocoo/pkg/conf"
+	"github.com/tsingsun/woocoo/web"
+	"github.com/woocoos/knockout-go/pkg/identity"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,7 +17,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router := gin.New()
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
-			tid, err := TenantIDFromContext(c)
+			tid, err := identity.TenantIDFromContext(c)
 			assert.NoError(t, err)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
@@ -33,7 +35,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.GET("/test", func(c *gin.Context) {
 			ctx := context.WithValue(c.Request.Context(), gin.ContextKey, c)
 			func(ctx2 context.Context) {
-				tid, err := TenantIDFromContext(ctx2)
+				tid, err := identity.TenantIDFromContext(ctx2)
 				assert.NoError(t, err)
 				assert.Equal(t, 1, tid)
 			}(ctx)
@@ -49,7 +51,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router := gin.New()
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
-			tid, err := TenantIDFromContext(c)
+			tid, err := identity.TenantIDFromContext(c)
 			assert.Error(t, err)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
@@ -67,7 +69,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 			"rootDomain": "woocoo.com",
 		})))
 		router.GET("/test", func(c *gin.Context) {
-			tid, err := TenantIDFromContext(c)
+			tid, err := identity.TenantIDFromContext(c)
 			assert.NoError(t, err)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
@@ -95,5 +97,27 @@ func TestTenantIDMiddleware(t *testing.T) {
 		w = httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+	t.Run("web", func(t *testing.T) {
+		router := web.New(
+			web.WithConfiguration(conf.NewFromBytes([]byte(`
+engine:
+  routerGroups:
+  - default:
+      middlewares:
+      - tenant:
+`))),
+			RegisterTenantID(),
+		)
+		router.Router().GET("/test", func(c *gin.Context) {
+			tid, err := identity.TenantIDFromContext(c)
+			assert.NoError(t, err)
+			assert.Equal(t, 1, tid)
+			c.String(200, "test")
+		})
+		req := httptest.NewRequest("GET", "/test", nil)
+		req.Header.Set("X-Tenant-ID", "1")
+		w := httptest.NewRecorder()
+		router.Router().ServeHTTP(w, req)
 	})
 }
