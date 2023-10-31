@@ -8,14 +8,17 @@ import (
 	"strconv"
 )
 
-var (
+const (
 	TenantContextKey = "_woocoos/knockout/tenant_id"
 	TenantHeaderKey  = "X-Tenant-ID"
+)
 
+var (
 	ErrInvalidUserID = errors.New("invalid user")
 	ErrMisTenantID   = errors.New("miss tenant id")
 )
 
+// UserIDFromContext returns the user id from context
 func UserIDFromContext(ctx context.Context) (int, error) {
 	gp, ok := security.GenericPrincipalFromContext(ctx)
 	if !ok {
@@ -28,6 +31,7 @@ func UserIDFromContext(ctx context.Context) (int, error) {
 	return id, nil
 }
 
+// WithTenantID returns a new context with tenant id
 func WithTenantID(parent context.Context, id int) context.Context {
 	return context.WithValue(parent, TenantContextKey, id)
 }

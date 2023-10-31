@@ -15,7 +15,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4
-	github.com/tsingsun/woocoo v0.4.2
+	github.com/tsingsun/woocoo v0.4.3-0.20231031104525-7637d5a6bb7f
 	github.com/tsingsun/woocoo/contrib/gql v0.0.1
 	github.com/tsingsun/woocoo/contrib/telemetry v0.1.3
 	github.com/vektah/gqlparser/v2 v2.5.10
@@ -23,6 +23,7 @@ require (
 	github.com/woocoos/entcache v0.0.0-20231018132617-2a6c9fb4ee1a
 	go.opentelemetry.io/contrib/propagators/b3 v1.20.0
 	go.opentelemetry.io/otel v1.19.0
+	golang.org/x/oauth2 v0.11.0
 	golang.org/x/tools v0.9.3
 )
 
@@ -109,7 +110,6 @@ require (
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/oauth2 v0.11.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect

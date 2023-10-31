@@ -1,0 +1,266 @@
+openapi: 3.0.0
+info:
+  title: File API
+  version: 0.0.1
+  description: |
+    This API is used to access the file service.
+  contact:
+    name: API Support
+    email: 21997272@qq.com
+
+servers:
+  - url: http://localhost:10070
+    description: Local server
+tags:
+  - name: file
+    description: File API
+paths:
+  /files:
+    post:
+      description: upload file
+      tags:
+        - file
+      operationId: uploadFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucket:
+                  type: string
+                  description: the name of bucket，value is local
+                key:
+                  type: string
+                  description: the path of file in the bucket
+      responses:
+        '200':
+          description: upload success
+          content:
+            application/json:
+              schema:
+                type: string
+                description: id of the file
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /files/report-ref-count:
+    post:
+      description: number of times that the file is referenced by business
+      tags:
+        - file
+      operationId: reportRefCount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inputs:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FileRefInput'
+              required:
+                - inputs
+      responses:
+        '200':
+          description: report reference count success
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /files/upload-info:
+    post:
+      description: upload the file info for oss
+      tags:
+        - file
+      operationId: uploadFileInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  $ref: '#/components/schemas/FileInput'
+                fileSource:
+                  $ref: '#/components/schemas/FileSourceInput'
+              required:
+                - file
+                - fileSource
+      responses:
+        '200':
+          description: upload file info success
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /files/{fileId}:
+    get:
+      description: get file info
+      tags:
+        - file
+      operationId: getFile
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 文件信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileInfo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      description: delete file
+      tags:
+        - file
+      operationId: deleteFile
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: delete success
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /files/{fileId}/raw:
+    get:
+      description: get file
+      tags:
+        - file
+      operationId: getFileRaw
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: get file raw data
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        details:
+          type: string
+    FileInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        size:
+          type: integer
+        path:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        FileSource:
+          $ref: '#/components/schemas/FileSource'
+    FileSource:
+      type: object
+      properties:
+        id:
+          type: integer
+        kind:
+          type: string
+          enum: [ "local","alioss" ]
+        endpoint:
+          type: string
+        bucket:
+          type: string
+        region:
+          type: string
+    FileInput:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        size:
+          type: integer
+        mine_type:
+          type: string
+      required:
+        - name
+        - path
+        - size
+        - mine_type
+    FileSourceInput:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [ "local","alioss" ]
+        endpoint:
+          type: string
+        region:
+          type: string
+        bucket:
+          type: string
+      required:
+        - kind
+        - endpoint
+        - region
+        - bucket
+    FileRefInput:
+      type: object
+      properties:
+        fileId:
+          type: integer
+        opType:
+          type: string
+          description: plus or minus the reference count
+          enum: [ "plus","minus" ]
+      required:
+        - fileId
+        - opType
