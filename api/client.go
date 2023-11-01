@@ -64,6 +64,13 @@ func NewSDK(cnf *conf.Configuration) (sdk *SDK, err error) {
 		}
 		authTransPort.Base = sdk.signerClient
 	}
+	if cnf.IsSet("plugin") {
+		cnf.Map("plugin", func(root string, sub *conf.Configuration) {
+			if err := sdk.RegisterPlugin(root, sub); err != nil {
+				panic(err)
+			}
+		})
+	}
 	return
 }
 

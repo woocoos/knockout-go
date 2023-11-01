@@ -19,7 +19,7 @@ type Alert struct {
 }
 
 type AlertGroup struct {
-	Alerts []json.RawMessage `binding:"required" json:"alerts"`
+	Alerts []*GettableAlert `binding:"required" json:"alerts"`
 	// Labels A set of labels. Labels are key/value pairs that are attached to
 	// alerts. Labels are used to specify identifying attributes of alerts,
 	// such as their tenant, user , instance, and job.
@@ -72,7 +72,7 @@ type GettableAlert struct {
 	UpdatedAt   time.Time   `binding:"required" json:"updatedAt" time_format:"2006-01-02T15:04:05Z07:00"`
 }
 
-type GettableAlerts []json.RawMessage
+type GettableAlerts []*GettableAlert
 
 type GettableSilence struct {
 	*Silence  `json:",inline"`
@@ -81,7 +81,7 @@ type GettableSilence struct {
 	UpdatedAt time.Time     `binding:"required" json:"updatedAt" time_format:"2006-01-02T15:04:05Z07:00"`
 }
 
-type GettableSilences []json.RawMessage
+type GettableSilences []*GettableSilence
 
 // LabelSet A set of labels. Labels are key/value pairs that are attached to
 // alerts. Labels are used to specify identifying attributes of alerts,
@@ -118,7 +118,7 @@ type PostableAlert struct {
 	StartsAt    time.Time `json:"startsAt,omitempty" time_format:"2006-01-02T15:04:05Z07:00"`
 }
 
-type PostableAlerts []json.RawMessage
+type PostableAlerts []*PostableAlert
 
 type PostableSilence struct {
 	*Silence `json:",inline"`

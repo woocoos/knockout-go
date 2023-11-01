@@ -8,9 +8,11 @@ import (
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/woocoos/knockout-go/api/file"
 	"github.com/woocoos/knockout-go/api/msg"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 var (
@@ -34,6 +36,11 @@ kosdk:
       nonce:
       url: CanonicalUri
     nonceLen: 12
+  plugin:
+    file:
+      basePath: http://127.0.0.1:10070
+    msg:
+      basePath: http://127.0.0.1:10070
 cache:
   memory:
     driverName: local
@@ -65,11 +72,20 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 		w.Write(d)
 	})
 	mux.HandleFunc("/alerts", func(w http.ResponseWriter, r *http.Request) {
-		ah := r.Header.Values("Authorization")
-		t.Require().Len(ah, 2)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("[]"))
-		return
+		switch r.Method {
+		case http.MethodGet:
+			ah := r.Header.Values("Authorization")
+			t.Require().Len(ah, 2)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte("[]"))
+		case http.MethodPost:
+			as, err := io.ReadAll(r.Body)
+			t.Require().NoError(err)
+			var data msg.PostAlertsRequest
+			t.Require().NoError(json.Unmarshal(as, &data))
+			t.Require().Len(data.PostableAlerts, 1)
+			w.WriteHeader(http.StatusOK)
+		}
 	})
 	mux.HandleFunc(`/files/`, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -110,17 +126,38 @@ func (t *apiSuite) TestGetPlugin() {
 }
 
 func (t *apiSuite) TestMsg() {
-	ret, resp, err := t.sdk.Msg().AlertAPI.GetAlerts(context.Background(), &msg.GetAlertsRequest{
-		Active:      nil,
-		Silenced:    nil,
-		Inhibited:   nil,
-		Unprocessed: nil,
-		Filter:      nil,
-		Receiver:    nil,
+	t.Run("getAlerts", func() {
+		ret, resp, err := t.sdk.Msg().AlertAPI.GetAlerts(context.Background(), &msg.GetAlertsRequest{
+			Active:      nil,
+			Silenced:    nil,
+			Inhibited:   nil,
+			Unprocessed: nil,
+			Filter:      nil,
+			Receiver:    nil,
+		})
+		t.Require().NoError(err)
+		t.NotNil(ret)
+		t.Equal(200, resp.StatusCode)
 	})
-	t.Require().NoError(err)
-	t.NotNil(ret)
-	t.Equal(200, resp.StatusCode)
+	t.Run("postAlerts", func() {
+		resp, err := t.sdk.Msg().AlertAPI.PostAlerts(context.Background(), &msg.PostAlertsRequest{
+			PostableAlerts: msg.PostableAlerts{
+				{
+					EndsAt: time.Now(),
+					Alert: &msg.Alert{
+						Labels: map[string]string{
+							"summary": "test",
+						},
+					},
+					Annotations: map[string]string{
+						"annotation": "test",
+					},
+				},
+			},
+		})
+		t.Require().NoError(err)
+		t.Equal(200, resp.StatusCode)
+	})
 }
 
 func (t *apiSuite) TestFile() {

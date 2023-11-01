@@ -44,7 +44,7 @@ func (a *SilenceAPI) DeleteSilence(ctx context.Context, req *DeleteSilenceReques
 }
 
 // (GET /silence/{silenceID})
-func (a *SilenceAPI) GetSilence(ctx context.Context, req *GetSilenceRequest) (ret GettableSilence, resp *http.Response, err error) {
+func (a *SilenceAPI) GetSilence(ctx context.Context, req *GetSilenceRequest) (ret *GettableSilence, resp *http.Response, err error) {
 	var (
 		contentType string
 		body        any
@@ -67,7 +67,8 @@ func (a *SilenceAPI) GetSilence(ctx context.Context, req *GetSilenceRequest) (re
 		return
 	}
 	if resp.StatusCode == http.StatusOK {
-		err = a.client.decode(respBody, &ret, resp.Header.Get("Content-Type"))
+		ret = new(GettableSilence)
+		err = a.client.decode(respBody, ret, resp.Header.Get("Content-Type"))
 		if err == nil {
 			return
 		}
