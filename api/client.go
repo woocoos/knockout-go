@@ -4,8 +4,10 @@ import (
 	"context"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/httpx"
+	"github.com/woocoos/knockout-go/pkg/identity"
 	"golang.org/x/oauth2"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -107,4 +109,16 @@ func (sdk *SDK) File() *File {
 // Msg returns the msg plugin.
 func (sdk *SDK) Msg() *Msg {
 	return sdk.plugins["msg"].(*Msg)
+}
+
+// TenantIDInterceptor is a client intercept that try to inject tenant id into request header.
+// only support string and int type.
+func TenantIDInterceptor(ctx context.Context, req *http.Request) error {
+	switch tid := ctx.Value(identity.TenantContextKey).(type) {
+	case string:
+		req.Header.Add(identity.TenantHeaderKey, tid)
+	case int:
+		req.Header.Add(identity.TenantHeaderKey, strconv.Itoa(tid))
+	}
+	return nil
 }

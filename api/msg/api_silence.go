@@ -26,7 +26,7 @@ func (a *SilenceAPI) DeleteSilence(ctx context.Context, req *DeleteSilenceReques
 	if err != nil {
 		return
 	}
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (a *SilenceAPI) GetSilence(ctx context.Context, req *GetSilenceRequest) (re
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func (a *SilenceAPI) GetSilences(ctx context.Context, req *GetSilencesRequest) (
 	request.URL.RawQuery = queryParams.Encode()
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -136,7 +136,7 @@ func (a *SilenceAPI) PostSilences(ctx context.Context, req *PostSilencesRequest)
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}

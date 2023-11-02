@@ -4,6 +4,7 @@ package msg
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -17,6 +18,10 @@ import (
 	"strings"
 )
 
+// InterceptFunc is a function that intercepts a request before it is sent.
+type InterceptFunc func(context.Context, *http.Request) error
+
+// Config stores configuration for API client
 type Config struct {
 	BasePath   string            `json:"basePath,omitempty" yaml:"basePath,omitempty"`
 	Host       string            `json:"host,omitempty" yaml:"host,omitempty"`
@@ -32,20 +37,23 @@ func NewConfig() *Config {
 	}
 }
 
+// APIClient manages communication with the Alertmanager API API v0.0.1 endpoints.
 type APIClient struct {
-	cfg         *Config
-	common      api // Reuse a single struct instead of allocating one for each service on the heap.
-	GeneralAPI  *GeneralAPI
-	ReceiverAPI *ReceiverAPI
-	SilenceAPI  *SilenceAPI
-	AlertAPI    *AlertAPI
-	PushAPI     *PushAPI
+	cfg          *Config
+	interceptors []InterceptFunc
+	common       api // Reuse a single struct instead of allocating one for each service on the heap.
+	GeneralAPI   *GeneralAPI
+	ReceiverAPI  *ReceiverAPI
+	SilenceAPI   *SilenceAPI
+	AlertAPI     *AlertAPI
+	PushAPI      *PushAPI
 }
 
 type api struct {
 	client *APIClient
 }
 
+// NewAPIClient creates a new API client. If nil is provided for the httpClient
 func NewAPIClient(cfg *Config) *APIClient {
 	if cfg.HTTPClient == nil {
 		cfg.HTTPClient = http.DefaultClient
@@ -62,6 +70,11 @@ func NewAPIClient(cfg *Config) *APIClient {
 	c.PushAPI = (*PushAPI)(&c.common)
 
 	return c
+}
+
+// AddInterceptor adds an interceptor to the APIClient
+func (c *APIClient) AddInterceptor(interceptor InterceptFunc) {
+	c.interceptors = append(c.interceptors, interceptor)
 }
 
 // parameterToString convert any parameters to string, using a delimiter if format is provided.
@@ -145,7 +158,14 @@ func (c *APIClient) prepareRequest(
 }
 
 // Do sends an HTTP request and returns an HTTP response.
-func (c *APIClient) Do(req *http.Request) (res *http.Response, err error) {
+func (c *APIClient) Do(ctx context.Context, req *http.Request) (res *http.Response, err error) {
+	for _, interceptor := range c.interceptors {
+		err = interceptor(ctx, req)
+		if err != nil {
+			return
+		}
+	}
+
 	return c.cfg.HTTPClient.Do(req)
 }
 

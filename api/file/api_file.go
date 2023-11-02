@@ -25,7 +25,7 @@ func (a *FileAPI) DeleteFile(ctx context.Context, req *DeleteFileRequest) (resp 
 	if err != nil {
 		return
 	}
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -57,7 +57,7 @@ func (a *FileAPI) GetFile(ctx context.Context, req *GetFileRequest) (ret *FileIn
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -93,7 +93,7 @@ func (a *FileAPI) GetFileRaw(ctx context.Context, req *GetFileRawRequest) (ret [
 	}
 	accept := selectHeaderAccept([]string{"application/octet-stream"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -129,7 +129,7 @@ func (a *FileAPI) ReportRefCount(ctx context.Context, req *ReportRefCountRequest
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -168,7 +168,7 @@ func (a *FileAPI) UploadFile(ctx context.Context, req *UploadFileRequest) (ret s
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -204,7 +204,7 @@ func (a *FileAPI) UploadFileInfo(ctx context.Context, req *UploadFileInfoRequest
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}

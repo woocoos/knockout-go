@@ -25,7 +25,7 @@ func (a *PushAPI) PostPush(ctx context.Context, req *PostPushRequest) (resp *htt
 	if err != nil {
 		return
 	}
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}

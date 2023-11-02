@@ -22,5 +22,6 @@ func (f *File) Apply(sdk *SDK, cnf *conf.Configuration) error {
 	}
 	f.cfg.HTTPClient = sdk.client
 	f.APIClient = file.NewAPIClient(f.cfg)
+	f.AddInterceptor(TenantIDInterceptor)
 	return nil
 }

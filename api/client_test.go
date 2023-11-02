@@ -8,6 +8,7 @@ import (
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/woocoos/knockout-go/api/file"
 	"github.com/woocoos/knockout-go/api/msg"
+	"github.com/woocoos/knockout-go/pkg/identity"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -88,6 +89,7 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 		}
 	})
 	mux.HandleFunc(`/files/`, func(w http.ResponseWriter, r *http.Request) {
+		t.Require().EqualValues("1", r.Header.Get(identity.TenantHeaderKey))
 		w.Header().Set("Content-Type", "application/json")
 		d, err := json.Marshal(file.FileInfo{
 			ID: "1",
@@ -108,6 +110,9 @@ func (t *apiSuite) SetupSuite() {
 	t.Require().NoError(err)
 	err = sdk.RegisterPlugin("file", conf.NewFromStringMap(map[string]any{
 		"basePath": srv.URL,
+		"header": map[string]string{
+			identity.TenantHeaderKey: "context:" + identity.TenantContextKey,
+		},
 	}))
 	t.Require().NoError(err)
 	err = sdk.RegisterPlugin("msg", conf.NewFromStringMap(map[string]any{
@@ -161,7 +166,7 @@ func (t *apiSuite) TestMsg() {
 }
 
 func (t *apiSuite) TestFile() {
-	ret, resp, err := t.sdk.File().FileAPI.GetFile(context.Background(), &file.GetFileRequest{
+	ret, resp, err := t.sdk.File().FileAPI.GetFile(identity.WithTenantID(context.Background(), 1), &file.GetFileRequest{
 		FileId: "1",
 	})
 	t.Require().NoError(err)

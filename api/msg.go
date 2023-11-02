@@ -22,5 +22,6 @@ func (f *Msg) Apply(sdk *SDK, cnf *conf.Configuration) error {
 	}
 	f.cfg.HTTPClient = sdk.client
 	f.APIClient = msg.NewAPIClient(f.cfg)
+	f.AddInterceptor(TenantIDInterceptor)
 	return nil
 }

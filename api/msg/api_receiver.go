@@ -25,7 +25,7 @@ func (a *ReceiverAPI) GetReceivers(ctx context.Context) (ret []*Receiver, resp *
 	}
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}

@@ -49,7 +49,7 @@ func (a *AlertAPI) GetAlerts(ctx context.Context, req *GetAlertsRequest) (ret Ge
 	request.URL.RawQuery = queryParams.Encode()
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
@@ -83,7 +83,7 @@ func (a *AlertAPI) PostAlerts(ctx context.Context, req *PostAlertsRequest) (resp
 	if err != nil {
 		return
 	}
-	resp, err = a.client.Do(request)
+	resp, err = a.client.Do(ctx, request)
 	if err != nil {
 		return
 	}
