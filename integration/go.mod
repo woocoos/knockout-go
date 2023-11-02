@@ -17,7 +17,7 @@ require (
 	github.com/tsingsun/woocoo v0.4.3-0.20231101035132-910828c6d763
 	github.com/vektah/gqlparser/v2 v2.5.10
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230404005858-cd33f1b0b92e
-	github.com/woocoos/entcache v0.0.0-20231018132617-2a6c9fb4ee1a
+	github.com/woocoos/entcache v0.0.0-20231102091619-19ccccc2c1ab
 	github.com/woocoos/knockout-go v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.4.0
 )
