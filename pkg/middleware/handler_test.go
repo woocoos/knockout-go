@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/web"
 	"github.com/woocoos/knockout-go/pkg/identity"
@@ -18,8 +19,8 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
-			tid, err := identity.TenantIDFromContext(c)
-			assert.NoError(t, err)
+			tid, ok := identity.TenantIDFromContext(c)
+			require.True(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
 		})
@@ -36,8 +37,8 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.GET("/test", func(c *gin.Context) {
 			ctx := context.WithValue(c.Request.Context(), gin.ContextKey, c)
 			func(ctx2 context.Context) {
-				tid, err := identity.TenantIDFromContext(ctx2)
-				assert.NoError(t, err)
+				tid, ok := identity.TenantIDFromContext(ctx2)
+				require.True(t, ok)
 				assert.Equal(t, 1, tid)
 			}(ctx)
 			c.String(200, "test")
@@ -53,8 +54,8 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
-			tid, err := identity.TenantIDFromContext(c)
-			assert.Error(t, err)
+			tid, ok := identity.TenantIDFromContext(c)
+			assert.False(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
 		})
@@ -72,8 +73,8 @@ func TestTenantIDMiddleware(t *testing.T) {
 			"rootDomain": "woocoo.com",
 		})))
 		router.GET("/test", func(c *gin.Context) {
-			tid, err := identity.TenantIDFromContext(c)
-			assert.NoError(t, err)
+			tid, ok := identity.TenantIDFromContext(c)
+			assert.True(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
 		})
@@ -114,8 +115,8 @@ engine:
 			RegisterTenantID(),
 		)
 		router.Router().GET("/test", func(c *gin.Context) {
-			tid, err := identity.TenantIDFromContext(c)
-			assert.NoError(t, err)
+			tid, ok := identity.TenantIDFromContext(c)
+			assert.True(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
 		})

@@ -2,11 +2,10 @@ package helloapp
 
 import (
 	"context"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/tsingsun/woocoo/pkg/authz"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/security"
 	entadapter "github.com/woocoos/casbin-ent-adapter"
@@ -15,7 +14,8 @@ import (
 	"github.com/woocoos/knockout-go/integration/helloapp/ent"
 	_ "github.com/woocoos/knockout-go/integration/helloapp/ent/runtime"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
-	"github.com/woocoos/knockout-go/pkg/authorization"
+	"github.com/woocoos/knockout-go/pkg/authz"
+	"github.com/woocoos/knockout-go/pkg/authz/casbin"
 	"github.com/woocoos/knockout-go/pkg/identity"
 	"log"
 	"math/rand"
@@ -40,7 +40,7 @@ func initCasbin(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("failed opening connection to sqlite: %v", err)
 	}
-	_, err = authorization.SetAuthorization(conf.NewFromStringMap(map[string]any{
+	err = casbin.SetAuthorizer(conf.NewFromStringMap(map[string]any{
 		"model": `
 [request_definition]
 r = sub, dom, obj, act
@@ -99,17 +99,18 @@ func Test_WorldWithTenant(t *testing.T) {
 
 	tid := rand.Int()
 	tctx := identity.WithTenantID(ctx, tid)
-	tctx = security.WithContext(tctx, security.NewGenericPrincipalByClaims(map[string]interface{}{"sub": "1"}))
+	tctx = security.WithContext(tctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "1"}))
 	id := rand.Int()
 
-	r, err := authz.DefaultAuthorization.Enforcer.AddRoleForUserInDomain("1", strconv.Itoa(tid), strconv.Itoa(tid))
+	authorizer := security.DefaultAuthorizer.(*casbin.Authorizer)
+	r, err := authorizer.Enforcer.AddRoleForUserInDomain("1", strconv.Itoa(tid), strconv.Itoa(tid))
 	require.NoError(t, err)
-	arnp := authorization.FormatArnPrefix("", strconv.Itoa(tid), "World")
-	r, err = authz.DefaultAuthorization.Enforcer.AddPolicy("1", arnp, "read", "allow")
+	arnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "World")
+	r, err = authorizer.Enforcer.AddPolicy("1", arnp, "read", "allow")
 	require.NoError(t, err)
-	r, err = authz.DefaultAuthorization.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/abc", "read", "allow")
+	r, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/abc", "read", "allow")
 	require.NoError(t, err)
-	r, err = authz.DefaultAuthorization.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/cba:power_by/0", "read", "allow")
+	r, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/cba:power_by/0", "read", "allow")
 	require.NoError(t, err)
 	assert.True(t, r)
 	// set tenant_id to 1 should be not working
@@ -143,7 +144,7 @@ func Test_SoftDelete(t *testing.T) {
 
 	tid := rand.Int()
 	tctx := identity.WithTenantID(ctx, tid)
-	tctx = security.WithContext(tctx, security.NewGenericPrincipalByClaims(map[string]interface{}{"sub": "1"}))
+	tctx = security.WithContext(tctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "1"}))
 	id := rand.Int()
 	if err := client.World.Create().SetName("woocoo").SetTenantID(tid).SetID(id).Exec(tctx); err != nil {
 		t.Fatal("expect tenant creation to succeed, but got:", err)

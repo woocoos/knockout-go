@@ -6,11 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
-	"errors"
 	"fmt"
-	casbinerr "github.com/casbin/casbin/v2/errors"
-	"github.com/tsingsun/woocoo/pkg/authz"
-	"github.com/woocoos/knockout-go/pkg/authorization"
+	"github.com/tsingsun/woocoo/pkg/security"
+	"github.com/woocoos/knockout-go/pkg/authz"
 	"github.com/woocoos/knockout-go/pkg/identity"
 	"strconv"
 	"strings"
@@ -100,9 +98,9 @@ func (d TenantMixin[T, Q]) Hooks() []ent.Hook {
 					return next.Mutate(ctx, m)
 				}
 
-				tid, err := identity.TenantIDFromContext(ctx)
-				if err != nil {
-					return nil, fmt.Errorf("get tenant id from context: %w", err)
+				tid, ok := identity.TenantIDFromContext(ctx)
+				if !ok {
+					return nil, identity.ErrMisTenantID
 				}
 
 				mx, ok := m.(tenant[Q])
@@ -128,27 +126,28 @@ func (d TenantMixin[T, Q]) P(w Query, tid int) {
 	)
 }
 
+// QueryRulesP adds a storage-level predicate to the queries.
+//
+// When call Authorizer.Prepare, pass appcode, tenant id, and resource type those as resource prefix,
+// the prefix format is `appcode:tenant_id:resource_type:`.
 func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
-	typ := ent.QueryFromContext(ctx).Type
-	uid, err := identity.UserIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-	tid, err := identity.TenantIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	if authz.DefaultAuthorization == nil {
-		d.P(w, tid)
-		return nil
+	tid, ok := identity.TenantIDFromContext(ctx)
+	if !ok {
+		return identity.ErrMisTenantID
 	}
 	tidstr := strconv.Itoa(tid)
-	uidstr := strconv.Itoa(uid)
-	prefix := authorization.FormatArnPrefix(d.app, tidstr, typ)
-	flts, err := authorization.GetAllowedObjectConditions(uidstr, "read", prefix, tidstr)
-	if err != nil && !errors.Is(err, casbinerr.ErrEmptyCondition) {
+	authArgs, err := security.DefaultAuthorizer.Prepare(ctx, authz.ActionKindResourcePrefix,
+		d.app, tidstr, ent.QueryFromContext(ctx).Type)
+	if err != nil {
 		return err
+	}
+	flts, err := security.DefaultAuthorizer.QueryAllowedResourceConditions(ctx, authArgs)
+	if err != nil {
+		return err
+	}
+	if len(flts) == 0 {
+		d.P(w, tid)
+		return nil
 	}
 
 	w.WhereP(func(selector *sql.Selector) {
@@ -161,7 +160,7 @@ func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 }
 
 // getTenantRules returns the tenant resource conditions for the current user.
-// if field rule is not having value after "/", it will be ignore, and like * effect.
+// if field rule is not having value after "/", it will be ignored, and like * effect.
 func getTenantRules(filers []string, tid string, selector *sql.Selector) []*sql.Predicate {
 	v := make([]*sql.Predicate, 0, len(filers))
 	for _, flt := range filers {

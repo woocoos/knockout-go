@@ -2,6 +2,7 @@ package test
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -22,4 +23,16 @@ func BaseDir() string {
 
 func Path(ref string) string {
 	return filepath.Join(basedir, ref)
+}
+
+func Tmp(ref string) string {
+	if filepath.IsAbs(ref) {
+		return ref
+	}
+
+	tmpPath := filepath.Join(basedir, "tmp")
+	if err := os.MkdirAll(tmpPath, 0755); err != nil {
+		panic(err)
+	}
+	return filepath.Join(tmpPath, ref)
 }

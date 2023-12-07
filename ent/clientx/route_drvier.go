@@ -70,9 +70,9 @@ func (r *RouteDriver) fromContext(ctx context.Context) dialect.Driver {
 		return r.defaultDriver
 	}
 	// find domain from context
-	tid, err := identity.TenantIDFromContext(ctx)
-	if err != nil {
-		panic(err)
+	tid, ok := identity.TenantIDFromContext(ctx)
+	if !ok {
+		panic(identity.ErrMisTenantID)
 	}
 	return r.dbRules[strconv.Itoa(tid)]
 }

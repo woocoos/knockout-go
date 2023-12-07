@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tsingsun/woocoo/pkg/security"
+	"strconv"
 	"time"
 )
 
@@ -80,13 +81,13 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 }
 
 func getUserID(ctx context.Context) (uid int, err error) {
-	gi, ok := security.GenericIdentityFromContext(ctx)
+	user, ok := security.FromContext(ctx)
 	if !ok {
-		return 0, errors.New("identity no found")
+		return 0, errors.New("user no found")
 	}
-	uid = gi.NameInt()
+	uid, _ = strconv.Atoi(user.Identity().Name())
 	if uid == 0 {
-		return 0, fmt.Errorf("unexpected identity %s", gi.Name())
+		return 0, fmt.Errorf("unexpected identity %s", user.Identity().Name())
 	}
 	return
 }

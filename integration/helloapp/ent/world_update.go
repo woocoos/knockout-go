@@ -54,6 +54,14 @@ func (wu *WorldUpdate) SetName(s string) *WorldUpdate {
 	return wu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (wu *WorldUpdate) SetNillableName(s *string) *WorldUpdate {
+	if s != nil {
+		wu.SetName(*s)
+	}
+	return wu
+}
+
 // SetPowerBy sets the "power_by" field.
 func (wu *WorldUpdate) SetPowerBy(s string) *WorldUpdate {
 	wu.mutation.SetPowerBy(s)
@@ -173,6 +181,14 @@ func (wuo *WorldUpdateOne) ClearDeletedAt() *WorldUpdateOne {
 // SetName sets the "name" field.
 func (wuo *WorldUpdateOne) SetName(s string) *WorldUpdateOne {
 	wuo.mutation.SetName(s)
+	return wuo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (wuo *WorldUpdateOne) SetNillableName(s *string) *WorldUpdateOne {
+	if s != nil {
+		wuo.SetName(*s)
+	}
 	return wuo
 }
 

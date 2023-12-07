@@ -3,7 +3,6 @@ package identity
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/tsingsun/woocoo/pkg/security"
 	"strconv"
 )
@@ -20,11 +19,11 @@ var (
 
 // UserIDFromContext returns the user id from context
 func UserIDFromContext(ctx context.Context) (int, error) {
-	gp, ok := security.GenericPrincipalFromContext(ctx)
+	user, ok := security.FromContext(ctx)
 	if !ok {
 		return 0, ErrInvalidUserID
 	}
-	id := gp.GenericIdentity.NameInt()
+	id, _ := strconv.Atoi(user.Identity().Name())
 	if id == 0 {
 		return 0, ErrInvalidUserID
 	}
@@ -37,19 +36,7 @@ func WithTenantID(parent context.Context, id int) context.Context {
 }
 
 // TenantIDFromContext returns the tenant id from context.tenant id is int format
-func TenantIDFromContext(ctx context.Context) (id int, err error) {
-	switch tid := ctx.Value(TenantContextKey).(type) {
-	case int:
-		return tid, nil
-	case string:
-		id, err = strconv.Atoi(tid)
-		if err == nil {
-			return
-		}
-	case nil:
-		return 0, ErrMisTenantID
-	default:
-		return 0, fmt.Errorf("invalid tenant id type %T", tid)
-	}
+func TenantIDFromContext(ctx context.Context) (id int, ok bool) {
+	id, ok = ctx.Value(TenantContextKey).(int)
 	return
 }

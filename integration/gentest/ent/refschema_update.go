@@ -33,6 +33,14 @@ func (rsu *RefSchemaUpdate) SetName(s string) *RefSchemaUpdate {
 	return rsu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (rsu *RefSchemaUpdate) SetNillableName(s *string) *RefSchemaUpdate {
+	if s != nil {
+		rsu.SetName(*s)
+	}
+	return rsu
+}
+
 // Mutation returns the RefSchemaMutation object of the builder.
 func (rsu *RefSchemaUpdate) Mutation() *RefSchemaMutation {
 	return rsu.mutation
@@ -100,6 +108,14 @@ type RefSchemaUpdateOne struct {
 // SetName sets the "name" field.
 func (rsuo *RefSchemaUpdateOne) SetName(s string) *RefSchemaUpdateOne {
 	rsuo.mutation.SetName(s)
+	return rsuo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (rsuo *RefSchemaUpdateOne) SetNillableName(s *string) *RefSchemaUpdateOne {
+	if s != nil {
+		rsuo.SetName(*s)
+	}
 	return rsuo
 }
 
