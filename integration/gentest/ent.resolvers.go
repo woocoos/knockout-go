@@ -6,32 +6,26 @@ package gentest
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
-	"github.com/gin-gonic/gin"
 	"github.com/woocoos/knockout-go/integration/gentest/ent"
-	"github.com/woocoos/knockout-go/pkg/pagination"
 )
 
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.client.NoderEx(ctx, id)
 }
 
 // Nodes is the resolver for the nodes field.
 func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.client.NodersEx(ctx, ids)
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
-	gctx := ctx.Value(gin.ContextKey).(*gin.Context)
-	sp, err := pagination.NewSimplePagination(gctx.Query("p"), gctx.Query("c"))
-	if err != nil {
-		return nil, err
-	}
-	return r.client.User.Query().Paginate(pagination.WithSimplePagination(ctx, sp), after, first, before, last)
+	return r.client.User.Query().Paginate(ctx, after, first, before, last,
+		ent.WithUserOrder(orderBy),
+		ent.WithUserFilter(where.Filter))
 }
 
 // Query returns QueryResolver implementation.

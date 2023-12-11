@@ -30,6 +30,7 @@ func (User) Annotations() []schema.Annotation {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int("id"),
 		field.String("name").MaxLen(45).Comment("姓名"),
 		field.Time("created_at").Immutable().Default(time.Now).Immutable().
 			Annotations(entgql.OrderField("createdAt"), entgql.Skip(entgql.SkipMutationCreateInput),

@@ -1,8 +1,13 @@
 scalar Decimal
 type Mutation {
+    # createUser will not auto generate the logic.
     createUser(name: String!, money: Decimal): User!
+    # createUserByInput will auto generate the logic.
     createUserByInput(input: CreateUserInput!): User!
+    # updateUser will auto generate the logic.
     updateUser(id:ID!,input: UpdateUserInput!): User!
+    # deleteUser will auto generate the logic.
     deleteUser(id:ID!): Boolean!
+    # deleteUser1 will not auto generate the logic.
     deleteUser1(id:ID!): Boolean
 }

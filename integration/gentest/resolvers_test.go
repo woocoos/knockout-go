@@ -12,6 +12,7 @@ import (
 	"github.com/tsingsun/woocoo/pkg/gds"
 	"github.com/woocoos/knockout-go/integration/gentest/ent"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
+	"github.com/woocoos/knockout-go/pkg/pagination"
 	"net/http/httptest"
 	"strconv"
 	"strings"
@@ -23,15 +24,18 @@ import (
 
 type TestSuite struct {
 	suite.Suite
-	client        *ent.Client
-	queryResolver queryResolver
+	client           *ent.Client
+	queryResolver    queryResolver
+	mutationResolver mutationResolver
 }
 
 func (s *TestSuite) SetupSuite() {
+	gin.SetMode(gin.ReleaseMode)
 	dr, err := sql.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	s.Require().NoError(err)
 	s.client = ent.NewClient(ent.Driver(dr), ent.Debug())
 	s.queryResolver = queryResolver{&Resolver{s.client}}
+	s.mutationResolver = mutationResolver{&Resolver{s.client}}
 	s.NoError(s.client.Schema.Create(context.Background()))
 }
 
@@ -40,12 +44,16 @@ func TestTestSuite(t *testing.T) {
 }
 
 func (s *TestSuite) TestUsers_SimplePagination() {
+	_, _ = s.client.User.Delete().Exec(context.Background())
 	builder := make([]*ent.UserCreate, 0)
 	for i := 0; i < 20; i++ {
-		builder = append(builder, s.client.User.Create().SetName("user"+strconv.Itoa(i)))
+		row := s.client.User.Create()
+		row.SetName("user" + strconv.Itoa(i)).Mutation().SetID(i + 1)
+		builder = append(builder, row)
 	}
 	s.NoError(s.client.User.CreateBulk(builder...).Exec(context.Background()))
-
+	all := s.client.User.Query().AllX(context.Background())
+	s.T().Log(all[0].ID, all[19].ID)
 	s.Run("pagination after", func() {
 		ctx, _ := gin.CreateTestContext(nil)
 		users, err := s.queryResolver.Users(ctx, &ent.Cursor{ID: 2}, gds.Ptr(2), nil, nil, nil, nil)
@@ -57,8 +65,7 @@ func (s *TestSuite) TestUsers_SimplePagination() {
 	})
 
 	s.Run("simple after", func() {
-		ctx, _ := gin.CreateTestContext(nil)
-		ctx.Request = httptest.NewRequest("GET", "/?p=3&c=1", nil)
+		ctx := pagination.WithSimplePagination(context.Background(), &pagination.SimplePagination{PageIndex: 3, CurrentIndex: 1})
 		users, err := s.queryResolver.Users(ctx, &ent.Cursor{ID: 2}, gds.Ptr(2), nil, nil, nil, nil)
 		s.NoError(err)
 		s.Len(users.Edges, 2)
@@ -67,7 +74,7 @@ func (s *TestSuite) TestUsers_SimplePagination() {
 
 	})
 
-	s.Run("pagination befor", func() {
+	s.Run("pagination before", func() {
 		ctx, _ := gin.CreateTestContext(nil)
 		users, err := s.queryResolver.Users(ctx, nil, nil, &ent.Cursor{ID: 5}, gds.Ptr(2), nil, nil)
 		s.NoError(err)
@@ -78,8 +85,7 @@ func (s *TestSuite) TestUsers_SimplePagination() {
 	})
 
 	s.Run("simple before", func() {
-		ctx, _ := gin.CreateTestContext(nil)
-		ctx.Request = httptest.NewRequest("GET", "/?p=1&c=3", nil)
+		ctx := pagination.WithSimplePagination(context.Background(), &pagination.SimplePagination{PageIndex: 1, CurrentIndex: 3})
 		users, err := s.queryResolver.Users(ctx, nil, nil, &ent.Cursor{ID: 5}, gds.Ptr(2), nil, nil)
 		s.NoError(err)
 		s.Len(users.Edges, 2)
@@ -144,5 +150,20 @@ func (s *TestSuite) TestDecimal() {
 		}
 		s.Require().NoError(json.Unmarshal(w.Body.Bytes(), &ret))
 		s.Require().Contains(ret.Errors[0].Message, "value out of range")
+	})
+}
+
+func (s *TestSuite) TestResolverPlugin() {
+	s.Run("CreateUser", func() {
+		s.NotPanics(func() {
+			_, _ = s.mutationResolver.CreateUser(ent.NewContext(context.Background(), s.mutationResolver.client), "empty", gds.Ptr(decimal.NewFromFloat(1.1)))
+		})
+	})
+	s.Run("CreateUserByInput", func() {
+		s.NotPanics(func() {
+			_, _ = s.mutationResolver.CreateUserByInput(ent.NewContext(context.Background(), s.mutationResolver.client), ent.CreateUserInput{
+				Name: "test",
+			})
+		})
 	})
 }

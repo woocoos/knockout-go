@@ -20,15 +20,15 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[0].Descriptor()
+	userDescName := userFields[1].Descriptor()
 	// user.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	user.NameValidator = userDescName.Validators[0].(func(string) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[1].Descriptor()
+	userDescCreatedAt := userFields[2].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescMoney is the schema descriptor for money field.
-	userDescMoney := userFields[2].Descriptor()
+	userDescMoney := userFields[3].Descriptor()
 	// user.DefaultMoney holds the default value on creation for the money field.
 	user.DefaultMoney = userDescMoney.Default.(func() decimal.Decimal)
 	// user.MoneyValidator is a validator for the "money" field. It is called by the builders before save.

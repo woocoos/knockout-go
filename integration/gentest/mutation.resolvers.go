@@ -19,7 +19,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, name string, money *d
 
 // CreateUserByInput is the resolver for the createUserByInput field.
 func (r *mutationResolver) CreateUserByInput(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: CreateUserByInput - createUserByInput"))
+	return ent.FromContext(ctx).User.Create().SetInput(input).Save(ctx)
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -29,7 +29,8 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id int, input ent.Upd
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id int) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteUser - deleteUser"))
+	err := ent.FromContext(ctx).User.DeleteOneID(id).Exec(ctx)
+	return err == nil, err
 }
 
 // DeleteUser1 is the resolver for the deleteUser1 field.

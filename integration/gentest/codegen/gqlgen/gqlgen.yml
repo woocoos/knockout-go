@@ -7,6 +7,8 @@ resolver:
   layout: follow-schema
   dir: .
 
+exec:
+  dir: .
 autobind:
   - github.com/woocoos/knockout-go/integration/gentest/ent
 models:

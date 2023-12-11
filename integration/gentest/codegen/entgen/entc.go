@@ -15,8 +15,8 @@ func main() {
 		entgql.WithSchemaGenerator(),
 		entx.WithGqlWithTemplates(),
 		entgql.WithWhereInputs(true),
-		entgql.WithConfigPath("gentest/gqlgen.yml"),
-		entgql.WithSchemaPath("gentest/ent.graphql"),
+		entgql.WithConfigPath("codegen/gqlgen/gqlgen.yml"),
+		entgql.WithSchemaPath("ent.graphql"),
 		entgql.WithSchemaHook(entx.ChangeRelayNodeType()),
 	)
 	if err != nil {
@@ -28,9 +28,9 @@ func main() {
 		entx.SimplePagination(),
 		entcachegen.QueryCache(),
 	}
-	err = entc.Generate("./gentest/ent/schema", &gen.Config{
+	err = entc.Generate("./ent/schema", &gen.Config{
 		Package: "github.com/woocoos/knockout-go/integration/gentest/ent",
-		Target:  "./gentest/ent",
+		Target:  "./ent",
 	},
 		opts...)
 	if err != nil {
