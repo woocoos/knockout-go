@@ -21,8 +21,9 @@ func TestGen(t *testing.T) {
 	require.NoError(t, err)
 	// the test generate new code field always, so no need adding config
 	err = api.Generate(cfg, api.AddPlugin(gqlx.NewResolverPlugin(gqlx.WithRelayNodeEx(), gqlx.WithConfig(cfg))))
-	if assert.NoError(t, err) {
-		err = os.RemoveAll(filepath.Join(testdir, "tmp"))
-		t.Log(err)
+	if assert.NoError(t, err, "generate success then clean up") {
+		if err = os.RemoveAll(filepath.Join(testdir, "tmp")); err != nil {
+			t.Log(err)
+		}
 	}
 }

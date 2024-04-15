@@ -7,9 +7,8 @@ import (
 	"entgo.io/ent/schema/mixin"
 )
 
-// IntID helps to generate an int type id.
+// IntID helps to generate an int type id. It is used for the primary key of the table.
 type IntID struct {
-	// ID is the unique identifier of the user in the database.
 	mixin.Schema
 }
 

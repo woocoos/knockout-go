@@ -30,7 +30,7 @@ import (
 
 var (
 	defaultNode *snowflake.Node
-	// 时间戳起始时间 北京时间 2023-01-01 00:00:00
+	// timestamp start at cst 2023-01-01 00:00:00
 	epoch int64 = 1672531200000
 )
 
@@ -44,6 +44,10 @@ func init() {
 	}
 }
 
+// SetDefaultNodeFromEnv set default node from env。
+//
+// SNOWFLAKE_DEFAULT: if true, use default config, the other env will be ignored.
+// SNOWFLAKE_NODE_LIST: node list split by `,`, it will be used to determine the nodeID, useful in k8s.
 func SetDefaultNodeFromEnv() (err error) {
 	nodeID := 1
 	if useDefault, _ := strconv.ParseBool(os.Getenv("SNOWFLAKE_DEFAULT")); !useDefault {
@@ -51,10 +55,9 @@ func SetDefaultNodeFromEnv() (err error) {
 		snowflake.NodeBits = 3
 		snowflake.StepBits = 8
 	}
-	nodelist := strings.Split(os.Getenv("SNOWFLAKE_NODE_LIST"), ",")
-	if len(nodelist) > 0 {
+	if nl := strings.Split(os.Getenv("SNOWFLAKE_NODE_LIST"), ","); len(nl) > 0 {
 		hostip := os.Getenv("HOST_IP")
-		for i, v := range nodelist {
+		for i, v := range nl {
 			if v == hostip {
 				nodeID = i + 1
 				break
@@ -68,6 +71,7 @@ func SetDefaultNodeFromEnv() (err error) {
 	return err
 }
 
+// SetDefaultNode set default node from config.
 func SetDefaultNode(cnf *conf.Configuration) (err error) {
 	if v := cnf.Int("nodeBits"); v > 0 {
 		snowflake.NodeBits = uint8(v)
@@ -86,6 +90,7 @@ func SetDefaultNode(cnf *conf.Configuration) (err error) {
 	return err
 }
 
+// New generate a new snowflake id.
 func New() snowflake.ID {
 	return defaultNode.Generate()
 }

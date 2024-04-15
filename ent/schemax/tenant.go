@@ -48,21 +48,40 @@ type TenantMixin[T Query, Q Mutator] struct {
 	app string
 	// the NewQuery returns the generic Query interface for the given typed query.
 	newQueryFunc func(ent.Query) (T, error)
+	// schemaType overrides the default database type with a custom
+	// schema type (per dialect) for int.
+	schemaType map[string]string
+}
+
+type TenantMixinOption[T Query, Q Mutator] func(*TenantMixin[T, Q])
+
+// WithTenantMixinSchemaType sets the tenant field for ent SchemaType. By default,
+// in NewTenantMixin, it will be set to bigint for SnowFlakeID.
+func WithTenantMixinSchemaType[T Query, Q Mutator](schemaType map[string]string) TenantMixinOption[T, Q] {
+	return func(m *TenantMixin[T, Q]) {
+		m.schemaType = schemaType
+	}
 }
 
 // NewTenantMixin returns a mixin that adds a tenant_id field and inject resource query.
 //
 // app is the application code, the same as the one defined in knockout backend.
-func NewTenantMixin[T Query, Q Mutator](app string, newQuery func(ent.Query) (T, error)) TenantMixin[T, Q] {
-	return TenantMixin[T, Q]{
+// Knockout Tenant field uses go Int type as the field type, it is a snowflake id by default.
+func NewTenantMixin[T Query, Q Mutator](app string, newQuery func(ent.Query) (T, error), opts ...TenantMixinOption[T, Q]) TenantMixin[T, Q] {
+	val := TenantMixin[T, Q]{
 		app:          app,
 		newQueryFunc: newQuery,
+		schemaType:   SnowFlakeID{}.SchemaType(),
 	}
+	for _, opt := range opts {
+		opt(&val)
+	}
+	return val
 }
 
-func (TenantMixin[T, Q]) Fields() []ent.Field {
+func (d TenantMixin[T, Q]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int(FieldTenantID).Immutable().SchemaType(IntID{}.SchemaType()),
+		field.Int(FieldTenantID).Immutable().SchemaType(d.schemaType),
 	}
 }
 

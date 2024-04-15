@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"github.com/99designs/gqlgen/codegen"
 	"github.com/99designs/gqlgen/codegen/config"
-	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/99designs/gqlgen/plugin"
 	"golang.org/x/tools/imports"
 	"io/fs"
 	"os"
-	"strings"
 	"text/template"
 	"time"
 )
@@ -64,16 +62,6 @@ func (r ResolverPlugin) Implement(f *codegen.Field) (val string) {
 	var (
 		err error
 	)
-	rewriter, err := NewRewriter(r.config.Resolver.Dir())
-	// for v0.17.41 break change. need the config.
-	if r.config != nil {
-		rs := f.Object.ResolverInterface.String()
-		sn := templates.LcFirst(rs[strings.LastIndex(rs, ".")+1:])
-		implementation := strings.TrimSpace(rewriter.GetMethodBody(sn, f.GoFieldName))
-		if implementation != "" {
-			return implementation
-		}
-	}
 	switch {
 	case f.Object.Definition.Name == "Mutation":
 		val, err = r.Mutation(f)

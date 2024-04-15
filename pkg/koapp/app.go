@@ -24,12 +24,12 @@ const (
 	otelPathName = "otel"
 )
 
-// New 初始化Knockout应用,尝试从配置文件中加载常用的配置并初始化.
+// New initializes the Knockout application, trying to load common configurations from the configuration file and initialize them.
 //
-// 该函数会尝试从配置文件中加载以下配置:
+// This function will try to load the following configurations from the configuration file:
 //
-//	Cache: 用于缓存的配置,目前支持redis和local.
-//	Snowflake: 用于生成唯一ID的配置,目前支持snowflake.注意该配置是全局的,如果有多个应用实例,需要保证每个实例的配置一致.
+//	Cache: Configuration for caching, currently supports redis and local.
+//	Snowflake: Configuration for generating unique IDs, currently supports snowflake. Note that this configuration is global, if there are multiple application instances, you need to ensure that the configuration of each instance is consistent.
 func New(opts ...woocoo.Option) *woocoo.App {
 	app := woocoo.New(opts...)
 	BuildAppComponents(app)
@@ -37,7 +37,7 @@ func New(opts ...woocoo.Option) *woocoo.App {
 	return app
 }
 
-// BuildAppComponents 从配置文件中加载组件并初始化.应用级一般为单例的组件
+// BuildAppComponents loads components from the configuration file and initializes them. Application level is generally singleton components
 func BuildAppComponents(app *woocoo.App) {
 	if app.AppConfiguration().IsSet("snowflake") {
 		if err := snowflake.SetDefaultNode(app.AppConfiguration().Sub("snowflake")); err != nil {
@@ -52,7 +52,7 @@ func BuildAppComponents(app *woocoo.App) {
 	}
 }
 
-// BuildCacheComponents 从配置文件中加载缓存服务组件.
+// BuildCacheComponents loads cache service components from the configuration file.
 func BuildCacheComponents(cnf *conf.AppConfiguration) {
 	cnf.Map("cache", func(root string, sub *conf.Configuration) {
 		if !sub.IsSet("driverName") {
@@ -76,7 +76,7 @@ func BuildCacheComponents(cnf *conf.AppConfiguration) {
 	})
 }
 
-// BuildEntComponents 从配置文件中加载ent服务组件.
+// BuildEntComponents loads ent service components from the configuration file.
 func BuildEntComponents(cnf *conf.AppConfiguration) map[string]dialect.Driver {
 	vals := make(map[string]dialect.Driver)
 	cnf.Map("store", func(root string, sub *conf.Configuration) {
@@ -86,7 +86,7 @@ func BuildEntComponents(cnf *conf.AppConfiguration) map[string]dialect.Driver {
 		)
 		switch driverName := sub.String("driverName"); driverName {
 		case dialect.MySQL:
-			// 尝试注册otel,如果配置中有otel配置,则注册.
+			// Try to register otel, if there is otel configuration in the configuration, then register.
 			if cnf.IsSet(otelPathName) {
 				// Register the otelsql wrapper for the provided postgres driver.
 				driverName, err = otelsql.Register("mysql",
