@@ -18,7 +18,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/minio/minio-go/v7 v7.0.69
-	github.com/shopspring/decimal v1.3.1
+	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tsingsun/woocoo v0.4.4-0.20240314052445-fc626f2c3666
 	github.com/tsingsun/woocoo/contrib/gql v0.0.3-0.20240318150039-7ad15a0fe23e

@@ -2,6 +2,7 @@ package fs
 
 import (
 	"context"
+	"errors"
 	"github.com/minio/minio-go/v7"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,8 @@ func TestNewMinio(t *testing.T) {
 			Region: minioLocaltion,
 		})
 		if err != nil {
-			merr, ok := err.(minio.ErrorResponse)
+			var merr minio.ErrorResponse
+			ok := errors.As(err, &merr)
 			require.True(t, ok)
 			assert.Equal(t, merr.Code, "BucketAlreadyOwnedByYou")
 		}
