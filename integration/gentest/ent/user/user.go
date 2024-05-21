@@ -21,6 +21,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldMoney holds the string denoting the money field in the database.
 	FieldMoney = "money"
+	// FieldAvatar holds the string denoting the avatar field in the database.
+	FieldAvatar = "avatar"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 )
@@ -31,6 +33,7 @@ var Columns = []string{
 	FieldName,
 	FieldCreatedAt,
 	FieldMoney,
+	FieldAvatar,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -58,6 +61,8 @@ var (
 	DefaultMoney func() decimal.Decimal
 	// MoneyValidator is a validator for the "money" field. It is called by the builders before save.
 	MoneyValidator func(decimal.Decimal) error
+	// AvatarValidator is a validator for the "avatar" field. It is called by the builders before save.
+	AvatarValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -81,4 +86,9 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByMoney orders the results by the money field.
 func ByMoney(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMoney, opts...).ToFunc()
+}
+
+// ByAvatar orders the results by the avatar field.
+func ByAvatar(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvatar, opts...).ToFunc()
 }

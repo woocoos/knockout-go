@@ -366,6 +366,7 @@ type UserMutation struct {
 	created_at    *time.Time
 	money         *decimal.Decimal
 	addmoney      *decimal.Decimal
+	avatar        *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*User, error)
@@ -618,6 +619,55 @@ func (m *UserMutation) ResetMoney() {
 	delete(m.clearedFields, user.FieldMoney)
 }
 
+// SetAvatar sets the "avatar" field.
+func (m *UserMutation) SetAvatar(s string) {
+	m.avatar = &s
+}
+
+// Avatar returns the value of the "avatar" field in the mutation.
+func (m *UserMutation) Avatar() (r string, exists bool) {
+	v := m.avatar
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvatar returns the old "avatar" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAvatar(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvatar is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvatar requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvatar: %w", err)
+	}
+	return oldValue.Avatar, nil
+}
+
+// ClearAvatar clears the value of the "avatar" field.
+func (m *UserMutation) ClearAvatar() {
+	m.avatar = nil
+	m.clearedFields[user.FieldAvatar] = struct{}{}
+}
+
+// AvatarCleared returns if the "avatar" field was cleared in this mutation.
+func (m *UserMutation) AvatarCleared() bool {
+	_, ok := m.clearedFields[user.FieldAvatar]
+	return ok
+}
+
+// ResetAvatar resets all changes to the "avatar" field.
+func (m *UserMutation) ResetAvatar() {
+	m.avatar = nil
+	delete(m.clearedFields, user.FieldAvatar)
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -652,7 +702,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
@@ -661,6 +711,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.money != nil {
 		fields = append(fields, user.FieldMoney)
+	}
+	if m.avatar != nil {
+		fields = append(fields, user.FieldAvatar)
 	}
 	return fields
 }
@@ -676,6 +729,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case user.FieldMoney:
 		return m.Money()
+	case user.FieldAvatar:
+		return m.Avatar()
 	}
 	return nil, false
 }
@@ -691,6 +746,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case user.FieldMoney:
 		return m.OldMoney(ctx)
+	case user.FieldAvatar:
+		return m.OldAvatar(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -720,6 +777,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMoney(v)
+		return nil
+	case user.FieldAvatar:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvatar(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -769,6 +833,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldMoney) {
 		fields = append(fields, user.FieldMoney)
 	}
+	if m.FieldCleared(user.FieldAvatar) {
+		fields = append(fields, user.FieldAvatar)
+	}
 	return fields
 }
 
@@ -786,6 +853,9 @@ func (m *UserMutation) ClearField(name string) error {
 	case user.FieldMoney:
 		m.ClearMoney()
 		return nil
+	case user.FieldAvatar:
+		m.ClearAvatar()
+		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
 }
@@ -802,6 +872,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldMoney:
 		m.ResetMoney()
+		return nil
+	case user.FieldAvatar:
+		m.ResetAvatar()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

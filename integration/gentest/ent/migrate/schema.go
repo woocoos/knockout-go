@@ -26,6 +26,7 @@ var (
 		{Name: "name", Type: field.TypeString, Size: 45},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "money", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(10,6)", "postgres": "decimal(10,6)", "sqlite3": "decimal(10,6)"}},
+		{Name: "avatar", Type: field.TypeString, Nullable: true, Size: 255},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

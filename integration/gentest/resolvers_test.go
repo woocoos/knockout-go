@@ -153,6 +153,14 @@ func (s *TestSuite) TestDecimal() {
 	})
 }
 
+func (s *TestSuite) TestFile() {
+	srv := handler.New(NewSchema(s.client))
+	srv.AddTransport(transport.POST{})
+	s.Run("ent", func() {
+		s.NoError(s.client.User.Create().SetID(999).SetName("filetest").SetAvatar("test").Exec(context.Background()))
+	})
+}
+
 func (s *TestSuite) TestResolverPlugin() {
 	s.Run("CreateUser", func() {
 		s.NotPanics(func() {
