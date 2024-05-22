@@ -14,7 +14,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tsingsun/woocoo v0.4.4-0.20240314052445-fc626f2c3666
+	github.com/tsingsun/woocoo v0.4.4-0.20240521081855-d699f57712f0
 	github.com/vektah/gqlparser/v2 v2.5.12
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2
 	github.com/woocoos/entcache v0.0.0-20231206055445-856f0148efa5
@@ -99,7 +99,7 @@ require (
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect

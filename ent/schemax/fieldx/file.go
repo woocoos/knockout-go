@@ -7,13 +7,14 @@ import (
 	"regexp"
 )
 
+// File returns a file url field which is used to store file path.
 func File(name string) *fileBuilder {
 	v := &fileBuilder{
 		&field.Descriptor{
 			Name: name,
 		},
 	}
-	ot := field.String(name).MaxLen(255)
+	ot := field.String(name)
 	v.desc = ot.Descriptor()
 	return v
 }

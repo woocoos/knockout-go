@@ -401,7 +401,7 @@ web:
 	_, err = gql.RegisterSchema(srv, &mock)
 	require.NoError(t, err)
 	var reuqest = func(target, uid string) *http.Request {
-		r := httptest.NewRequest("POST", target, bytes.NewReader([]byte(`{"query":"query hello { hello() }"}`)))
+		r := httptest.NewRequest("POST", target, bytes.NewReader([]byte(`{"query":"query hello { hello }"}`)))
 		if uid != "" {
 			r = r.WithContext(security.WithContext(context.Background(), security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": uid})))
 		}

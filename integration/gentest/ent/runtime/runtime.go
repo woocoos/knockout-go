@@ -50,21 +50,7 @@ func init() {
 	// userDescAvatar is the schema descriptor for avatar field.
 	userDescAvatar := userFields[4].Descriptor()
 	// user.AvatarValidator is a validator for the "avatar" field. It is called by the builders before save.
-	user.AvatarValidator = func() func(string) error {
-		validators := userDescAvatar.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-		}
-		return func(avatar string) error {
-			for _, fn := range fns {
-				if err := fn(avatar); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
+	user.AvatarValidator = userDescAvatar.Validators[0].(func(string) error)
 }
 
 const (

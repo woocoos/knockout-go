@@ -158,6 +158,8 @@ func (s *TestSuite) TestFile() {
 	srv.AddTransport(transport.POST{})
 	s.Run("ent", func() {
 		s.NoError(s.client.User.Create().SetID(999).SetName("filetest").SetAvatar("test").Exec(context.Background()))
+		err := s.client.User.UpdateOneID(999).SetAvatar(strings.Repeat("a", 256)).Exec(context.Background())
+		s.True(ent.IsValidationError(err))
 	})
 }
 
