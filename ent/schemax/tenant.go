@@ -117,7 +117,7 @@ func (d TenantMixin[T, Q]) Hooks() []ent.Hook {
 					return next.Mutate(ctx, m)
 				}
 
-				tid, ok := identity.TenantIDFromContext(ctx)
+				tid, ok := identity.TenantIDLoadFromContext(ctx)
 				if !ok {
 					return nil, identity.ErrMisTenantID
 				}
@@ -150,7 +150,7 @@ func (d TenantMixin[T, Q]) P(w Query, tid int) {
 // When call Authorizer.Prepare, pass appcode, tenant id, and resource type those as resource prefix,
 // the prefix format is `appcode:tenant_id:resource_type:`.
 func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
-	tid, ok := identity.TenantIDFromContext(ctx)
+	tid, ok := identity.TenantIDLoadFromContext(ctx)
 	if !ok {
 		return identity.ErrMisTenantID
 	}

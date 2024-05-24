@@ -19,7 +19,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
-			tid, ok := identity.TenantIDFromContext(c)
+			tid, ok := identity.TenantIDLoadFromContext(c)
 			require.True(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
@@ -37,7 +37,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.GET("/test", func(c *gin.Context) {
 			ctx := context.WithValue(c.Request.Context(), gin.ContextKey, c)
 			func(ctx2 context.Context) {
-				tid, ok := identity.TenantIDFromContext(ctx2)
+				tid, ok := identity.TenantIDLoadFromContext(ctx2)
 				require.True(t, ok)
 				assert.Equal(t, 1, tid)
 			}(ctx)
@@ -54,7 +54,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 		router.ContextWithFallback = true
 		router.Use(TenantIDMiddleware(conf.New()))
 		router.GET("/test", func(c *gin.Context) {
-			tid, ok := identity.TenantIDFromContext(c)
+			tid, ok := identity.TenantIDLoadFromContext(c)
 			assert.False(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
@@ -73,7 +73,7 @@ func TestTenantIDMiddleware(t *testing.T) {
 			"rootDomain": "woocoo.com",
 		})))
 		router.GET("/test", func(c *gin.Context) {
-			tid, ok := identity.TenantIDFromContext(c)
+			tid, ok := identity.TenantIDLoadFromContext(c)
 			assert.True(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
@@ -115,7 +115,7 @@ engine:
 			RegisterTenantID(),
 		)
 		router.Router().GET("/test", func(c *gin.Context) {
-			tid, ok := identity.TenantIDFromContext(c)
+			tid, ok := identity.TenantIDLoadFromContext(c)
 			assert.True(t, ok)
 			assert.Equal(t, 1, tid)
 			c.String(200, "test")
