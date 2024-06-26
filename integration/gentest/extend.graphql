@@ -1,0 +1,8 @@
+extend type Query {
+    user(id: ID!): User
+}
+
+extend type User {
+    """是否分配role"""
+    isExtend: Boolean!
+}

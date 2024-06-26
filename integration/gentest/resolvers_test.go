@@ -176,4 +176,13 @@ func (s *TestSuite) TestResolverPlugin() {
 			})
 		})
 	})
+	s.Run("DeleteUser1", func() {
+		s.NotPanics(func() {
+			defer func() {
+				e := recover()
+				s.Equal(DeleteUser1Panic, e)
+			}()
+			_, _ = s.mutationResolver.DeleteUser1(ent.NewContext(context.Background(), s.mutationResolver.client), 1)
+		})
+	})
 }

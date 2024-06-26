@@ -65,6 +65,18 @@ func (r ResolverPlugin) Implement(prevImplementation string, f *codegen.Field) (
 	var (
 		err error
 	)
+	r.rewriter, err = NewRewriter(r.config.Resolver.Dir())
+	if err != nil {
+		panic(err)
+	}
+	if r.config != nil {
+		rs := f.Object.ResolverInterface.String()
+		sn := templates.LcFirst(rs[strings.LastIndex(rs, ".")+1:])
+		implementation := strings.TrimSpace(r.rewriter.GetMethodBody(sn, f.GoFieldName))
+		if implementation != "" {
+			return implementation
+		}
+	}
 	switch {
 	case f.Object.Definition.Name == "Mutation":
 		val, err = r.Mutation(f)
@@ -133,20 +145,6 @@ func (r ResolverPlugin) Mutation(f *codegen.Field) (string, error) {
 		b   = &bytes.Buffer{}
 		err error
 	)
-	if r.rewriter == nil {
-		r.rewriter, err = NewRewriter(r.config.Resolver.Dir())
-		if err != nil {
-			return "", err
-		}
-	}
-	if r.config != nil {
-		rs := f.Object.ResolverInterface.String()
-		sn := templates.LcFirst(rs[strings.LastIndex(rs, ".")+1:])
-		implementation := strings.TrimSpace(r.rewriter.GetMethodBody(sn, f.GoFieldName))
-		if implementation != "" {
-			return implementation, nil
-		}
-	}
 	if f.Object.Definition.Name == "Mutation" {
 		switch {
 		case isEntCreate(f):
