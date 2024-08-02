@@ -1,14 +1,25 @@
 module github.com/woocoos/knockout-go
 
-go 1.21
+go 1.22
 
 require (
 	ariga.io/atlas v0.19.1-0.20240203083654-5948b60a8e43
 	entgo.io/contrib v0.5.0
-	entgo.io/ent v0.13.1
+	entgo.io/ent v0.14.0
 	github.com/99designs/gqlgen v0.17.47
 	github.com/XSAM/otelsql v0.31.0
+	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.8
+	github.com/alibabacloud-go/sts-20150401/v2 v2.0.2
+	github.com/alibabacloud-go/tea v1.2.2
+	github.com/alibabacloud-go/tea-utils/v2 v2.0.6
 	github.com/alicebob/miniredis/v2 v2.30.5
+	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
+	github.com/aws/aws-sdk-go-v2 v1.30.3
+	github.com/aws/aws-sdk-go-v2/config v1.27.27
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.27
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.2
+	github.com/aws/aws-sdk-go-v2/service/sts v1.30.3
+	github.com/aws/smithy-go v1.20.3
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/casbin/casbin/v2 v2.77.2
 	github.com/casbin/redis-watcher/v2 v2.5.0
@@ -37,12 +48,32 @@ require (
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4 // indirect
+	github.com/alibabacloud-go/debug v1.0.0 // indirect
+	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect
+	github.com/alibabacloud-go/openapi-util v0.1.0 // indirect
+	github.com/alibabacloud-go/tea-utils v1.3.1 // indirect
+	github.com/alibabacloud-go/tea-xml v1.1.3 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/aliyun/credentials-go v1.3.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.11 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.15 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.15 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.15 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.15 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.22.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.4 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/clbanning/mxj/v2 v2.5.5 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -95,6 +126,7 @@ require (
 	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tjfoc/gmsm v1.3.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
@@ -123,6 +155,7 @@ require (
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect

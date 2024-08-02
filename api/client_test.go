@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"encoding/xml"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/suite"
 	"github.com/tsingsun/woocoo/pkg/cache/lfu"
 	"github.com/tsingsun/woocoo/pkg/conf"
-	"github.com/woocoos/knockout-go/api/file"
+	"github.com/woocoos/knockout-go/api/fs"
 	"github.com/woocoos/knockout-go/api/msg"
 	"github.com/woocoos/knockout-go/pkg/identity"
 	"io"
@@ -15,6 +17,51 @@ import (
 	"testing"
 	"time"
 )
+
+// AssumeRoleResponse contains the result of successful AssumeRole request.
+type AssumeRoleResponse struct {
+	XMLName xml.Name `xml:"https://sts.amazonaws.com/doc/2011-06-15/ AssumeRoleResponse" json:"-"`
+
+	Result           AssumeRoleResult `xml:"AssumeRoleResult"`
+	ResponseMetadata struct {
+		RequestID string `xml:"RequestId,omitempty"`
+	} `xml:"ResponseMetadata,omitempty"`
+}
+
+// AssumeRoleResult - Contains the response to a successful AssumeRole
+// request, including temporary credentials that can be used to make
+// MinIO API requests.
+type AssumeRoleResult struct {
+	// The identifiers for the temporary security credentials that the operation
+	// returns.
+	AssumedRoleUser AssumedRoleUser `xml:",omitempty"`
+
+	// The temporary security credentials, which include an access key ID, a secret
+	// access key, and a security (or session) token.
+	//
+	// Note: The size of the security token that STS APIs return is not fixed. We
+	// strongly recommend that you make no assumptions about the maximum size. As
+	// of this writing, the typical size is less than 4096 bytes, but that can vary.
+	// Also, future updates to AWS might require larger sizes.
+	Credentials struct {
+		AccessKey    string    `xml:"AccessKeyId" json:"accessKey,omitempty"`
+		SecretKey    string    `xml:"SecretAccessKey" json:"secretKey,omitempty"`
+		Expiration   time.Time `xml:"Expiration" json:"expiration,omitempty"`
+		SessionToken string    `xml:"SessionToken" json:"sessionToken,omitempty"`
+	} `xml:",omitempty"`
+
+	// A percentage value that indicates the size of the policy in packed form.
+	// The service rejects any policy with a packed size greater than 100 percent,
+	// which means the policy exceeded the allowed space.
+	PackedPolicySize int `xml:",omitempty"`
+}
+
+// AssumedRoleUser - The identifiers for the temporary security credentials that
+// the operation returns. Please also see https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumedRoleUser
+type AssumedRoleUser struct {
+	Arn           string
+	AssumedRoleID string `xml:"AssumeRoleId"`
+}
 
 var (
 	cnfStr = `
@@ -38,8 +85,21 @@ kosdk:
       url: CanonicalUri
     nonceLen: 12
   plugin:
-    file:
-      basePath: http://127.0.0.1:10070
+    fs:
+      sources:
+      - kind: minio
+        tenantID: 1
+        accessKeyID: test
+        accessKeySecret: test1234
+        endpoint: http://127.0.0.1:10070
+        endpointImmutable: false
+        stsEndpoint: http://127.0.0.1:10070
+        region: minio
+        roleArn: arn:aws:s3:::*
+        policy: ""
+        durationSeconds: 3600
+        bucket: fstest
+        bucketUrl: http://192.168.0.17:32650/fstest,
     msg:
       basePath: http://127.0.0.1:10070
 cache:
@@ -52,7 +112,8 @@ cache:
 
 type apiSuite struct {
 	suite.Suite
-	sdk *SDK
+	sdk           *SDK
+	mockServerUrl string
 }
 
 func TestApiSuite(t *testing.T) {
@@ -88,22 +149,51 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 			w.WriteHeader(http.StatusOK)
 		}
 	})
-	mux.HandleFunc(`/files/`, func(w http.ResponseWriter, r *http.Request) {
-		t.Require().EqualValues("1", r.Header.Get(identity.TenantHeaderKey))
-		w.Header().Set("Content-Type", "application/json")
-		d, err := json.Marshal(file.FileInfo{
-			ID: "1",
-		})
+	mux.HandleFunc(`/sts`, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/xml")
+		resp := AssumeRoleResponse{
+			Result: AssumeRoleResult{
+				AssumedRoleUser: AssumedRoleUser{
+					Arn:           "arn:aws:sts::123456789012:assumed-role/role-name/role-session-name",
+					AssumedRoleID: "role-session-name",
+				},
+				Credentials: struct {
+					AccessKey    string    `xml:"AccessKeyId" json:"accessKey,omitempty"`
+					SecretKey    string    `xml:"SecretAccessKey" json:"secretKey,omitempty"`
+					Expiration   time.Time `xml:"Expiration" json:"expiration,omitempty"`
+					SessionToken string    `xml:"SessionToken" json:"sessionToken,omitempty"`
+				}{
+					"test", "test1234", time.Now().Add(1 * time.Hour), "test1234",
+				},
+			},
+		}
+		d, err := xml.Marshal(resp)
 		t.Require().NoError(err)
 		w.Write(d)
+	})
+	// GetObjectTest
+	mux.HandleFunc(`/fstest/`, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/xml")
+		// mock body
+		w.Write([]byte("test"))
 	})
 	return mux
 }
 
 func (t *apiSuite) SetupSuite() {
 	srv := httptest.NewServer(t.mockHttpServer())
+	t.mockServerUrl = srv.URL
 	cnf := conf.NewFromBytes([]byte(cnfStr))
-	cnf.Parser().Set("kosdk.client.oauth2.endpoint.tokenURL", srv.URL+"/token")
+	cnf.Parser().Set("kosdk.client.oauth2.endpoint.tokenURL", t.mockServerUrl+"/token")
+	// fs
+	fcfg := cnf.Parser().Get("kosdk.plugin.fs.sources")
+	fss := fcfg.([]any)
+	fs := fss[0].(map[string]any)
+	fs["endpoint"] = t.mockServerUrl
+	fs["stsEndpoint"] = t.mockServerUrl + "/sts"
+	fs["bucketUrl"] = t.mockServerUrl + "/fstest"
+	cnf.Parser().Set("kosdk.plugin.fs.sources", fss)
+
 	_, err := lfu.NewTinyLFU(cnf.Sub("cache.memory"))
 	t.Require().NoError(err)
 	sdk, err := NewSDK(cnf.Sub("kosdk"))
@@ -122,9 +212,9 @@ func (t *apiSuite) SetupSuite() {
 }
 
 func (t *apiSuite) TestGetPlugin() {
-	_, ok := t.sdk.GetPlugin("file")
+	_, ok := t.sdk.GetPlugin(PluginFS)
 	t.Require().True(ok)
-	_, ok = t.sdk.GetPlugin("msg")
+	_, ok = t.sdk.GetPlugin(PluginMsg)
 	t.Require().True(ok)
 	_, ok = t.sdk.GetPlugin("not-exist")
 	t.Require().False(ok)
@@ -165,11 +255,27 @@ func (t *apiSuite) TestMsg() {
 	})
 }
 
-func (t *apiSuite) TestFile() {
-	ret, resp, err := t.sdk.File().FileAPI.GetFile(identity.WithTenantID(context.Background(), 1), &file.GetFileRequest{
-		FileId: "1",
+func (t *apiSuite) TestFs() {
+	sc := &fs.SourceConfig{
+		TenantID: 1,
+		Kind:     "minio",
+		Endpoint: t.mockServerUrl,
+		Bucket:   "fstest",
+	}
+	p, err := t.sdk.Fs().Client.GetProvider(identity.WithTenantID(context.Background(), 1),
+		sc)
+	t.Require().NoError(err)
+	resp, err := p.GetSTS("anyname")
+	t.Require().NoError(err)
+	t.NotNil(resp)
+	t.NotEmpty(resp.AccessKeyID)
+	got, err := p.S3Client().GetObject(context.Background(), &s3.GetObjectInput{
+		Bucket: &sc.Bucket,
+		Key:    &sc.Bucket,
 	})
 	t.Require().NoError(err)
-	t.NotNil(ret)
-	t.Equal(200, resp.StatusCode)
+	// read body
+	gt, err := io.ReadAll(got.Body)
+	t.Require().NoError(err)
+	t.Equal("test", string(gt))
 }

@@ -1,12 +1,14 @@
 module github.com/woocoos/knockout-go/integration
 
-go 1.21
+go 1.22
+
+toolchain go1.22.5
 
 replace github.com/woocoos/knockout-go => ../
 
 require (
 	entgo.io/contrib v0.5.0
-	entgo.io/ent v0.13.1
+	entgo.io/ent v0.14.0
 	github.com/99designs/gqlgen v0.17.47
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1

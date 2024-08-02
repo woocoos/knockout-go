@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+const (
+	PluginFS  = "fs"
+	PluginMsg = "msg"
+)
+
 // Plugin is the knockout service client plugin interface.
 type Plugin interface {
 	Apply(*SDK, *conf.Configuration) error
@@ -79,13 +84,13 @@ func NewSDK(cnf *conf.Configuration) (sdk *SDK, err error) {
 // RegisterPlugin registers a plugin. Plugins are used to extend the SDK.
 func (sdk *SDK) RegisterPlugin(name string, cnf *conf.Configuration) error {
 	switch name {
-	case "file":
-		p := NewFile()
+	case PluginFS:
+		p := NewFs()
 		if err := p.Apply(sdk, cnf); err != nil {
 			return err
 		}
 		sdk.plugins[name] = p
-	case "msg":
+	case PluginMsg:
 		p := NewMsg()
 		if err := p.Apply(sdk, cnf); err != nil {
 			return err
@@ -101,14 +106,14 @@ func (sdk *SDK) GetPlugin(name string) (Plugin, bool) {
 	return v, ok
 }
 
-// File returns the file plugin.
-func (sdk *SDK) File() *File {
-	return sdk.plugins["file"].(*File)
+// Fs returns the file system plugin.
+func (sdk *SDK) Fs() *Fs {
+	return sdk.plugins[PluginFS].(*Fs)
 }
 
 // Msg returns the msg plugin.
 func (sdk *SDK) Msg() *Msg {
-	return sdk.plugins["msg"].(*Msg)
+	return sdk.plugins[PluginMsg].(*Msg)
 }
 
 // TenantIDInterceptor is a client intercept that try to inject tenant id into request header.
