@@ -17,26 +17,26 @@ func init() {
 	fs.RegisterS3Provider(fs.KindAliOSS, BuildProvider)
 }
 
-// Provider for ali yun. it implements fs.S3Provider
-// At first, you shoulr register this provider before using it.
+// Provider for ali yun. it implements fs.S3Provider.
+// it uses s3.Client to access s3 compatible storage, use native ali yun sdk to call sts service.
+// import package to register provider:
 //
-//	 import (
-//	 	"github.com/woocoos/knockout-go/api/fs/alioss"
-//	 )
-//		fs.RegisterS3Provider(fs.KindAliOSS, alioss.BuildProvider)
+//	import (
+//		_ "github.com/woocoos/knockout-go/api/fs/alioss"
+//	)
 type Provider struct {
-	ctx        context.Context
-	stsClient  *sts20150401.Client
-	ossClient  *oss.Client
-	s3Client   *s3.Client
-	fileSource *fs.ProviderConfig
+	ctx       context.Context
+	stsClient *sts20150401.Client
+	ossClient *oss.Client
+	s3Client  *s3.Client
+	config    *fs.ProviderConfig
 }
 
 // BuildProvider create aws s3 provider. it matches fs.S3ProviderBuilder
-func BuildProvider(ctx context.Context, fileSource *fs.ProviderConfig) (fs.S3Provider, error) {
+func BuildProvider(ctx context.Context, config *fs.ProviderConfig) (fs.S3Provider, error) {
 	svc := &Provider{
-		ctx:        ctx,
-		fileSource: fileSource,
+		ctx:    ctx,
+		config: config,
 	}
 	err := svc.initAliSTS()
 	if err != nil {
@@ -56,11 +56,11 @@ func BuildProvider(ctx context.Context, fileSource *fs.ProviderConfig) (fs.S3Pro
 // initAliSTS init ali yun oss sts client
 func (svc *Provider) initAliSTS() error {
 	cfg := &openapi.Config{
-		AccessKeyId:     tea.String(svc.fileSource.AccessKeyID),
-		AccessKeySecret: tea.String(svc.fileSource.AccessKeySecret),
-		RegionId:        tea.String(svc.fileSource.Region),
+		AccessKeyId:     tea.String(svc.config.AccessKeyID),
+		AccessKeySecret: tea.String(svc.config.AccessKeySecret),
+		RegionId:        tea.String(svc.config.Region),
 	}
-	cfg.Endpoint = tea.String(svc.fileSource.StsEndpoint)
+	cfg.Endpoint = tea.String(svc.config.StsEndpoint)
 	stsClient, err := sts20150401.NewClient(cfg)
 	if err != nil {
 		return err
@@ -73,10 +73,10 @@ func (svc *Provider) initAliSTS() error {
 func (svc *Provider) initAliOSS() error {
 	useCname := false
 	// use custom domain
-	if svc.fileSource.EndpointImmutable {
+	if svc.config.EndpointImmutable {
 		useCname = true
 	}
-	client, err := oss.New(svc.fileSource.Endpoint, svc.fileSource.AccessKeyID, svc.fileSource.AccessKeySecret, oss.UseCname(useCname))
+	client, err := oss.New(svc.config.Endpoint, svc.config.AccessKeyID, svc.config.AccessKeySecret, oss.UseCname(useCname))
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (svc *Provider) initAliOSS() error {
 
 // initAwsClient init s3 compatible client
 func (svc *Provider) initAwsClient() error {
-	s3Client, err := fs.InitAwsClient(svc.ctx, svc.fileSource)
+	s3Client, err := fs.InitAwsClient(svc.ctx, svc.config)
 	if err != nil {
 		return err
 	}
@@ -99,11 +99,11 @@ func (svc *Provider) initAwsClient() error {
 func (svc *Provider) GetSTS(roleSessionName string) (*fs.STSResponse, error) {
 	assumeRoleRequest := &sts20150401.AssumeRoleRequest{
 		RoleSessionName: tea.String(roleSessionName),
-		RoleArn:         tea.String(svc.fileSource.RoleArn),
-		DurationSeconds: tea.Int64(int64(svc.fileSource.DurationSeconds)),
+		RoleArn:         tea.String(svc.config.RoleArn),
+		DurationSeconds: tea.Int64(int64(svc.config.DurationSeconds)),
 	}
-	if svc.fileSource.Policy != "" {
-		assumeRoleRequest.Policy = tea.String(svc.fileSource.Policy)
+	if svc.config.Policy != "" {
+		assumeRoleRequest.Policy = tea.String(svc.config.Policy)
 	}
 
 	resp, err := svc.stsClient.AssumeRoleWithOptions(assumeRoleRequest, &service.RuntimeOptions{})
@@ -123,7 +123,7 @@ func (svc *Provider) GetSTS(roleSessionName string) (*fs.STSResponse, error) {
 	}, nil
 }
 
-// GetPreSignedURL get aliyun presign url
+// GetPreSignedURL get signed url by ali yun rule.
 func (svc *Provider) GetPreSignedURL(bucket, path string, expires time.Duration) (string, error) {
 	bk, err := svc.ossClient.Bucket(bucket)
 	if err != nil {

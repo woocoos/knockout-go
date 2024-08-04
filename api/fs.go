@@ -18,7 +18,7 @@ func NewFs() *Fs {
 	}
 }
 
-func (f *Fs) Apply(sdk *SDK, cnf *conf.Configuration) error {
+func (f *Fs) Apply(_ *SDK, cnf *conf.Configuration) error {
 	err := cnf.Unmarshal(f.cfg)
 	if err != nil {
 		return err

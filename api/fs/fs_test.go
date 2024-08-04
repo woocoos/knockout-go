@@ -22,7 +22,7 @@ var (
 		RoleArn:           "arn:aws:s3:::*",
 		Policy:            "",
 		DurationSeconds:   3600,
-		Bucket:            "knockout-go",
+		Bucket:            "knockout-go-test",
 		BucketUrl:         "http://127.0.0.1:32650/knockout-go",
 	}
 )

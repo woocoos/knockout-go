@@ -118,6 +118,9 @@ func NewClient(cfg *Config) (*Client, error) {
 	return c, nil
 }
 
+// GetProvider get file system provider.If provider is not exist, create a new one and cache it.
+// If you want to create a new provider in this method, you should pass all config value.
+// Note that the cache key is the combination of access key id, endpoint, bucket and kind, maybe change it later.
 func (c *Client) GetProvider(ctx context.Context, fs *ProviderConfig) (S3Provider, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

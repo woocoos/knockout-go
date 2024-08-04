@@ -171,7 +171,7 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 		t.Require().NoError(err)
 		w.Write(d)
 	})
-	// GetObjectTest
+	// GetObjectTest,'fstest' is the bucket name
 	mux.HandleFunc(`/fstest/`, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/xml")
 		// mock body
