@@ -86,7 +86,7 @@ kosdk:
     nonceLen: 12
   plugin:
     fs:
-      sources:
+      providers:
       - kind: minio
         tenantID: 1
         accessKeyID: test
@@ -186,26 +186,20 @@ func (t *apiSuite) SetupSuite() {
 	cnf := conf.NewFromBytes([]byte(cnfStr))
 	cnf.Parser().Set("kosdk.client.oauth2.endpoint.tokenURL", t.mockServerUrl+"/token")
 	// fs
-	fcfg := cnf.Parser().Get("kosdk.plugin.fs.sources")
+	fskey := "kosdk.plugin.fs.providers"
+	fcfg := cnf.Parser().Get(fskey)
 	fss := fcfg.([]any)
-	fs := fss[0].(map[string]any)
-	fs["endpoint"] = t.mockServerUrl
-	fs["stsEndpoint"] = t.mockServerUrl + "/sts"
-	fs["bucketUrl"] = t.mockServerUrl + "/fstest"
-	cnf.Parser().Set("kosdk.plugin.fs.sources", fss)
+	fsit := fss[0].(map[string]any)
+	fsit["endpoint"] = t.mockServerUrl
+	fsit["stsEndpoint"] = t.mockServerUrl + "/sts"
+	fsit["bucketUrl"] = t.mockServerUrl + "/fstest"
+	cnf.Parser().Set(fskey, fss)
 
 	_, err := lfu.NewTinyLFU(cnf.Sub("cache.memory"))
 	t.Require().NoError(err)
 	sdk, err := NewSDK(cnf.Sub("kosdk"))
 	t.Require().NoError(err)
-	err = sdk.RegisterPlugin("file", conf.NewFromStringMap(map[string]any{
-		"basePath": srv.URL,
-		"header": map[string]string{
-			identity.TenantHeaderKey: "context:" + identity.TenantContextKey,
-		},
-	}))
-	t.Require().NoError(err)
-	err = sdk.RegisterPlugin("msg", conf.NewFromStringMap(map[string]any{
+	err = sdk.RegisterPlugin(PluginMsg, conf.NewFromStringMap(map[string]any{
 		"basePath": srv.URL,
 	}))
 	t.sdk = sdk
@@ -256,11 +250,11 @@ func (t *apiSuite) TestMsg() {
 }
 
 func (t *apiSuite) TestFs() {
-	sc := &fs.SourceConfig{
-		TenantID: 1,
-		Kind:     "minio",
-		Endpoint: t.mockServerUrl,
-		Bucket:   "fstest",
+	sc := &fs.ProviderConfig{
+		AccessKeyID: "test",
+		Kind:        "minio",
+		Endpoint:    t.mockServerUrl,
+		Bucket:      "fstest",
 	}
 	p, err := t.sdk.Fs().Client.GetProvider(identity.WithTenantID(context.Background(), 1),
 		sc)

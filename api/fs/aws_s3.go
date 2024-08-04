@@ -16,24 +16,24 @@ import (
 
 // AwsS3 aws s3 service for file storage.
 type AwsS3 struct {
-	ctx        context.Context
-	stsClient  *sts.Client
-	s3Client   *s3.Client
-	fileSource *SourceConfig
+	ctx       context.Context
+	stsClient *sts.Client
+	s3Client  *s3.Client
+	config    *ProviderConfig
 }
 
 // BuildAwsS3 create aws s3 provider. it matches S3ProviderBuilder
-func BuildAwsS3(ctx context.Context, fileSource *SourceConfig) (S3Provider, error) {
+func BuildAwsS3(ctx context.Context, fileSource *ProviderConfig) (S3Provider, error) {
 	svc := &AwsS3{
-		ctx:        ctx,
-		fileSource: fileSource,
+		ctx:    ctx,
+		config: fileSource,
 	}
-	stsClient, err := initAwsSTS(svc.ctx, svc.fileSource)
+	stsClient, err := initAwsSTS(svc.ctx, svc.config)
 	if err != nil {
 		return nil, err
 	}
 	svc.stsClient = stsClient
-	s3Client, err := InitAwsClient(svc.ctx, svc.fileSource)
+	s3Client, err := InitAwsClient(svc.ctx, svc.config)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func BuildAwsS3(ctx context.Context, fileSource *SourceConfig) (S3Provider, erro
 }
 
 // initAwsSTS init aws sts client
-func initAwsSTS(ctx context.Context, fs *SourceConfig) (*sts.Client, error) {
+func initAwsSTS(ctx context.Context, fs *ProviderConfig) (*sts.Client, error) {
 	creds := awsCredentials.NewStaticCredentialsProvider(fs.AccessKeyID, fs.AccessKeySecret, "")
 	cfg, err := awsCfg.LoadDefaultConfig(ctx, awsCfg.WithCredentialsProvider(creds))
 	if err != nil {
@@ -57,7 +57,7 @@ func initAwsSTS(ctx context.Context, fs *SourceConfig) (*sts.Client, error) {
 }
 
 // InitAwsClient init aws s3 client.
-func InitAwsClient(ctx context.Context, fs *SourceConfig) (*s3.Client, error) {
+func InitAwsClient(ctx context.Context, fs *ProviderConfig) (*s3.Client, error) {
 	creds := awsCredentials.NewStaticCredentialsProvider(fs.AccessKeyID, fs.AccessKeySecret, "")
 	cfg, err := awsCfg.LoadDefaultConfig(ctx, awsCfg.WithCredentialsProvider(creds))
 	if err != nil {
@@ -82,10 +82,10 @@ func InitAwsClient(ctx context.Context, fs *SourceConfig) (*s3.Client, error) {
 // GetSTS get sts
 func (svc *AwsS3) GetSTS(roleSessionName string) (*STSResponse, error) {
 	input := &sts.AssumeRoleInput{
-		RoleArn:         aws.String(svc.fileSource.RoleArn),
-		Policy:          aws.String(svc.fileSource.Policy),
+		RoleArn:         aws.String(svc.config.RoleArn),
+		Policy:          aws.String(svc.config.Policy),
 		RoleSessionName: aws.String(roleSessionName),
-		DurationSeconds: aws.Int32(int32(svc.fileSource.DurationSeconds)),
+		DurationSeconds: aws.Int32(int32(svc.config.DurationSeconds)),
 	}
 	out, err := svc.stsClient.AssumeRole(svc.ctx, input)
 	if err != nil {

@@ -7,17 +7,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/assert"
 	"github.com/woocoos/knockout-go/api/fs"
-	"github.com/woocoos/knockout-go/api/fs/alioss"
 	"testing"
 	"time"
 )
 
-func init() {
-	fs.RegisterS3Provider(fs.KindAliOSS, alioss.BuildProvider)
-}
-
 var (
-	aliFileSource = fs.SourceConfig{
+	aliProviderConfig = fs.ProviderConfig{
 		Kind:              fs.KindAliOSS,
 		AccessKeyID:       "todo",
 		AccessKeySecret:   "todo",
@@ -34,9 +29,9 @@ var (
 )
 
 func TestAliSTS(t *testing.T) {
-	oss, err := fs.NewClient(&fs.Config{Sources: []fs.SourceConfig{aliFileSource}})
+	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	assert.NoError(t, err)
-	provider, err := oss.GetProvider(context.TODO(), &aliFileSource)
+	provider, err := oss.GetProvider(context.TODO(), &aliProviderConfig)
 	assert.NoError(t, err)
 	resp, err := provider.GetSTS("test")
 	assert.NoError(t, err)
@@ -44,9 +39,9 @@ func TestAliSTS(t *testing.T) {
 }
 
 func TestAliOSSPreSignedUrl(t *testing.T) {
-	oss, err := fs.NewClient(&fs.Config{Sources: []fs.SourceConfig{aliFileSource}})
+	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	assert.NoError(t, err)
-	provider, err := oss.GetProvider(context.TODO(), &aliFileSource)
+	provider, err := oss.GetProvider(context.TODO(), &aliProviderConfig)
 	assert.NoError(t, err)
 	u, err := provider.GetPreSignedURL("qldevtest", "cust/159ecc5f964dfe00", time.Hour)
 	assert.NoError(t, err)
@@ -54,9 +49,9 @@ func TestAliOSSPreSignedUrl(t *testing.T) {
 }
 
 func TestAliS3GetObject(t *testing.T) {
-	oss, err := fs.NewClient(&fs.Config{Sources: []fs.SourceConfig{aliFileSource}})
+	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	assert.NoError(t, err)
-	provider, err := oss.GetProvider(context.TODO(), &aliFileSource)
+	provider, err := oss.GetProvider(context.TODO(), &aliProviderConfig)
 	assert.NoError(t, err)
 	s3Client := provider.S3Client()
 	out, err := s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String("qldevtest"), Key: aws.String("cust/159ecc5f964dfe00")})

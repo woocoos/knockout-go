@@ -24,7 +24,7 @@ func RegisterS3Provider(kind Kind, builder S3ProviderBuilder) {
 }
 
 // S3ProviderBuilder s3 provider builder.
-type S3ProviderBuilder func(context.Context, *SourceConfig) (S3Provider, error)
+type S3ProviderBuilder func(context.Context, *ProviderConfig) (S3Provider, error)
 
 // S3Provider s3 provider interface.
 type S3Provider interface {
@@ -54,10 +54,8 @@ const (
 	KindAwsS3  Kind = "awsS3"
 )
 
-// SourceConfig file source definition.
-type SourceConfig struct {
-	// tenant id
-	TenantID int `json:"tenantID,omitempty" yaml:"tenantID"`
+// ProviderConfig define file system source config.
+type ProviderConfig struct {
 	// file source kind
 	Kind Kind `json:"kind" yaml:"kind"`
 	// access key id
@@ -86,13 +84,13 @@ type SourceConfig struct {
 
 // Config file system config. if you want to add source config in config file.
 type Config struct {
-	Sources []SourceConfig `json:"sources" yaml:"sources"`
+	Providers []ProviderConfig `json:"providers" yaml:"providers"`
 }
 
 // NewConfig create a new config.
 func NewConfig() *Config {
 	return &Config{
-		Sources: make([]SourceConfig, 0),
+		Providers: make([]ProviderConfig, 0),
 	}
 }
 
@@ -110,7 +108,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		cfg:       cfg,
 		providers: make(map[string]S3Provider),
 	}
-	for _, source := range c.cfg.Sources {
+	for _, source := range c.cfg.Providers {
 		_, err := c.GetProvider(context.Background(), &source)
 		if err != nil {
 			return nil, err
@@ -120,7 +118,7 @@ func NewClient(cfg *Config) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) GetProvider(ctx context.Context, fs *SourceConfig) (S3Provider, error) {
+func (c *Client) GetProvider(ctx context.Context, fs *ProviderConfig) (S3Provider, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	pk := getProviderKey(fs)
@@ -140,6 +138,6 @@ func (c *Client) GetProvider(ctx context.Context, fs *SourceConfig) (S3Provider,
 	return provider, nil
 }
 
-func getProviderKey(fs *SourceConfig) string {
-	return fmt.Sprintf("%d:%s:%s:%s", fs.TenantID, fs.Endpoint, fs.Bucket, fs.Kind)
+func getProviderKey(fs *ProviderConfig) string {
+	return fmt.Sprintf("%s:%s:%s:%s", fs.AccessKeyID, fs.Endpoint, fs.Bucket, fs.Kind)
 }

@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+func init() {
+	fs.RegisterS3Provider(fs.KindAliOSS, BuildProvider)
+}
+
 // Provider for ali yun. it implements fs.S3Provider
 // At first, you shoulr register this provider before using it.
 //
@@ -25,11 +29,11 @@ type Provider struct {
 	stsClient  *sts20150401.Client
 	ossClient  *oss.Client
 	s3Client   *s3.Client
-	fileSource *fs.SourceConfig
+	fileSource *fs.ProviderConfig
 }
 
 // BuildProvider create aws s3 provider. it matches fs.S3ProviderBuilder
-func BuildProvider(ctx context.Context, fileSource *fs.SourceConfig) (fs.S3Provider, error) {
+func BuildProvider(ctx context.Context, fileSource *fs.ProviderConfig) (fs.S3Provider, error) {
 	svc := &Provider{
 		ctx:        ctx,
 		fileSource: fileSource,

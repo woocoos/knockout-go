@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/httpx"
 	"github.com/woocoos/knockout-go/pkg/identity"
@@ -96,6 +97,8 @@ func (sdk *SDK) RegisterPlugin(name string, cnf *conf.Configuration) error {
 			return err
 		}
 		sdk.plugins[name] = p
+	default:
+		return fmt.Errorf("plugin %s is not supported", name)
 	}
 	return nil
 }

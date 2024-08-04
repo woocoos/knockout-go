@@ -2,19 +2,16 @@ package fs
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
 )
 
 var (
-	minioFileSource = SourceConfig{
+	minioProviderConfig = ProviderConfig{
 		Kind:              KindMinio,
 		AccessKeyID:       "minioadmin",
 		AccessKeySecret:   "minioadmin",
@@ -40,26 +37,20 @@ func TestApiSuite(t *testing.T) {
 }
 
 func (t *fsSuite) SetupSuite() {
-	cli, err := minio.New("127.0.0.1:9000", &minio.Options{
-		Creds:  credentials.NewStaticV4(minioFileSource.AccessKeyID, minioFileSource.AccessKeySecret, ""),
-		Secure: false,
-	})
+	cli, err := InitAwsClient(context.Background(), &minioProviderConfig)
 	t.Require().NoError(err)
-	err = cli.MakeBucket(context.Background(), minioFileSource.Bucket, minio.MakeBucketOptions{
-		Region: minioFileSource.Region,
-	})
+	_, err = cli.CreateBucket(context.Background(), &s3.CreateBucketInput{
+		Bucket: aws.String(minioProviderConfig.Bucket)},
+	)
 	if err != nil {
-		var merr minio.ErrorResponse
-		ok := errors.As(err, &merr)
-		t.Require().True(ok)
-		t.Assert().Equal(merr.Code, "BucketAlreadyOwnedByYou")
+		t.Require().ErrorContains(err, "BucketAlreadyOwnedByYou")
 	}
-	t.client, err = NewClient(&Config{Sources: []SourceConfig{minioFileSource}})
+	t.client, err = NewClient(&Config{Providers: []ProviderConfig{minioProviderConfig}})
 	t.Require().NoError(err)
 }
 
 func (t *fsSuite) TestMinioSTS() {
-	provider, err := t.client.GetProvider(context.TODO(), &minioFileSource)
+	provider, err := t.client.GetProvider(context.TODO(), &minioProviderConfig)
 	t.NoError(err)
 	resp, err := provider.GetSTS("")
 	t.NoError(err)
@@ -67,7 +58,7 @@ func (t *fsSuite) TestMinioSTS() {
 }
 
 func (t *fsSuite) TestMinioPreSignedUrl() {
-	provider, err := t.client.GetProvider(context.TODO(), &minioFileSource)
+	provider, err := t.client.GetProvider(context.TODO(), &minioProviderConfig)
 	t.NoError(err)
 	u, err := provider.GetPreSignedURL("knockout-go", "3a9809ba339ec87f1636c7878685f616.jpeg", time.Hour)
 	t.NoError(err)
@@ -75,7 +66,7 @@ func (t *fsSuite) TestMinioPreSignedUrl() {
 }
 
 func (t *fsSuite) TestMinioS3GetObject_NoSuchKey() {
-	provider, err := t.client.GetProvider(context.TODO(), &minioFileSource)
+	provider, err := t.client.GetProvider(context.TODO(), &minioProviderConfig)
 	t.NoError(err)
 	s3Client := provider.S3Client()
 	_, err = s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String("knockout-go"), Key: aws.String("/NoSuchKey.jpeg")})
