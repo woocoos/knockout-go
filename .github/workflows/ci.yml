@@ -58,7 +58,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
     - name: Run tests
-      run: go test -race ./...
+      run: TEST_WIP=true go test -race ./...
   generate:
     runs-on: ubuntu-latest
     steps:
