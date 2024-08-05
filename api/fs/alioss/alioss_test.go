@@ -23,7 +23,7 @@ var (
 		Endpoint:          "https://%s.aliyuncs.com",
 		EndpointImmutable: false,
 		StsEndpoint:       "sts.cn-shenzhen.aliyuncs.com",
-		RoleArn:           "acs:ram::5755321561100682:role/devossrwrole",
+		RoleArn:           "todo",
 		Bucket:            "todo",
 		BucketUrl:         "https://%s.%s.aliyuncs.com",
 		Region:            "oss-cn-shenzhen",

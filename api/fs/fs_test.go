@@ -60,7 +60,7 @@ func (t *fsSuite) TestMinioSTS() {
 func (t *fsSuite) TestMinioPreSignedUrl() {
 	provider, err := t.client.GetProvider(context.TODO(), &minioProviderConfig)
 	t.NoError(err)
-	u, err := provider.GetPreSignedURL("knockout-go", "3a9809ba339ec87f1636c7878685f616.jpeg", time.Hour)
+	u, err := provider.GetPreSignedURL(minioProviderConfig.Bucket, "3a9809ba339ec87f1636c7878685f616.jpeg", time.Hour)
 	t.NoError(err)
 	fmt.Println(u)
 }
@@ -69,6 +69,6 @@ func (t *fsSuite) TestMinioS3GetObject_NoSuchKey() {
 	provider, err := t.client.GetProvider(context.TODO(), &minioProviderConfig)
 	t.NoError(err)
 	s3Client := provider.S3Client()
-	_, err = s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String("knockout-go"), Key: aws.String("/NoSuchKey.jpeg")})
+	_, err = s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String(minioProviderConfig.Bucket), Key: aws.String("/NoSuchKey.jpeg")})
 	t.ErrorContains(err, "NoSuchKey")
 }

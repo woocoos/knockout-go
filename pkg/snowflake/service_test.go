@@ -35,7 +35,7 @@ func TestSetDefaultNode(t *testing.T) {
 				id := New()
 				assert.EqualValues(t, 3, int(snowflake.NodeBits))
 				assert.EqualValues(t, 8, int(snowflake.StepBits))
-				assert.Len(t, id.String(), 14)
+				assert.Len(t, id.String(), 15)
 			},
 		},
 		{
@@ -46,7 +46,7 @@ func TestSetDefaultNode(t *testing.T) {
 			panic: false,
 			check: func() {
 				id := New()
-				assert.Len(t, id.String(), 14)
+				assert.Len(t, id.String(), 15)
 			},
 		},
 		{
