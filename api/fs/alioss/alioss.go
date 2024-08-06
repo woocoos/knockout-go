@@ -96,7 +96,7 @@ func (svc *Provider) initAwsClient() error {
 
 // GetSTS get STS
 // note: roleSessionName is required, but you can pass an any string(by zmm).
-func (svc *Provider) GetSTS(roleSessionName string) (*fs.STSResponse, error) {
+func (svc *Provider) GetSTS(ctx context.Context, roleSessionName string) (*fs.STSResponse, error) {
 	assumeRoleRequest := &sts20150401.AssumeRoleRequest{
 		RoleSessionName: tea.String(roleSessionName),
 		RoleArn:         tea.String(svc.config.RoleArn),
@@ -124,7 +124,7 @@ func (svc *Provider) GetSTS(roleSessionName string) (*fs.STSResponse, error) {
 }
 
 // GetPreSignedURL get signed url by ali yun rule.
-func (svc *Provider) GetPreSignedURL(bucket, path string, expires time.Duration) (string, error) {
+func (svc *Provider) GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error) {
 	bk, err := svc.ossClient.Bucket(bucket)
 	if err != nil {
 		return "", err

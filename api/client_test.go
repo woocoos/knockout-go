@@ -10,7 +10,6 @@ import (
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/woocoos/knockout-go/api/fs"
 	"github.com/woocoos/knockout-go/api/msg"
-	"github.com/woocoos/knockout-go/pkg/identity"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -256,10 +255,9 @@ func (t *apiSuite) TestFs() {
 		Endpoint:    t.mockServerUrl,
 		Bucket:      "fstest",
 	}
-	p, err := t.sdk.Fs().Client.GetProvider(identity.WithTenantID(context.Background(), 1),
-		sc)
+	p, err := t.sdk.Fs().Client.GetProvider(sc)
 	t.Require().NoError(err)
-	resp, err := p.GetSTS("anyname")
+	resp, err := p.GetSTS(context.Background(), "anyname")
 	t.Require().NoError(err)
 	t.NotNil(resp)
 	t.NotEmpty(resp.AccessKeyID)

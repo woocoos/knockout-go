@@ -28,7 +28,7 @@ var (
 		BucketUrl:         "https://%s.%s.aliyuncs.com",
 		Region:            "oss-cn-shenzhen",
 		Policy:            "",
-		DurationSeconds:   120,
+		DurationSeconds:   900,
 	}
 )
 
@@ -85,9 +85,9 @@ func (t *fsSuite) SetupSuite() {
 func (t *fsSuite) TestAliSTS() {
 	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	t.Require().NoError(err)
-	provider, err := oss.GetProvider(context.TODO(), &aliProviderConfig)
+	provider, err := oss.GetProvider(&aliProviderConfig)
 	t.NoError(err)
-	resp, err := provider.GetSTS("test")
+	resp, err := provider.GetSTS(context.Background(), "test")
 	t.NoError(err)
 	fmt.Println(resp)
 }
@@ -95,9 +95,9 @@ func (t *fsSuite) TestAliSTS() {
 func (t *fsSuite) TestAliOSSPreSignedUrl() {
 	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	t.NoError(err)
-	provider, err := oss.GetProvider(context.TODO(), &aliProviderConfig)
+	provider, err := oss.GetProvider(&aliProviderConfig)
 	t.NoError(err)
-	u, err := provider.GetPreSignedURL("qldevtest", "cust/159ecc5f964dfe00", time.Hour)
+	u, err := provider.GetPreSignedURL(context.Background(), "qldevtest", "cust/159ecc5f964dfe00", time.Hour)
 	t.NoError(err)
 	fmt.Println(u)
 }
@@ -105,7 +105,7 @@ func (t *fsSuite) TestAliOSSPreSignedUrl() {
 func (t *fsSuite) TestAliS3GetObject() {
 	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	t.NoError(err)
-	provider, err := oss.GetProvider(context.TODO(), &aliProviderConfig)
+	provider, err := oss.GetProvider(&aliProviderConfig)
 	t.NoError(err)
 	s3Client := provider.S3Client()
 	out, err := s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String("qldevtest"), Key: aws.String("cust/159ecc5f964dfe00")})

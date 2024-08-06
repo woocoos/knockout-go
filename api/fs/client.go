@@ -29,9 +29,9 @@ type S3ProviderBuilder func(context.Context, *ProviderConfig) (S3Provider, error
 // S3Provider s3 provider interface.
 type S3Provider interface {
 	// GetSTS get sts response.
-	GetSTS(roleSessionName string) (*STSResponse, error)
+	GetSTS(ctx context.Context, roleSessionName string) (*STSResponse, error)
 	// GetPreSignedURL get pre-signed url to make request format match each S3Provider.
-	GetPreSignedURL(bucket, path string, expires time.Duration) (string, error)
+	GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error)
 	// S3Client return s3 client.
 	S3Client() *s3.Client
 }
@@ -109,7 +109,7 @@ func NewClient(cfg *Config) (*Client, error) {
 		providers: make(map[string]S3Provider),
 	}
 	for _, source := range c.cfg.Providers {
-		_, err := c.GetProvider(context.Background(), &source)
+		_, err := c.GetProvider(&source)
 		if err != nil {
 			return nil, err
 		}
@@ -121,7 +121,7 @@ func NewClient(cfg *Config) (*Client, error) {
 // GetProvider get file system provider.If provider is not exist, create a new one and cache it.
 // If you want to create a new provider in this method, you should pass all config value.
 // Note that the cache key is the combination of access key id, endpoint, bucket and kind, maybe change it later.
-func (c *Client) GetProvider(ctx context.Context, fs *ProviderConfig) (S3Provider, error) {
+func (c *Client) GetProvider(fs *ProviderConfig) (S3Provider, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	pk := getProviderKey(fs)
@@ -133,7 +133,7 @@ func (c *Client) GetProvider(ctx context.Context, fs *ProviderConfig) (S3Provide
 	if !ok {
 		return nil, fmt.Errorf("file system kind: %s is not supported", fs.Kind)
 	}
-	provider, err := builder(ctx, fs)
+	provider, err := builder(context.Background(), fs)
 	if err != nil {
 		return nil, err
 	}

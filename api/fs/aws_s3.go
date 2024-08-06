@@ -16,7 +16,6 @@ import (
 
 // AwsS3 aws s3 service for file storage.
 type AwsS3 struct {
-	ctx       context.Context
 	stsClient *sts.Client
 	s3Client  *s3.Client
 	config    *ProviderConfig
@@ -25,15 +24,14 @@ type AwsS3 struct {
 // BuildAwsS3 create aws s3 provider. it matches S3ProviderBuilder
 func BuildAwsS3(ctx context.Context, fileSource *ProviderConfig) (S3Provider, error) {
 	svc := &AwsS3{
-		ctx:    ctx,
 		config: fileSource,
 	}
-	stsClient, err := initAwsSTS(svc.ctx, svc.config)
+	stsClient, err := initAwsSTS(ctx, svc.config)
 	if err != nil {
 		return nil, err
 	}
 	svc.stsClient = stsClient
-	s3Client, err := InitAwsClient(svc.ctx, svc.config)
+	s3Client, err := InitAwsClient(ctx, svc.config)
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +78,14 @@ func InitAwsClient(ctx context.Context, fs *ProviderConfig) (*s3.Client, error) 
 }
 
 // GetSTS get sts
-func (svc *AwsS3) GetSTS(roleSessionName string) (*STSResponse, error) {
+func (svc *AwsS3) GetSTS(ctx context.Context, roleSessionName string) (*STSResponse, error) {
 	input := &sts.AssumeRoleInput{
 		RoleArn:         aws.String(svc.config.RoleArn),
 		Policy:          aws.String(svc.config.Policy),
 		RoleSessionName: aws.String(roleSessionName),
 		DurationSeconds: aws.Int32(int32(svc.config.DurationSeconds)),
 	}
-	out, err := svc.stsClient.AssumeRole(svc.ctx, input)
+	out, err := svc.stsClient.AssumeRole(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +98,9 @@ func (svc *AwsS3) GetSTS(roleSessionName string) (*STSResponse, error) {
 }
 
 // GetPreSignedURL get pre-signed url
-func (svc *AwsS3) GetPreSignedURL(bucket, path string, expires time.Duration) (string, error) {
+func (svc *AwsS3) GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error) {
 	pClient := s3.NewPresignClient(svc.s3Client)
-	resp, err := pClient.PresignGetObject(svc.ctx, &s3.GetObjectInput{
+	resp, err := pClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(strings.TrimLeft(path, "/")),
 	}, func(options *s3.PresignOptions) {
