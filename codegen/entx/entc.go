@@ -77,24 +77,6 @@ func WithGqlWithTemplates() entgql.ExtensionOption {
 	return entgql.WithTemplates(append(entgql.AllTemplates, nodeTpl)...)
 }
 
-// ReplaceGqlMutationInput is a schema hook for replace gql mutation input template.
-// Deprecated: not use
-func ReplaceGqlMutationInput() entgql.ExtensionOption {
-	rt := gen.MustParse(gen.NewTemplate("gql_mutation_input").
-		Funcs(entgql.TemplateFuncs).
-		ParseFS(_templates, "template/gql_mutation_input.tmpl")).SkipIf(skipMutationTemplate)
-	return entgql.WithTemplates([]*gen.Template{
-		entgql.CollectionTemplate,
-		entgql.EnumTemplate,
-		entgql.NodeTemplate,
-		entgql.PaginationTemplate,
-		entgql.TransactionTemplate,
-		entgql.EdgeTemplate,
-		entgql.WhereTemplate,
-		rt,
-	}...)
-}
-
 func skipMutationTemplate(g *gen.Graph) bool {
 	for _, n := range g.Nodes {
 		ant, err := annotation(n.Annotations)
