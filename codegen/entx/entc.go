@@ -77,33 +77,6 @@ func WithGqlWithTemplates() entgql.ExtensionOption {
 	return entgql.WithTemplates(append(entgql.AllTemplates, nodeTpl)...)
 }
 
-func skipMutationTemplate(g *gen.Graph) bool {
-	for _, n := range g.Nodes {
-		ant, err := annotation(n.Annotations)
-		if err != nil {
-			continue
-		}
-		for _, i := range ant.MutationInputs {
-			if (i.IsCreate && !ant.Skip.Is(entgql.SkipMutationCreateInput)) ||
-				(!i.IsCreate && !ant.Skip.Is(entgql.SkipMutationUpdateInput)) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-// annotation extracts the entgql.Annotation or returns its empty value.
-func annotation(ants gen.Annotations) (*entgql.Annotation, error) {
-	ant := &entgql.Annotation{}
-	if ants != nil && ants[ant.Name()] != nil {
-		if err := ant.Decode(ants[ant.Name()]); err != nil {
-			return nil, err
-		}
-	}
-	return ant, nil
-}
-
 // SkipTablesDiffHook is a schema migration hook for skip tables diff thus skip migration.
 // the table name is database name,not the ent schema struct name.
 //
