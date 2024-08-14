@@ -3,7 +3,10 @@ package fs
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -28,6 +31,10 @@ type S3ProviderBuilder func(context.Context, *ProviderConfig) (S3Provider, error
 
 // S3Provider s3 provider interface.
 type S3Provider interface {
+	// ProviderConfig return ProviderConfig. Provider need hold a ProviderConfig.
+	ProviderConfig() *ProviderConfig
+	// ParseUrlKey parse url key.
+	ParseUrlKey(urlStr string) (key string, err error)
 	// GetSTS get sts response.
 	GetSTS(ctx context.Context, roleSessionName string) (*STSResponse, error)
 	// GetPreSignedURL get pre-signed url to make request format match each S3Provider.
@@ -94,10 +101,16 @@ func NewConfig() *Config {
 	}
 }
 
+type BizKey interface {
+	int | string
+}
+
 // Client file system client.
 type Client struct {
 	cfg       *Config
 	providers map[string]S3Provider
+	// biz key -> provider key
+	keys map[string]string
 
 	mu sync.RWMutex
 }
@@ -107,9 +120,11 @@ func NewClient(cfg *Config) (*Client, error) {
 	c := &Client{
 		cfg:       cfg,
 		providers: make(map[string]S3Provider),
+		keys:      make(map[string]string),
 	}
 	for _, source := range c.cfg.Providers {
-		_, err := c.GetProvider(&source)
+		key := GetProviderKey(&source)
+		err := c.RegistryProvider(&source, key)
 		if err != nil {
 			return nil, err
 		}
@@ -118,29 +133,85 @@ func NewClient(cfg *Config) (*Client, error) {
 	return c, nil
 }
 
-// GetProvider get file system provider.If provider is not exist, create a new one and cache it.
-// If you want to create a new provider in this method, you should pass all config value.
-// Note that the cache key is the combination of access key id, endpoint, bucket and kind, maybe change it later.
-func (c *Client) GetProvider(fs *ProviderConfig) (S3Provider, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	pk := getProviderKey(fs)
-	v, ok := c.providers[pk]
-	if ok {
-		return v, nil
-	}
-	builder, ok := S3Builders[fs.Kind]
+// GetProviderByBizKey get provider by biz key
+func (c *Client) GetProviderByBizKey(bizKey string) (S3Provider, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	pk, ok := c.keys[bizKey]
 	if !ok {
-		return nil, fmt.Errorf("file system kind: %s is not supported", fs.Kind)
+		return nil, fmt.Errorf("provider is not exist")
 	}
-	provider, err := builder(context.Background(), fs)
-	if err != nil {
-		return nil, err
+	v, ok := c.providers[pk]
+	if !ok {
+		return nil, fmt.Errorf("provider is not exist")
 	}
-	c.providers[pk] = provider
-	return provider, nil
+	return v, nil
 }
 
-func getProviderKey(fs *ProviderConfig) string {
+// RegistryProvider registry a file system provider.If provider is not exist, create a new one and cache it.
+// Note that the cache key is the combination of access key id, endpoint, bucket and kind, maybe change it later.
+// parameter bizKey is used to set/replace a customer key for the provider, so that you can get the provider by the key.
+func (c *Client) RegistryProvider(cfg *ProviderConfig, bizKey string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	pk := GetProviderKey(cfg)
+	_, ok := c.providers[pk]
+	if ok {
+		if bizKey != "" {
+			c.keys[bizKey] = pk
+		}
+		return nil
+	}
+	builder, ok := S3Builders[cfg.Kind]
+	if !ok {
+		return fmt.Errorf("file system kind: %s is not supported", cfg.Kind)
+	}
+	provider, err := builder(context.Background(), cfg)
+	if err != nil {
+		return err
+	}
+	c.providers[pk] = provider
+	if bizKey != "" {
+		c.keys[bizKey] = pk
+	}
+	return nil
+}
+
+// DownloadObjectByKey download object by biz key(tenantID or ...).If local file exists, it will be overwritten.
+func (c *Client) DownloadObjectByKey(bizKey string, url string, localFile string) error {
+	provider, err := c.GetProviderByBizKey(bizKey)
+	if err != nil {
+		return err
+	}
+	fileKey, err := provider.ParseUrlKey(url)
+	if err != nil {
+		return err
+	}
+	getObjOutput, err := provider.S3Client().GetObject(context.Background(), &s3.GetObjectInput{
+		Bucket: &provider.ProviderConfig().Bucket,
+		Key:    aws.String(fileKey),
+	})
+	if err != nil {
+		return err
+	}
+	defer getObjOutput.Body.Close()
+	err = os.MkdirAll(filepath.Dir(localFile), os.ModePerm)
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(localFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = file.ReadFrom(getObjOutput.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetProviderKey get provider key.
+func GetProviderKey(fs *ProviderConfig) string {
 	return fmt.Sprintf("%s:%s:%s:%s", fs.AccessKeyID, fs.Endpoint, fs.Bucket, fs.Kind)
 }

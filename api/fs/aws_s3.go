@@ -77,15 +77,34 @@ func InitAwsClient(ctx context.Context, fs *ProviderConfig) (*s3.Client, error) 
 	return s3Client, nil
 }
 
-// GetSTS get sts
-func (svc *AwsS3) GetSTS(ctx context.Context, roleSessionName string) (*STSResponse, error) {
-	input := &sts.AssumeRoleInput{
-		RoleArn:         aws.String(svc.config.RoleArn),
-		Policy:          aws.String(svc.config.Policy),
-		RoleSessionName: aws.String(roleSessionName),
-		DurationSeconds: aws.Int32(int32(svc.config.DurationSeconds)),
+// ProviderConfig return ProviderConfig. Provider need hold a ProviderConfig.
+func (p *AwsS3) ProviderConfig() *ProviderConfig {
+	return p.config
+}
+
+// ParseUrlKey parse url key.
+func (p *AwsS3) ParseUrlKey(urlStr string) (key string, err error) {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return
 	}
-	out, err := svc.stsClient.AssumeRole(ctx, input)
+	if p.config.Kind == KindMinio {
+		key = strings.TrimPrefix(u.Path, "/"+p.config.Bucket)
+	} else {
+		key = strings.TrimPrefix(u.Path, "/")
+	}
+	return key, nil
+}
+
+// GetSTS get sts
+func (p *AwsS3) GetSTS(ctx context.Context, roleSessionName string) (*STSResponse, error) {
+	input := &sts.AssumeRoleInput{
+		RoleArn:         aws.String(p.config.RoleArn),
+		Policy:          aws.String(p.config.Policy),
+		RoleSessionName: aws.String(roleSessionName),
+		DurationSeconds: aws.Int32(int32(p.config.DurationSeconds)),
+	}
+	out, err := p.stsClient.AssumeRole(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +117,8 @@ func (svc *AwsS3) GetSTS(ctx context.Context, roleSessionName string) (*STSRespo
 }
 
 // GetPreSignedURL get pre-signed url
-func (svc *AwsS3) GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error) {
-	pClient := s3.NewPresignClient(svc.s3Client)
+func (p *AwsS3) GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error) {
+	pClient := s3.NewPresignClient(p.s3Client)
 	resp, err := pClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(strings.TrimLeft(path, "/")),
@@ -116,8 +135,8 @@ func (svc *AwsS3) GetPreSignedURL(ctx context.Context, bucket, path string, expi
 }
 
 // S3Client get s3Client
-func (svc *AwsS3) S3Client() *s3.Client {
-	return svc.s3Client
+func (p *AwsS3) S3Client() *s3.Client {
+	return p.s3Client
 }
 
 // EndpointResolverV2 customer endpoint resolver

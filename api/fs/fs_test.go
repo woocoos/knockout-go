@@ -50,7 +50,7 @@ func (t *fsSuite) SetupSuite() {
 }
 
 func (t *fsSuite) TestMinioSTS() {
-	provider, err := t.client.GetProvider(&minioProviderConfig)
+	provider, err := t.client.GetProviderByBizKey(GetProviderKey(&minioProviderConfig))
 	t.NoError(err)
 	resp, err := provider.GetSTS(context.Background(), "")
 	t.NoError(err)
@@ -58,7 +58,7 @@ func (t *fsSuite) TestMinioSTS() {
 }
 
 func (t *fsSuite) TestMinioPreSignedUrl() {
-	provider, err := t.client.GetProvider(&minioProviderConfig)
+	provider, err := t.client.GetProviderByBizKey(GetProviderKey(&minioProviderConfig))
 	t.NoError(err)
 	u, err := provider.GetPreSignedURL(context.Background(), minioProviderConfig.Bucket, "3a9809ba339ec87f1636c7878685f616.jpeg", time.Hour)
 	t.NoError(err)
@@ -66,7 +66,7 @@ func (t *fsSuite) TestMinioPreSignedUrl() {
 }
 
 func (t *fsSuite) TestMinioS3GetObject_NoSuchKey() {
-	provider, err := t.client.GetProvider(&minioProviderConfig)
+	provider, err := t.client.GetProviderByBizKey(GetProviderKey(&minioProviderConfig))
 	t.NoError(err)
 	s3Client := provider.S3Client()
 	_, err = s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String(minioProviderConfig.Bucket), Key: aws.String("/NoSuchKey.jpeg")})

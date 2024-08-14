@@ -255,7 +255,7 @@ func (t *apiSuite) TestFs() {
 		Endpoint:    t.mockServerUrl,
 		Bucket:      "fstest",
 	}
-	p, err := t.sdk.Fs().Client.GetProvider(sc)
+	p, err := t.sdk.Fs().Client.GetProviderByBizKey(fs.GetProviderKey(sc))
 	t.Require().NoError(err)
 	resp, err := p.GetSTS(context.Background(), "anyname")
 	t.Require().NoError(err)

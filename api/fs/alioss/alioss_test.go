@@ -85,7 +85,7 @@ func (t *fsSuite) SetupSuite() {
 func (t *fsSuite) TestAliSTS() {
 	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	t.Require().NoError(err)
-	provider, err := oss.GetProvider(&aliProviderConfig)
+	provider, err := oss.GetProviderByBizKey(fs.GetProviderKey(&aliProviderConfig))
 	t.NoError(err)
 	resp, err := provider.GetSTS(context.Background(), "test")
 	t.NoError(err)
@@ -95,7 +95,7 @@ func (t *fsSuite) TestAliSTS() {
 func (t *fsSuite) TestAliOSSPreSignedUrl() {
 	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	t.NoError(err)
-	provider, err := oss.GetProvider(&aliProviderConfig)
+	provider, err := oss.GetProviderByBizKey(fs.GetProviderKey(&aliProviderConfig))
 	t.NoError(err)
 	u, err := provider.GetPreSignedURL(context.Background(), "qldevtest", "cust/159ecc5f964dfe00", time.Hour)
 	t.NoError(err)
@@ -105,7 +105,7 @@ func (t *fsSuite) TestAliOSSPreSignedUrl() {
 func (t *fsSuite) TestAliS3GetObject() {
 	oss, err := fs.NewClient(&fs.Config{Providers: []fs.ProviderConfig{aliProviderConfig}})
 	t.NoError(err)
-	provider, err := oss.GetProvider(&aliProviderConfig)
+	provider, err := oss.GetProviderByBizKey(fs.GetProviderKey(&aliProviderConfig))
 	t.NoError(err)
 	s3Client := provider.S3Client()
 	out, err := s3Client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String("qldevtest"), Key: aws.String("cust/159ecc5f964dfe00")})

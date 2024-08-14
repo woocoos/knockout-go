@@ -9,6 +9,7 @@ import (
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/woocoos/knockout-go/api/fs"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -54,59 +55,74 @@ func BuildProvider(ctx context.Context, config *fs.ProviderConfig) (fs.S3Provide
 }
 
 // initAliSTS init ali yun oss sts client
-func (svc *Provider) initAliSTS() error {
+func (p *Provider) initAliSTS() error {
 	cfg := &openapi.Config{
-		AccessKeyId:     tea.String(svc.config.AccessKeyID),
-		AccessKeySecret: tea.String(svc.config.AccessKeySecret),
-		RegionId:        tea.String(svc.config.Region),
+		AccessKeyId:     tea.String(p.config.AccessKeyID),
+		AccessKeySecret: tea.String(p.config.AccessKeySecret),
+		RegionId:        tea.String(p.config.Region),
 	}
-	cfg.Endpoint = tea.String(svc.config.StsEndpoint)
+	cfg.Endpoint = tea.String(p.config.StsEndpoint)
 	stsClient, err := sts20150401.NewClient(cfg)
 	if err != nil {
 		return err
 	}
-	svc.stsClient = stsClient
+	p.stsClient = stsClient
 	return nil
 }
 
 // initAliOSS init ali yun oss client
-func (svc *Provider) initAliOSS() error {
+func (p *Provider) initAliOSS() error {
 	useCname := false
 	// use custom domain
-	if svc.config.EndpointImmutable {
+	if p.config.EndpointImmutable {
 		useCname = true
 	}
-	client, err := oss.New(svc.config.Endpoint, svc.config.AccessKeyID, svc.config.AccessKeySecret, oss.UseCname(useCname))
+	client, err := oss.New(p.config.Endpoint, p.config.AccessKeyID, p.config.AccessKeySecret, oss.UseCname(useCname))
 	if err != nil {
 		return err
 	}
-	svc.ossClient = client
+	p.ossClient = client
 	return nil
 }
 
 // initAwsClient init s3 compatible client
-func (svc *Provider) initAwsClient() error {
-	s3Client, err := fs.InitAwsClient(svc.ctx, svc.config)
+func (p *Provider) initAwsClient() error {
+	s3Client, err := fs.InitAwsClient(p.ctx, p.config)
 	if err != nil {
 		return err
 	}
-	svc.s3Client = s3Client
+	p.s3Client = s3Client
 	return nil
+}
+
+// ProviderConfig return ProviderConfig. Provider need hold a ProviderConfig.
+func (p *Provider) ProviderConfig() *fs.ProviderConfig {
+	return p.config
+}
+
+// ParseUrlKey parse url key.
+func (p *Provider) ParseUrlKey(urlStr string) (key string, err error) {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return
+	}
+	key = strings.TrimPrefix(u.Path, "/")
+	return key, nil
 }
 
 // GetSTS get STS
 // note: roleSessionName is required, but you can pass an any string(by zmm).
-func (svc *Provider) GetSTS(ctx context.Context, roleSessionName string) (*fs.STSResponse, error) {
+func (p *Provider) GetSTS(ctx context.Context, roleSessionName string) (*fs.STSResponse, error) {
 	assumeRoleRequest := &sts20150401.AssumeRoleRequest{
 		RoleSessionName: tea.String(roleSessionName),
-		RoleArn:         tea.String(svc.config.RoleArn),
-		DurationSeconds: tea.Int64(int64(svc.config.DurationSeconds)),
+		RoleArn:         tea.String(p.config.RoleArn),
+		DurationSeconds: tea.Int64(int64(p.config.DurationSeconds)),
 	}
-	if svc.config.Policy != "" {
-		assumeRoleRequest.Policy = tea.String(svc.config.Policy)
+	if p.config.Policy != "" {
+		assumeRoleRequest.Policy = tea.String(p.config.Policy)
 	}
 
-	resp, err := svc.stsClient.AssumeRoleWithOptions(assumeRoleRequest, &service.RuntimeOptions{})
+	resp, err := p.stsClient.AssumeRoleWithOptions(assumeRoleRequest, &service.RuntimeOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +140,8 @@ func (svc *Provider) GetSTS(ctx context.Context, roleSessionName string) (*fs.ST
 }
 
 // GetPreSignedURL get signed url by ali yun rule.
-func (svc *Provider) GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error) {
-	bk, err := svc.ossClient.Bucket(bucket)
+func (p *Provider) GetPreSignedURL(ctx context.Context, bucket, path string, expires time.Duration) (string, error) {
+	bk, err := p.ossClient.Bucket(bucket)
 	if err != nil {
 		return "", err
 	}
@@ -137,6 +153,6 @@ func (svc *Provider) GetPreSignedURL(ctx context.Context, bucket, path string, e
 }
 
 // S3Client get s3 client
-func (svc *Provider) S3Client() *s3.Client {
-	return svc.s3Client
+func (p *Provider) S3Client() *s3.Client {
+	return p.s3Client
 }
