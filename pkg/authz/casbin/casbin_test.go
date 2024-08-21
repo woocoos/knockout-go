@@ -23,6 +23,7 @@ import (
 	"github.com/tsingsun/woocoo/web/handler"
 	"github.com/tsingsun/woocoo/web/handler/authz"
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/woocoos/knockout-go/pkg/identity"
 	"github.com/woocoos/knockout-go/test"
 	"net/http"
 	"net/http/httptest"
@@ -151,65 +152,6 @@ func TestNewAuthorization(t *testing.T) {
 	}
 }
 
-func TestRedisCallback(t *testing.T) {
-	casbinFilePrepare("callback")
-	redis := miniredis.RunT(t)
-	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
-		"expireTime": 10 * time.Second,
-		"watcherOptions": map[string]any{
-			"options": map[string]any{
-				"addr":    redis.Addr(),
-				"channel": "/casbin",
-			},
-		},
-		"model":  test.Tmp(`callback_model.conf`),
-		"policy": test.Tmp(`callback_policy.csv`),
-	}))
-
-	require.NoError(t, err)
-	t.Run("UpdateForAddPolicy", func(t *testing.T) {
-		msg := rediswatcher.MSG{ID: uuid.New().String(), Method: "UpdateForAddPolicy",
-			Sec: "g", Ptype: "g", NewRule: []string{"alice", "admin"},
-		}
-		m, err := json.Marshal(msg)
-		require.NoError(t, err)
-		redis.Publish("/casbin", string(m))
-		assert.NoError(t, wctest.RunWait(t, time.Second*3, func() error {
-			time.Sleep(time.Second * 2)
-			return nil
-		}))
-	})
-	// file adapter does not support UpdateForRemovePolicy
-	t.Run("UpdateForRemovePolicy", func(t *testing.T) {
-		msg := rediswatcher.MSG{ID: uuid.New().String(), Method: "UpdateForRemovePolicy",
-			Sec: "p", Ptype: "p", NewRule: []string{"alice", "data1", "remove"},
-		}
-		m, err := json.Marshal(msg)
-		require.NoError(t, err)
-		ok := authorizer.Enforcer.HasPolicy("alice", "data1", "remove")
-		assert.True(t, ok)
-		redis.Publish("/casbin", string(m))
-		assert.NoError(t, wctest.RunWait(t, time.Second*3, func() error {
-			time.Sleep(time.Second * 2)
-			return nil
-		}))
-	})
-	authorizer.Watcher.Close()
-}
-
-func TestGetAllowedRecordsForUser(t *testing.T) {
-	casbinFilePrepare("conditions")
-	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
-		"expireTime": 10 * time.Second,
-		"model":      test.Tmp(`conditions_model.conf`),
-		"policy":     test.Tmp(`conditions_policy.csv`),
-	}))
-	require.NoError(t, err)
-	condions, err := authorizer.BaseEnforcer().GetAllowedObjectConditions("alice", "read", "r.obj.")
-	require.NoError(t, err)
-	assert.Equal(t, []string{"price < 25", "category_id = 2"}, condions)
-}
-
 func TestAuthorizer(t *testing.T) {
 
 	var cnf = `
@@ -330,6 +272,65 @@ handler:
 	}
 }
 
+func TestRedisCallback(t *testing.T) {
+	casbinFilePrepare("callback")
+	redis := miniredis.RunT(t)
+	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
+		"expireTime": 10 * time.Second,
+		"watcherOptions": map[string]any{
+			"options": map[string]any{
+				"addr":    redis.Addr(),
+				"channel": "/casbin",
+			},
+		},
+		"model":  test.Tmp(`callback_model.conf`),
+		"policy": test.Tmp(`callback_policy.csv`),
+	}))
+
+	require.NoError(t, err)
+	t.Run("UpdateForAddPolicy", func(t *testing.T) {
+		msg := rediswatcher.MSG{ID: uuid.New().String(), Method: "UpdateForAddPolicy",
+			Sec: "g", Ptype: "g", NewRule: []string{"alice", "admin"},
+		}
+		m, err := json.Marshal(msg)
+		require.NoError(t, err)
+		redis.Publish("/casbin", string(m))
+		assert.NoError(t, wctest.RunWait(t, time.Second*3, func() error {
+			time.Sleep(time.Second * 2)
+			return nil
+		}))
+	})
+	// file adapter does not support UpdateForRemovePolicy
+	t.Run("UpdateForRemovePolicy", func(t *testing.T) {
+		msg := rediswatcher.MSG{ID: uuid.New().String(), Method: "UpdateForRemovePolicy",
+			Sec: "p", Ptype: "p", NewRule: []string{"alice", "data1", "remove"},
+		}
+		m, err := json.Marshal(msg)
+		require.NoError(t, err)
+		ok := authorizer.Enforcer.HasPolicy("alice", "data1", "remove")
+		assert.True(t, ok)
+		redis.Publish("/casbin", string(m))
+		assert.NoError(t, wctest.RunWait(t, time.Second*3, func() error {
+			time.Sleep(time.Second * 2)
+			return nil
+		}))
+	})
+	authorizer.Watcher.Close()
+}
+
+func TestGetAllowedRecordsForUser(t *testing.T) {
+	casbinFilePrepare("conditions")
+	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
+		"expireTime": 10 * time.Second,
+		"model":      test.Tmp(`conditions_model.conf`),
+		"policy":     test.Tmp(`conditions_policy.csv`),
+	}))
+	require.NoError(t, err)
+	condions, err := authorizer.BaseEnforcer().GetAllowedObjectConditions("alice", "read", "r.obj.")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"price < 25", "category_id = 2"}, condions)
+}
+
 func TestGraphqlCheckPermissions(t *testing.T) {
 	log.InitGlobalLogger()
 	var cfgStr = `
@@ -424,4 +425,22 @@ web:
 			assert.Contains(t, w.Body.String(), "action hello is not allowed")
 		}
 	})
+}
+
+func TestAuthorizer_QueryAllowedResourceConditions(t *testing.T) {
+	casbinFilePrepare("resources")
+	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
+		"expireTime": 10 * time.Second,
+		"model":      test.Tmp(`resources_model.conf`),
+		"policy":     test.Tmp(`resources_policy.csv`),
+	}))
+	require.NoError(t, err)
+	ctx := identity.WithTenantID(context.Background(), 10000)
+	condions, err := authorizer.QueryAllowedResourceConditions(ctx, &security.EvalArgs{
+		User:     security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "alice"}),
+		Action:   "read",
+		Resource: ":10000:World",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []string{":name/cba:power_by/0"}, condions)
 }

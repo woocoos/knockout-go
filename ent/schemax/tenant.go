@@ -148,7 +148,9 @@ func (d TenantMixin[T, Q]) P(w Query, tid int) {
 // QueryRulesP adds a storage-level predicate to the queries.
 //
 // When call Authorizer.Prepare, pass appcode, tenant id, and resource type those as resource prefix,
-// the prefix format is `appcode:tenant_id:resource_type:`.
+// the prefix format is `appcode:tenant_id:resource_type:expression`.
+// The expression is a list of field and value pairs separated by `/`, and the field and value are separated by `:`.
+// It means multiple and conditions that only support the equal operation.
 func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 	tid, ok := identity.TenantIDLoadFromContext(ctx)
 	if !ok {

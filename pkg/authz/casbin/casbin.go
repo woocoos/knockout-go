@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/casbin/casbin/v2"
-	casbinerr "github.com/casbin/casbin/v2/errors"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
@@ -146,14 +145,10 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 		// policy {sub, domain, obj, act}
 		if policy[3] == "read" {
 			if !strings.HasPrefix(policy[2], prefix) {
-				return nil, casbinerr.ErrObjCondition
+				continue
 			}
 			objectConditions = append(objectConditions, strings.TrimPrefix(policy[2], prefix))
 		}
-	}
-
-	if len(objectConditions) == 0 {
-		return nil, casbinerr.ErrEmptyCondition
 	}
 
 	return objectConditions, nil
