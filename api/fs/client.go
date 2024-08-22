@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -91,12 +92,18 @@ type ProviderConfig struct {
 
 // Config file system config. if you want to add source config in config file.
 type Config struct {
-	Providers []ProviderConfig `json:"providers" yaml:"providers"`
+	BasePath   string            `json:"basePath,omitempty" yaml:"basePath,omitempty"`
+	Host       string            `json:"host,omitempty" yaml:"host,omitempty"`
+	Headers    map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
+	UserAgent  string            `json:"userAgent,omitempty" yaml:"userAgent,omitempty"`
+	HTTPClient *http.Client
+	Providers  []ProviderConfig `json:"providers" yaml:"providers"`
 }
 
 // NewConfig create a new config.
 func NewConfig() *Config {
 	return &Config{
+		BasePath:  "http://localhost:8080/graphql/query",
 		Providers: make([]ProviderConfig, 0),
 	}
 }
@@ -112,6 +119,9 @@ type Client struct {
 	// biz key -> provider key
 	keys map[string]string
 
+	interceptors    []InterceptFunc
+	FileIdentityAPI *FileIdentityAPI
+
 	mu sync.RWMutex
 }
 
@@ -122,6 +132,12 @@ func NewClient(cfg *Config) (*Client, error) {
 		providers: make(map[string]S3Provider),
 		keys:      make(map[string]string),
 	}
+
+	api := api{
+		client: c,
+	}
+	c.FileIdentityAPI = (*FileIdentityAPI)(&api)
+
 	for _, source := range c.cfg.Providers {
 		key := GetProviderKey(&source)
 		err := c.RegistryProvider(&source, key)
@@ -129,7 +145,6 @@ func NewClient(cfg *Config) (*Client, error) {
 			return nil, err
 		}
 	}
-
 	return c, nil
 }
 
@@ -177,8 +192,32 @@ func (c *Client) RegistryProvider(cfg *ProviderConfig, bizKey string) error {
 	return nil
 }
 
+type DownloadOption struct {
+	// if true, overwrite the local file if it exists
+	OverwrittenFile bool
+}
+
+type DownloadOptionFn func(options *DownloadOption)
+
+func WithOverwrittenFile(overwrittenFile bool) DownloadOptionFn {
+	return func(options *DownloadOption) {
+		options.OverwrittenFile = overwrittenFile
+	}
+}
+
 // DownloadObjectByKey download object by biz key(tenantID or ...).If local file exists, it will be overwritten.
-func (c *Client) DownloadObjectByKey(bizKey string, url string, localFile string) error {
+func (c *Client) DownloadObjectByKey(bizKey string, url string, localFile string, optFns ...DownloadOptionFn) error {
+	options := DownloadOption{
+		OverwrittenFile: true,
+	}
+	for _, fn := range optFns {
+		fn(&options)
+	}
+	if !options.OverwrittenFile {
+		if _, err := os.Stat(localFile); !os.IsNotExist(err) {
+			return nil
+		}
+	}
 	provider, err := c.GetProviderByBizKey(bizKey)
 	if err != nil {
 		return err

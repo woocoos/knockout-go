@@ -18,11 +18,13 @@ func NewFs() *Fs {
 	}
 }
 
-func (f *Fs) Apply(_ *SDK, cnf *conf.Configuration) error {
+func (f *Fs) Apply(sdk *SDK, cnf *conf.Configuration) error {
 	err := cnf.Unmarshal(f.cfg)
 	if err != nil {
 		return err
 	}
+	f.cfg.HTTPClient = sdk.client
 	f.Client, err = fs.NewClient(f.cfg)
+	f.AddInterceptor(TenantIDInterceptor)
 	return err
 }
