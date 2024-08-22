@@ -28,7 +28,7 @@ type ID int
 
 func (i *ID) UnmarshalJSON(data []byte) error {
 	// 去除引号
-	str := string(data[1 : len(data)-1])
+	str := strings.Trim(string(data), `"`)
 	// 将字符串转换为int
 	val, err := strconv.Atoi(str)
 	if err != nil {
@@ -81,6 +81,7 @@ func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req GetFileIden
 		body        any
 	)
 	contentType = "application/json"
+	path := "/graphql/query"
 	where := make([]string, 0)
 	if req.TenantID != nil {
 		where = append(where, "tenantID:"+strconv.Itoa(*req.TenantID))
@@ -101,7 +102,7 @@ func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req GetFileIden
 		}
 		where = append(where, `hasSourceWith:{`+strings.Join(hasSourceWith, ",")+`}`)
 	}
-	body = payload{
+	body = GraphqlRequest{
 		Query: `query {
 				  fileIdentitiesForApp(where:{` + strings.Join(where, ",") + `}){
 					id,tenantID,accessKeyID,accessKeySecret,roleArn,policy,durationSeconds,isDefault,
@@ -112,7 +113,7 @@ func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req GetFileIden
 				}`,
 	}
 
-	request, err := a.client.prepareRequest("POST", a.client.cfg.BasePath, contentType, body)
+	request, err := a.client.prepareRequest("POST", a.client.cfg.BasePath+path, contentType, body)
 	if err != nil {
 		return
 	}

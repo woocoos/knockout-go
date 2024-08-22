@@ -103,7 +103,7 @@ type Config struct {
 // NewConfig create a new config.
 func NewConfig() *Config {
 	return &Config{
-		BasePath:  "http://localhost:8080/graphql/query",
+		BasePath:  "http://localhost:8080",
 		Providers: make([]ProviderConfig, 0),
 	}
 }

@@ -20,7 +20,7 @@ type api struct {
 	client *Client
 }
 
-type payload struct {
+type GraphqlRequest struct {
 	Query     string      `json:"query"`
 	Variables interface{} `json:"variables"`
 }

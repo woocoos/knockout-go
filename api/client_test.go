@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/tsingsun/woocoo/pkg/cache/lfu"
 	"github.com/tsingsun/woocoo/pkg/conf"
+	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/woocoos/knockout-go/api/fs"
 	"github.com/woocoos/knockout-go/api/msg"
 	"io"
@@ -85,6 +87,9 @@ kosdk:
     nonceLen: 12
   plugin:
     fs:
+      basePath: http://127.0.0.1:8080
+      headers:
+        "X-Tenant-ID": 1
       providers:
       - kind: minio
         tenantID: 1
@@ -176,6 +181,49 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 		// mock body
 		w.Write([]byte("test"))
 	})
+	mux.HandleFunc("/graphql/query", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		as, err := io.ReadAll(r.Body)
+		t.Require().NoError(err)
+		var req fs.GraphqlRequest
+		t.Require().NoError(json.Unmarshal(as, &req))
+		// 解析query中的operation
+		doc, err := parser.ParseQuery(&ast.Source{Input: req.Query})
+		op := doc.Operations[0].SelectionSet[0]
+		opf := op.(*ast.Field)
+		ret := make([]byte, 0)
+		if opf.Name == "fileIdentitiesForApp" {
+			resp := fs.Result{
+				Data: fs.Data{
+					FileIdentitiesForApp: []*fs.FileIdentity{
+						{
+							ID:              fs.ID(1),
+							TenantID:        fs.ID(1),
+							AccessKeyID:     "test",
+							AccessKeySecret: "test1234",
+							RoleArn:         "arn:aws:s3:::*",
+							Policy:          "",
+							DurationSeconds: 3600,
+							IsDefault:       true,
+							Source: &fs.FileSource{
+								ID:                fs.ID(1),
+								Bucket:            "fstest",
+								BucketURL:         t.mockServerUrl + "/fstest",
+								Endpoint:          t.mockServerUrl,
+								EndpointImmutable: false,
+								Kind:              fs.KindMinio,
+								Region:            "minio",
+								StsEndpoint:       t.mockServerUrl + "/sts",
+							},
+						},
+					},
+				},
+			}
+			ret, err = json.Marshal(resp)
+			t.Require().NoError(err)
+		}
+		w.Write(ret)
+	})
 	return mux
 }
 
@@ -184,6 +232,7 @@ func (t *apiSuite) SetupSuite() {
 	t.mockServerUrl = srv.URL
 	cnf := conf.NewFromBytes([]byte(cnfStr))
 	cnf.Parser().Set("kosdk.client.oauth2.endpoint.tokenURL", t.mockServerUrl+"/token")
+	cnf.Parser().Set("kosdk.plugin.fs.basePath", srv.URL)
 	// fs
 	fskey := "kosdk.plugin.fs.providers"
 	fcfg := cnf.Parser().Get(fskey)
@@ -249,25 +298,48 @@ func (t *apiSuite) TestMsg() {
 }
 
 func (t *apiSuite) TestFs() {
-	sc := &fs.ProviderConfig{
-		AccessKeyID: "test",
-		Kind:        "minio",
-		Endpoint:    t.mockServerUrl,
-		Bucket:      "fstest",
-	}
-	p, err := t.sdk.Fs().Client.GetProviderByBizKey(fs.GetProviderKey(sc))
-	t.Require().NoError(err)
-	resp, err := p.GetSTS(context.Background(), "anyname")
-	t.Require().NoError(err)
-	t.NotNil(resp)
-	t.NotEmpty(resp.AccessKeyID)
-	got, err := p.S3Client().GetObject(context.Background(), &s3.GetObjectInput{
-		Bucket: &sc.Bucket,
-		Key:    &sc.Bucket,
+	t.Run("minio", func() {
+		sc := &fs.ProviderConfig{
+			AccessKeyID: "test",
+			Kind:        "minio",
+			Endpoint:    t.mockServerUrl,
+			Bucket:      "fstest",
+		}
+		p, err := t.sdk.Fs().Client.GetProviderByBizKey(fs.GetProviderKey(sc))
+		t.Require().NoError(err)
+		resp, err := p.GetSTS(context.Background(), "anyname")
+		t.Require().NoError(err)
+		t.NotNil(resp)
+		t.NotEmpty(resp.AccessKeyID)
+		got, err := p.S3Client().GetObject(context.Background(), &s3.GetObjectInput{
+			Bucket: &sc.Bucket,
+			Key:    &sc.Bucket,
+		})
+		t.Require().NoError(err)
+		// read body
+		gt, err := io.ReadAll(got.Body)
+		t.Require().NoError(err)
+		t.Equal("test", string(gt))
 	})
-	t.Require().NoError(err)
-	// read body
-	gt, err := io.ReadAll(got.Body)
-	t.Require().NoError(err)
-	t.Equal("test", string(gt))
+
+	t.Run("fileIdentitiesForApp", func() {
+		isDefault := true
+		ret, resp, err := t.sdk.Fs().FileIdentityAPI.GetFileIdentities(context.Background(), fs.GetFileIdentitiesRequest{
+			IsDefault: &isDefault,
+		})
+		t.Require().NoError(err)
+		t.NotNil(ret)
+		t.Equal(200, resp.StatusCode)
+
+		bizKey := fs.GetProviderKey(fs.ToProviderConfig(ret[0]))
+		t.NotNil(bizKey)
+		err = t.sdk.Fs().Client.RegistryProvider(fs.ToProviderConfig(ret[0]), bizKey)
+		t.Require().NoError(err)
+		provider, err := t.sdk.Fs().Client.GetProviderByBizKey(bizKey)
+		t.Require().NoError(err)
+		stsResp, err := provider.GetSTS(context.Background(), "anyname")
+		t.Require().NoError(err)
+		t.NotNil(stsResp)
+		t.NotEmpty(stsResp.AccessKeyID)
+	})
 }
