@@ -324,8 +324,9 @@ func (t *apiSuite) TestFs() {
 
 	t.Run("fileIdentitiesForApp", func() {
 		isDefault := true
-		ret, resp, err := t.sdk.Fs().FileIdentityAPI.GetFileIdentities(context.Background(), fs.GetFileIdentitiesRequest{
-			IsDefault: &isDefault,
+		ret, resp, err := t.sdk.Fs().FileIdentityAPI.GetFileIdentities(context.Background(), &fs.GetFileIdentitiesRequest{
+			IsDefault: isDefault,
+			TenantIDs: []int{1, 2, 3},
 		})
 		t.Require().NoError(err)
 		t.NotNil(ret)

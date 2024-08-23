@@ -12,16 +12,10 @@ import (
 type FileIdentityAPI api
 
 type GetFileIdentitiesRequest struct {
-	// TenantID the tenant id
-	TenantID *int `binding:"required" form:"tenantID"`
+	// TenantIDs the tenant id
+	TenantIDs []int `binding:"required" form:"tenantID"`
 	// IsDefault The default identity of the tenant
-	IsDefault *bool `form:"isDefault"`
-	// AccessKeyID The accessKeyID of the identity
-	AccessKeyID *string `form:"accessKeyID"`
-	// Bucket The bucket of the identity
-	Bucket *string `form:"bucket"`
-	// Endpoint The endpoint of the identity
-	Endpoint *string `form:"endpoint"`
+	IsDefault bool `form:"isDefault"`
 }
 
 type ID int
@@ -75,43 +69,11 @@ type FileSource struct {
 }
 
 // GetFileIdentities (POST fileIdentitiesFull)
-func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req GetFileIdentitiesRequest) (ret []*FileIdentity, resp *http.Response, err error) {
-	var (
-		contentType string
-		body        any
-	)
-	contentType = "application/json"
+func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req *GetFileIdentitiesRequest) (ret []*FileIdentity, resp *http.Response, err error) {
+	query := buildGraphQLQuery(req)
+	body := GraphqlRequest{Query: query}
+	contentType := "application/json"
 	path := "/graphql/query"
-	where := make([]string, 0)
-	if req.TenantID != nil {
-		where = append(where, "tenantID:"+strconv.Itoa(*req.TenantID))
-	}
-	if req.AccessKeyID != nil {
-		where = append(where, "accessKeyID:"+*req.AccessKeyID)
-	}
-	if req.IsDefault != nil {
-		where = append(where, "isDefault:"+strconv.FormatBool(*req.IsDefault))
-	}
-	if req.Bucket != nil || req.Endpoint != nil {
-		hasSourceWith := make([]string, 0)
-		if req.Bucket != nil {
-			hasSourceWith = append(hasSourceWith, "bucket:"+*req.Bucket)
-		}
-		if req.Endpoint != nil {
-			hasSourceWith = append(hasSourceWith, "endpoint:"+*req.Endpoint)
-		}
-		where = append(where, `hasSourceWith:{`+strings.Join(hasSourceWith, ",")+`}`)
-	}
-	body = GraphqlRequest{
-		Query: `query {
-				  fileIdentitiesForApp(where:{` + strings.Join(where, ",") + `}){
-					id,tenantID,accessKeyID,accessKeySecret,roleArn,policy,durationSeconds,isDefault,
-					source{
-					  id,kind,endpoint,endpointImmutable,stsEndpoint,region,bucket,bucketURL
-					}
-				  }
-				}`,
-	}
 
 	request, err := a.client.prepareRequest("POST", a.client.cfg.BasePath+path, contentType, body)
 	if err != nil {
@@ -137,6 +99,29 @@ func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req GetFileIden
 		err = errors.New(string(respBody))
 	}
 	return
+}
+
+func buildGraphQLQuery(req *GetFileIdentitiesRequest) string {
+	var where []string
+	ids := make([]string, len(req.TenantIDs))
+	if len(req.TenantIDs) != 0 {
+		for i, num := range req.TenantIDs {
+			ids[i] = strconv.Itoa(num)
+		}
+		where = append(where, "tenantIDIn:["+strings.Join(ids, ",")+"]")
+	}
+	if !req.IsDefault {
+		where = append(where, "isDefault: false")
+	}
+
+	return `query {
+		fileIdentitiesForApp(where:{` + strings.Join(where, ",") + `}){
+			id,tenantID,accessKeyID,accessKeySecret,roleArn,policy,durationSeconds,isDefault,
+			source{
+				id,kind,endpoint,endpointImmutable,stsEndpoint,region,bucket,bucketURL
+			}
+		}
+	}`
 }
 
 func ToProviderConfig(fi *FileIdentity) *ProviderConfig {
