@@ -68,7 +68,7 @@ type FileSource struct {
 	BucketURL         string `json:"bucketUrl,omitempty"`
 }
 
-// GetFileIdentities (POST fileIdentitiesFull)
+// GetFileIdentities (POST fileIdentitiesForApp)
 func (a *FileIdentityAPI) GetFileIdentities(ctx context.Context, req *GetFileIdentitiesRequest) (ret []*FileIdentity, resp *http.Response, err error) {
 	query := buildGraphQLQuery(req)
 	body := GraphqlRequest{Query: query}
@@ -110,8 +110,8 @@ func buildGraphQLQuery(req *GetFileIdentitiesRequest) string {
 		}
 		where = append(where, "tenantIDIn:["+strings.Join(ids, ",")+"]")
 	}
-	if !req.IsDefault {
-		where = append(where, "isDefault: false")
+	if req.IsDefault {
+		where = append(where, "isDefault: true")
 	}
 
 	return `query {
