@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/casbin/casbin/v2"
-	casbinerr "github.com/casbin/casbin/v2/errors"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
@@ -121,8 +120,8 @@ func (au *Authorizer) Prepare(ctx context.Context, kind security.ArnKind, arnPar
 // Eval checks if the user has permission to do an operation on a resource.
 // tenant will be used as domain. tenant allows not set.
 func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (bool, error) {
-	tenant, _ := identity.TenantIDFromContext(ctx)
-	if tenant == 0 {
+	tenant, ok := identity.TenantIDLoadFromContext(ctx)
+	if !ok {
 		return au.Enforcer.Enforce(args.User.Identity().Name(), string(args.Action), args.ActionVerb)
 	}
 	// read is the access name.
@@ -132,7 +131,7 @@ func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (bool, 
 // QueryAllowedResourceConditions returns the allowed resource conditions for the user in domain.
 // if the user don't have any permission, return nil.
 func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *security.EvalArgs) ([]string, error) {
-	tenant, ok := identity.TenantIDFromContext(ctx)
+	tenant, ok := identity.TenantIDLoadFromContext(ctx)
 	if !ok {
 		return nil, identity.ErrMisTenantID
 	}
@@ -146,14 +145,10 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 		// policy {sub, domain, obj, act}
 		if policy[3] == "read" {
 			if !strings.HasPrefix(policy[2], prefix) {
-				return nil, casbinerr.ErrObjCondition
+				continue
 			}
 			objectConditions = append(objectConditions, strings.TrimPrefix(policy[2], prefix))
 		}
-	}
-
-	if len(objectConditions) == 0 {
-		return nil, casbinerr.ErrEmptyCondition
 	}
 
 	return objectConditions, nil

@@ -153,6 +153,16 @@ func (s *TestSuite) TestDecimal() {
 	})
 }
 
+func (s *TestSuite) TestFile() {
+	srv := handler.New(NewSchema(s.client))
+	srv.AddTransport(transport.POST{})
+	s.Run("ent", func() {
+		s.NoError(s.client.User.Create().SetID(999).SetName("filetest").SetAvatar("test").Exec(context.Background()))
+		err := s.client.User.UpdateOneID(999).SetAvatar(strings.Repeat("a", 256)).Exec(context.Background())
+		s.True(ent.IsValidationError(err))
+	})
+}
+
 func (s *TestSuite) TestResolverPlugin() {
 	s.Run("CreateUser", func() {
 		s.NotPanics(func() {
@@ -164,6 +174,15 @@ func (s *TestSuite) TestResolverPlugin() {
 			_, _ = s.mutationResolver.CreateUserByInput(ent.NewContext(context.Background(), s.mutationResolver.client), ent.CreateUserInput{
 				Name: "test",
 			})
+		})
+	})
+	s.Run("DeleteUser1", func() {
+		s.NotPanics(func() {
+			defer func() {
+				e := recover()
+				s.Equal(DeleteUser1Panic, e)
+			}()
+			_, _ = s.mutationResolver.DeleteUser1(ent.NewContext(context.Background(), s.mutationResolver.client), 1)
 		})
 	})
 }

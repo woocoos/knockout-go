@@ -8,8 +8,9 @@ import (
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
-	Name  string
-	Money *decimal.Decimal
+	Name   string
+	Money  *decimal.Decimal
+	Avatar *string
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -17,6 +18,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetName(i.Name)
 	if v := i.Money; v != nil {
 		m.SetMoney(*v)
+	}
+	if v := i.Avatar; v != nil {
+		m.SetAvatar(*v)
 	}
 }
 
@@ -28,9 +32,11 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	Name       *string
-	ClearMoney bool
-	Money      *decimal.Decimal
+	Name        *string
+	ClearMoney  bool
+	Money       *decimal.Decimal
+	ClearAvatar bool
+	Avatar      *string
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
@@ -43,6 +49,12 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.Money; v != nil {
 		m.SetMoney(*v)
+	}
+	if i.ClearAvatar {
+		m.ClearAvatar()
+	}
+	if v := i.Avatar; v != nil {
+		m.SetAvatar(*v)
 	}
 }
 

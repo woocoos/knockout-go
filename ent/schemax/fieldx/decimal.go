@@ -10,9 +10,9 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// Decimal creates a new decimal field.
-func Decimal(name string) *DecimalBuilder {
-	b := &DecimalBuilder{&field.Descriptor{
+// Decimal returns a new decimal field with type github.com/shopspring/decimal.
+func Decimal(name string) *decimalBuilder {
+	b := &decimalBuilder{&field.Descriptor{
 		Name: name,
 	}}
 	ot := field.String("decimal-tmp").GoType(decimal.Decimal{})
@@ -23,12 +23,15 @@ func Decimal(name string) *DecimalBuilder {
 	return b
 }
 
-type DecimalBuilder struct {
+// decimalBuilder is the builder for decimal field.
+//
+// Testing in integration/gentest/ent/schema/user.go
+type decimalBuilder struct {
 	desc *field.Descriptor
 }
 
 // Precision sets the precision and scale of the decimal field.
-func (b *DecimalBuilder) Precision(precision, scale int) *DecimalBuilder {
+func (b *decimalBuilder) Precision(precision, scale int) *decimalBuilder {
 	b.SchemaType(map[string]string{
 		dialect.MySQL:    fmt.Sprintf("decimal(%d,%d)", precision, scale),
 		dialect.SQLite:   fmt.Sprintf("decimal(%d,%d)", precision, scale),
@@ -37,12 +40,12 @@ func (b *DecimalBuilder) Precision(precision, scale int) *DecimalBuilder {
 	return b
 }
 
-func (b *DecimalBuilder) Unique() *DecimalBuilder {
+func (b *decimalBuilder) Unique() *decimalBuilder {
 	b.desc.Unique = true
 	return b
 }
 
-func (b *DecimalBuilder) Range(i, j decimal.Decimal) *DecimalBuilder {
+func (b *decimalBuilder) Range(i, j decimal.Decimal) *decimalBuilder {
 	b.desc.Validators = append(b.desc.Validators, func(v decimal.Decimal) error {
 		if v.Cmp(i) == -1 || v.Cmp(j) == 1 {
 			return errors.New("value out of range")
@@ -52,7 +55,7 @@ func (b *DecimalBuilder) Range(i, j decimal.Decimal) *DecimalBuilder {
 	return b
 }
 
-func (b *DecimalBuilder) Min(i decimal.Decimal) *DecimalBuilder {
+func (b *decimalBuilder) Min(i decimal.Decimal) *decimalBuilder {
 	b.desc.Validators = append(b.desc.Validators, func(v decimal.Decimal) error {
 		if v.Cmp(i) == -1 {
 			return errors.New("value out of range")
@@ -62,7 +65,7 @@ func (b *DecimalBuilder) Min(i decimal.Decimal) *DecimalBuilder {
 	return b
 }
 
-func (b *DecimalBuilder) Max(i decimal.Decimal) *DecimalBuilder {
+func (b *decimalBuilder) Max(i decimal.Decimal) *decimalBuilder {
 	b.desc.Validators = append(b.desc.Validators, func(v decimal.Decimal) error {
 		if v.Cmp(i) == 1 {
 			return errors.New("value out of range")
@@ -73,7 +76,7 @@ func (b *DecimalBuilder) Max(i decimal.Decimal) *DecimalBuilder {
 }
 
 // Default sets the default value of the field.
-func (b *DecimalBuilder) Default(d float64) *DecimalBuilder {
+func (b *decimalBuilder) Default(d float64) *decimalBuilder {
 	b.desc.Default = func() decimal.Decimal {
 		return decimal.NewFromFloat(d)
 	}
@@ -82,60 +85,60 @@ func (b *DecimalBuilder) Default(d float64) *DecimalBuilder {
 
 // Nillable indicates that this field is a nillable.
 // Unlike "Optional" only fields, "Nillable" fields are pointers in the generated struct.
-func (b *DecimalBuilder) Nillable() *DecimalBuilder {
+func (b *decimalBuilder) Nillable() *decimalBuilder {
 	b.desc.Nillable = true
 	return b
 }
 
 // Comment sets the comment of the field.
-func (b *DecimalBuilder) Comment(c string) *DecimalBuilder {
+func (b *decimalBuilder) Comment(c string) *decimalBuilder {
 	b.desc.Comment = c
 	return b
 }
 
 // Optional indicates that this field is optional on create.
 // Unlike edges, fields are required by default.
-func (b *DecimalBuilder) Optional() *DecimalBuilder {
+func (b *decimalBuilder) Optional() *decimalBuilder {
 	b.desc.Optional = true
 	return b
 }
 
 // Immutable indicates that this field cannot be updated.
-func (b *DecimalBuilder) Immutable() *DecimalBuilder {
+func (b *decimalBuilder) Immutable() *decimalBuilder {
 	b.desc.Immutable = true
 	return b
 }
 
 // StructTag sets the struct tag of the field.
-func (b *DecimalBuilder) StructTag(s string) *DecimalBuilder {
+func (b *decimalBuilder) StructTag(s string) *decimalBuilder {
 	b.desc.Tag = s
 	return b
 }
 
 // Validate adds a validator for this field. Operation fails if the validation fails.
-func (b *DecimalBuilder) Validate(fn func(d decimal.Decimal) error) *DecimalBuilder {
+func (b *decimalBuilder) Validate(fn func(d decimal.Decimal) error) *decimalBuilder {
 	b.desc.Validators = append(b.desc.Validators, fn)
 	return b
 }
 
 // StorageKey sets the storage key of the field.
 // In SQL dialects is the column name and Gremlin is the property.
-func (b *DecimalBuilder) StorageKey(key string) *DecimalBuilder {
+func (b *decimalBuilder) StorageKey(key string) *decimalBuilder {
 	b.desc.StorageKey = key
 	return b
 }
 
-func (b *DecimalBuilder) SchemaType(types map[string]string) *DecimalBuilder {
+func (b *decimalBuilder) SchemaType(types map[string]string) *decimalBuilder {
 	b.desc.SchemaType = types
 	return b
 }
 
-func (b *DecimalBuilder) Annotations(annotations ...schema.Annotation) *DecimalBuilder {
+func (b *decimalBuilder) Annotations(annotations ...schema.Annotation) *decimalBuilder {
 	b.desc.Annotations = append(b.desc.Annotations, annotations...)
 	return b
 }
 
 // Descriptor implements the ent.Field interface by returning its descriptor.
-func (b *DecimalBuilder) Descriptor() *field.Descriptor {
+func (b *decimalBuilder) Descriptor() *field.Descriptor {
 	return b.desc
 }

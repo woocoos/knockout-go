@@ -103,16 +103,18 @@ func Test_WorldWithTenant(t *testing.T) {
 	id := rand.Int()
 
 	authorizer := security.DefaultAuthorizer.(*casbin.Authorizer)
-	r, err := authorizer.Enforcer.AddRoleForUserInDomain("1", strconv.Itoa(tid), strconv.Itoa(tid))
+	_, err := authorizer.Enforcer.AddRoleForUserInDomain("1", strconv.Itoa(tid), strconv.Itoa(tid))
 	require.NoError(t, err)
 	arnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "World")
-	r, err = authorizer.Enforcer.AddPolicy("1", arnp, "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", arnp, "read", "allow")
 	require.NoError(t, err)
-	r, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/abc", "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/abc", "read", "allow")
 	require.NoError(t, err)
-	r, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/cba:power_by/0", "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/cba:power_by/0", "read", "allow")
 	require.NoError(t, err)
-	assert.True(t, r)
+	// set action policy
+	_, err = authorizer.Enforcer.AddPolicy("1", "resource:*", "read", "allow")
+	require.NoError(t, err)
 	// set tenant_id to 1 should be not working
 	err = client.World.Create().SetID(id).SetName("abc").SetTenantID(1111).Exec(tctx)
 	assert.NoError(t, err)

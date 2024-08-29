@@ -77,51 +77,6 @@ func WithGqlWithTemplates() entgql.ExtensionOption {
 	return entgql.WithTemplates(append(entgql.AllTemplates, nodeTpl)...)
 }
 
-// ReplaceGqlMutationInput is a schema hook for replace gql mutation input template.
-// Deprecated: not use
-func ReplaceGqlMutationInput() entgql.ExtensionOption {
-	rt := gen.MustParse(gen.NewTemplate("gql_mutation_input").
-		Funcs(entgql.TemplateFuncs).
-		ParseFS(_templates, "template/gql_mutation_input.tmpl")).SkipIf(skipMutationTemplate)
-	return entgql.WithTemplates([]*gen.Template{
-		entgql.CollectionTemplate,
-		entgql.EnumTemplate,
-		entgql.NodeTemplate,
-		entgql.PaginationTemplate,
-		entgql.TransactionTemplate,
-		entgql.EdgeTemplate,
-		entgql.WhereTemplate,
-		rt,
-	}...)
-}
-
-func skipMutationTemplate(g *gen.Graph) bool {
-	for _, n := range g.Nodes {
-		ant, err := annotation(n.Annotations)
-		if err != nil {
-			continue
-		}
-		for _, i := range ant.MutationInputs {
-			if (i.IsCreate && !ant.Skip.Is(entgql.SkipMutationCreateInput)) ||
-				(!i.IsCreate && !ant.Skip.Is(entgql.SkipMutationUpdateInput)) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-// annotation extracts the entgql.Annotation or returns its empty value.
-func annotation(ants gen.Annotations) (*entgql.Annotation, error) {
-	ant := &entgql.Annotation{}
-	if ants != nil && ants[ant.Name()] != nil {
-		if err := ant.Decode(ants[ant.Name()]); err != nil {
-			return nil, err
-		}
-	}
-	return ant, nil
-}
-
 // SkipTablesDiffHook is a schema migration hook for skip tables diff thus skip migration.
 // the table name is database name,not the ent schema struct name.
 //

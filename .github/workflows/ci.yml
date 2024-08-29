@@ -34,10 +34,17 @@ jobs:
           - "4318:4318"
           - "8888:8888"
           - "8889:8889"
+      minio:
+        image: bitnami/minio:latest
+        ports:
+          - "9000:9000"
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
     strategy:
       fail-fast: false
       matrix:
-        go: ['1.20','1.21']
+        go: ['1.21','1.22']
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-go@v4
@@ -51,7 +58,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
     - name: Run tests
-      run: go test -race ./...
+      run: TEST_WIP=true go test -race ./...
   generate:
     runs-on: ubuntu-latest
     steps:

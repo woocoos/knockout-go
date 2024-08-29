@@ -3,15 +3,15 @@ package schemax
 import (
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"github.com/woocoos/knockout-go/pkg/snowflake"
 )
 
-// SnowFlakeID 是采用雪花算法生成的ID.
+// SnowFlakeID helps to generate a snowflake type id.
 type SnowFlakeID struct {
-	// ID is the unique identifier of the user in the database.
 	mixin.Schema
 }
 
@@ -27,8 +27,10 @@ func (id SnowFlakeID) Fields() []ent.Field {
 	}
 }
 
+// SchemaType override the ent.Schema.
+// The SchemaType of SnowFlakeID is a map of database dialects to the SQL type.
 func (SnowFlakeID) SchemaType() map[string]string {
 	return map[string]string{
-		"mysql": "bigint",
+		dialect.MySQL: "bigint",
 	}
 }

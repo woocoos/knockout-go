@@ -17,3 +17,4 @@
 # vendor/
 
 go.work*
+/api/fs/alioss/.env

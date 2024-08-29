@@ -39,6 +39,7 @@ var (
 
 type ResolverPlugin struct {
 	config         *config.Config
+	rewriter       *Rewriter
 	resolverTpl    *template.Template
 	useRelayNodeEx bool
 }
@@ -60,16 +61,18 @@ func (r ResolverPlugin) Name() string {
 }
 
 // Implement gqlgen api.ResolverImplementer
-func (r ResolverPlugin) Implement(f *codegen.Field) (val string) {
+func (r ResolverPlugin) Implement(prevImplementation string, f *codegen.Field) (val string) {
 	var (
 		err error
 	)
-	rewriter, err := NewRewriter(r.config.Resolver.Dir())
-	// for v0.17.41 break change. need the config.
+	r.rewriter, err = NewRewriter(r.config.Resolver.Dir())
+	if err != nil {
+		panic(err)
+	}
 	if r.config != nil {
 		rs := f.Object.ResolverInterface.String()
 		sn := templates.LcFirst(rs[strings.LastIndex(rs, ".")+1:])
-		implementation := strings.TrimSpace(rewriter.GetMethodBody(sn, f.GoFieldName))
+		implementation := strings.TrimSpace(r.rewriter.GetMethodBody(sn, f.GoFieldName))
 		if implementation != "" {
 			return implementation
 		}

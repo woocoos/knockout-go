@@ -44,6 +44,7 @@ func (User) Fields() []ent.Field {
 				}
 				return nil
 			}),
+		fieldx.File("avatar").MaxLen(255).Optional().Comment("头像"),
 	}
 }
 
