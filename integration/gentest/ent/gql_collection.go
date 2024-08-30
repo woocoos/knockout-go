@@ -6,11 +6,9 @@ import (
 	"context"
 
 	"entgo.io/contrib/entgql"
-	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
-	"github.com/woocoos/knockout-go/pkg/pagination"
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
@@ -19,13 +17,13 @@ func (rs *RefSchemaQuery) CollectFields(ctx context.Context, satisfies ...string
 	if fc == nil {
 		return rs, nil
 	}
-	if err := rs.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := rs.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
 	return rs, nil
 }
 
-func (rs *RefSchemaQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (rs *RefSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -86,13 +84,13 @@ func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) (*Us
 	if fc == nil {
 		return u, nil
 	}
-	if err := u.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := u.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
-func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -234,45 +232,6 @@ func unmarshalArgs(ctx context.Context, whereInput any, args map[string]any) map
 	}
 
 	return args
-}
-
-func limitRows(ctx context.Context, partitionBy string, limit int, first, last *int, orderBy ...sql.Querier) func(s *sql.Selector) {
-	offset := 0
-	if sp, ok := pagination.SimplePaginationFromContext(ctx); ok {
-		if first != nil {
-			offset = (sp.PageIndex - sp.CurrentIndex - 1) * *first
-		}
-		if last != nil {
-			offset = (sp.CurrentIndex - sp.PageIndex - 1) * *last
-		}
-	}
-	return func(s *sql.Selector) {
-		d := sql.Dialect(s.Dialect())
-		s.SetDistinct(false)
-		with := d.With("src_query").
-			As(s.Clone()).
-			With("limited_query").
-			As(
-				d.Select("*").
-					AppendSelectExprAs(
-						sql.RowNumber().PartitionBy(partitionBy).OrderExpr(orderBy...),
-						"row_number",
-					).
-					From(d.Table("src_query")),
-			)
-		t := d.Table("limited_query").As(s.TableName())
-		if offset != 0 {
-			*s = *d.Select(s.UnqualifiedColumns()...).
-				From(t).
-				Where(sql.GT(t.C("row_number"), offset)).Limit(limit).
-				Prefix(with)
-		} else {
-			*s = *d.Select(s.UnqualifiedColumns()...).
-				From(t).
-				Where(sql.LTE(t.C("row_number"), limit)).
-				Prefix(with)
-		}
-	}
 }
 
 // mayAddCondition appends another type condition to the satisfies list

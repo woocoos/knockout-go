@@ -43,7 +43,8 @@
 	if {{ $r }}, err = pager.applyCursors({{ $r }}, after, before); err != nil {
 		return nil, err
 	}
-	if limit := paginateLimit(first, last); limit != 0 {
+	limit := paginateLimit(first, last)
+	if limit != 0 {
 		{{ $r }}.Limit(limit)
 	}
 	if sp,ok := pagination.SimplePaginationFromContext(ctx);ok {
