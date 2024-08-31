@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/shopspring/decimal"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/predicate"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 )
 
@@ -89,9 +90,45 @@ func (uu *UserUpdate) ClearAvatar() *UserUpdate {
 	return uu
 }
 
+// AddRefIDs adds the "refs" edge to the RefSchema entity by IDs.
+func (uu *UserUpdate) AddRefIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddRefIDs(ids...)
+	return uu
+}
+
+// AddRefs adds the "refs" edges to the RefSchema entity.
+func (uu *UserUpdate) AddRefs(r ...*RefSchema) *UserUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uu.AddRefIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearRefs clears all "refs" edges to the RefSchema entity.
+func (uu *UserUpdate) ClearRefs() *UserUpdate {
+	uu.mutation.ClearRefs()
+	return uu
+}
+
+// RemoveRefIDs removes the "refs" edge to RefSchema entities by IDs.
+func (uu *UserUpdate) RemoveRefIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveRefIDs(ids...)
+	return uu
+}
+
+// RemoveRefs removes "refs" edges to RefSchema entities.
+func (uu *UserUpdate) RemoveRefs(r ...*RefSchema) *UserUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uu.RemoveRefIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -170,6 +207,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.AvatarCleared() {
 		_spec.ClearField(user.FieldAvatar, field.TypeString)
+	}
+	if uu.mutation.RefsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RefsTable,
+			Columns: []string{user.RefsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedRefsIDs(); len(nodes) > 0 && !uu.mutation.RefsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RefsTable,
+			Columns: []string{user.RefsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RefsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RefsTable,
+			Columns: []string{user.RefsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -252,9 +334,45 @@ func (uuo *UserUpdateOne) ClearAvatar() *UserUpdateOne {
 	return uuo
 }
 
+// AddRefIDs adds the "refs" edge to the RefSchema entity by IDs.
+func (uuo *UserUpdateOne) AddRefIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddRefIDs(ids...)
+	return uuo
+}
+
+// AddRefs adds the "refs" edges to the RefSchema entity.
+func (uuo *UserUpdateOne) AddRefs(r ...*RefSchema) *UserUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uuo.AddRefIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearRefs clears all "refs" edges to the RefSchema entity.
+func (uuo *UserUpdateOne) ClearRefs() *UserUpdateOne {
+	uuo.mutation.ClearRefs()
+	return uuo
+}
+
+// RemoveRefIDs removes the "refs" edge to RefSchema entities by IDs.
+func (uuo *UserUpdateOne) RemoveRefIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveRefIDs(ids...)
+	return uuo
+}
+
+// RemoveRefs removes "refs" edges to RefSchema entities.
+func (uuo *UserUpdateOne) RemoveRefs(r ...*RefSchema) *UserUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uuo.RemoveRefIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -363,6 +481,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.AvatarCleared() {
 		_spec.ClearField(user.FieldAvatar, field.TypeString)
+	}
+	if uuo.mutation.RefsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RefsTable,
+			Columns: []string{user.RefsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedRefsIDs(); len(nodes) > 0 && !uuo.mutation.RefsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RefsTable,
+			Columns: []string{user.RefsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RefsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RefsTable,
+			Columns: []string{user.RefsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/shopspring/decimal"
 )
 
@@ -23,8 +24,17 @@ const (
 	FieldMoney = "money"
 	// FieldAvatar holds the string denoting the avatar field in the database.
 	FieldAvatar = "avatar"
+	// EdgeRefs holds the string denoting the refs edge name in mutations.
+	EdgeRefs = "refs"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// RefsTable is the table that holds the refs relation/edge.
+	RefsTable = "ref_table"
+	// RefsInverseTable is the table name for the RefSchema entity.
+	// It exists in this package in order to avoid circular dependency with the "refschema" package.
+	RefsInverseTable = "ref_table"
+	// RefsColumn is the table column denoting the refs relation/edge.
+	RefsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -91,4 +101,25 @@ func ByMoney(opts ...sql.OrderTermOption) OrderOption {
 // ByAvatar orders the results by the avatar field.
 func ByAvatar(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvatar, opts...).ToFunc()
+}
+
+// ByRefsCount orders the results by refs count.
+func ByRefsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRefsStep(), opts...)
+	}
+}
+
+// ByRefs orders the results by refs terms.
+func ByRefs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRefsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newRefsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RefsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RefsTable, RefsColumn),
+	)
 }

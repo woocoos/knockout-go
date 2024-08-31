@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 )
 
 // RefSchemaCreate is the builder for creating a RefSchema entity.
@@ -23,6 +24,17 @@ type RefSchemaCreate struct {
 func (rsc *RefSchemaCreate) SetName(s string) *RefSchemaCreate {
 	rsc.mutation.SetName(s)
 	return rsc
+}
+
+// SetUserID sets the "user_id" field.
+func (rsc *RefSchemaCreate) SetUserID(i int) *RefSchemaCreate {
+	rsc.mutation.SetUserID(i)
+	return rsc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (rsc *RefSchemaCreate) SetUser(u *User) *RefSchemaCreate {
+	return rsc.SetUserID(u.ID)
 }
 
 // Mutation returns the RefSchemaMutation object of the builder.
@@ -62,6 +74,12 @@ func (rsc *RefSchemaCreate) check() error {
 	if _, ok := rsc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "RefSchema.name"`)}
 	}
+	if _, ok := rsc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "RefSchema.user_id"`)}
+	}
+	if _, ok := rsc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "RefSchema.user"`)}
+	}
 	return nil
 }
 
@@ -91,6 +109,23 @@ func (rsc *RefSchemaCreate) createSpec() (*RefSchema, *sqlgraph.CreateSpec) {
 	if value, ok := rsc.mutation.Name(); ok {
 		_spec.SetField(refschema.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if nodes := rsc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   refschema.UserTable,
+			Columns: []string{refschema.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

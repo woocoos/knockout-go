@@ -2,6 +2,7 @@ package gentest
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -37,13 +38,14 @@ func (s *TestSuite) SetupSuite() {
 	s.queryResolver = queryResolver{&Resolver{s.client}}
 	s.mutationResolver = mutationResolver{&Resolver{s.client}}
 	s.NoError(s.client.Schema.Create(context.Background()))
+
 }
 
 func TestTestSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
 
-func (s *TestSuite) TestUsers_SimplePagination() {
+func (s *TestSuite) refreshData() {
 	_, _ = s.client.User.Delete().Exec(context.Background())
 	builder := make([]*ent.UserCreate, 0)
 	for i := 0; i < 20; i++ {
@@ -51,7 +53,19 @@ func (s *TestSuite) TestUsers_SimplePagination() {
 		row.SetName("user" + strconv.Itoa(i)).Mutation().SetID(i + 1)
 		builder = append(builder, row)
 	}
+	refBuilder := make([]*ent.RefSchemaCreate, 0)
+	for i := 0; i < 20; i++ {
+		row := s.client.RefSchema.Create()
+		row.SetName("ref" + strconv.Itoa(i)).Mutation().SetUserID(1) //  user1
+		refBuilder = append(refBuilder, row)
+	}
+
 	s.NoError(s.client.User.CreateBulk(builder...).Exec(context.Background()))
+	s.NoError(s.client.RefSchema.CreateBulk(refBuilder...).Exec(context.Background()))
+}
+
+func (s *TestSuite) TestUsers_SimplePagination() {
+	s.refreshData()
 	all := s.client.User.Query().AllX(context.Background())
 	s.T().Log(all[0].ID, all[19].ID)
 	s.Run("pagination after", func() {
@@ -92,7 +106,69 @@ func (s *TestSuite) TestUsers_SimplePagination() {
 		s.Equal(1, users.Edges[0].Node.ID)
 		s.Equal(2, users.Edges[1].Node.ID)
 	})
+}
 
+// graphQLQueryToRequestBody 将 GraphQL 查询语句转换为 HTTP 请求体
+func graphQLQueryToRequestBody(query string, variables map[string]any) (string, error) {
+	requestBody := map[string]any{
+		"query":     query,
+		"variables": variables,
+	}
+	jsonData, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonData), nil
+}
+
+func (s *TestSuite) TestNode() {
+	s.refreshData()
+	srv := handler.New(NewSchema(s.client))
+	srv.AddTransport(transport.POST{})
+	s.Run("node", func() {
+		w := httptest.NewRecorder()
+		id := base64.StdEncoding.EncodeToString([]byte("users:1"))
+		gb, err := graphQLQueryToRequestBody(`
+query user($id: GID!) {
+	node(id: $id) {
+    	... on User {
+			id
+			name
+	    }
+    }
+}
+`, map[string]any{"id": id})
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Contains(w.Body.String(), `{"id":"1","name":"user0"}`)
+	})
+	s.Run("nodes", func() {
+		w := httptest.NewRecorder()
+		ids := []string{
+			base64.StdEncoding.EncodeToString([]byte("users:1")),
+			base64.StdEncoding.EncodeToString([]byte("users:2")),
+		}
+		gb, err := graphQLQueryToRequestBody(`
+query user($ids: [GID!]!) {
+	nodes(ids: $ids) {
+    	... on User {
+			id
+			name
+	    }
+    }
+}
+`, map[string]any{"ids": ids})
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Contains(w.Body.String(), `{"id":"1","name":"user0"}`)
+		s.Contains(w.Body.String(), `{"id":"2","name":"user1"}`)
+	})
 }
 
 func (s *TestSuite) TestDecimal() {

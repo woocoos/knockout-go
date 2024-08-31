@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/predicate"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 )
 
 // RefSchemaUpdate is the builder for updating RefSchema entities.
@@ -41,9 +42,34 @@ func (rsu *RefSchemaUpdate) SetNillableName(s *string) *RefSchemaUpdate {
 	return rsu
 }
 
+// SetUserID sets the "user_id" field.
+func (rsu *RefSchemaUpdate) SetUserID(i int) *RefSchemaUpdate {
+	rsu.mutation.SetUserID(i)
+	return rsu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (rsu *RefSchemaUpdate) SetNillableUserID(i *int) *RefSchemaUpdate {
+	if i != nil {
+		rsu.SetUserID(*i)
+	}
+	return rsu
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (rsu *RefSchemaUpdate) SetUser(u *User) *RefSchemaUpdate {
+	return rsu.SetUserID(u.ID)
+}
+
 // Mutation returns the RefSchemaMutation object of the builder.
 func (rsu *RefSchemaUpdate) Mutation() *RefSchemaMutation {
 	return rsu.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (rsu *RefSchemaUpdate) ClearUser() *RefSchemaUpdate {
+	rsu.mutation.ClearUser()
+	return rsu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -73,7 +99,18 @@ func (rsu *RefSchemaUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (rsu *RefSchemaUpdate) check() error {
+	if _, ok := rsu.mutation.UserID(); rsu.mutation.UserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RefSchema.user"`)
+	}
+	return nil
+}
+
 func (rsu *RefSchemaUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := rsu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(refschema.Table, refschema.Columns, sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt))
 	if ps := rsu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -84,6 +121,35 @@ func (rsu *RefSchemaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := rsu.mutation.Name(); ok {
 		_spec.SetField(refschema.FieldName, field.TypeString, value)
+	}
+	if rsu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   refschema.UserTable,
+			Columns: []string{refschema.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rsu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   refschema.UserTable,
+			Columns: []string{refschema.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, rsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -119,9 +185,34 @@ func (rsuo *RefSchemaUpdateOne) SetNillableName(s *string) *RefSchemaUpdateOne {
 	return rsuo
 }
 
+// SetUserID sets the "user_id" field.
+func (rsuo *RefSchemaUpdateOne) SetUserID(i int) *RefSchemaUpdateOne {
+	rsuo.mutation.SetUserID(i)
+	return rsuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (rsuo *RefSchemaUpdateOne) SetNillableUserID(i *int) *RefSchemaUpdateOne {
+	if i != nil {
+		rsuo.SetUserID(*i)
+	}
+	return rsuo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (rsuo *RefSchemaUpdateOne) SetUser(u *User) *RefSchemaUpdateOne {
+	return rsuo.SetUserID(u.ID)
+}
+
 // Mutation returns the RefSchemaMutation object of the builder.
 func (rsuo *RefSchemaUpdateOne) Mutation() *RefSchemaMutation {
 	return rsuo.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (rsuo *RefSchemaUpdateOne) ClearUser() *RefSchemaUpdateOne {
+	rsuo.mutation.ClearUser()
+	return rsuo
 }
 
 // Where appends a list predicates to the RefSchemaUpdate builder.
@@ -164,7 +255,18 @@ func (rsuo *RefSchemaUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (rsuo *RefSchemaUpdateOne) check() error {
+	if _, ok := rsuo.mutation.UserID(); rsuo.mutation.UserCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RefSchema.user"`)
+	}
+	return nil
+}
+
 func (rsuo *RefSchemaUpdateOne) sqlSave(ctx context.Context) (_node *RefSchema, err error) {
+	if err := rsuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(refschema.Table, refschema.Columns, sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt))
 	id, ok := rsuo.mutation.ID()
 	if !ok {
@@ -192,6 +294,35 @@ func (rsuo *RefSchemaUpdateOne) sqlSave(ctx context.Context) (_node *RefSchema, 
 	}
 	if value, ok := rsuo.mutation.Name(); ok {
 		_spec.SetField(refschema.FieldName, field.TypeString, value)
+	}
+	if rsuo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   refschema.UserTable,
+			Columns: []string{refschema.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rsuo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   refschema.UserTable,
+			Columns: []string{refschema.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &RefSchema{config: rsuo.config}
 	_spec.Assign = _node.assignValues

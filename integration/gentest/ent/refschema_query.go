@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/predicate"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 )
 
 // RefSchemaQuery is the builder for querying RefSchema entities.
@@ -22,6 +23,7 @@ type RefSchemaQuery struct {
 	order      []refschema.OrderOption
 	inters     []Interceptor
 	predicates []predicate.RefSchema
+	withUser   *UserQuery
 	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*RefSchema) error
 	// intermediate query (i.e. traversal path).
@@ -58,6 +60,28 @@ func (rsq *RefSchemaQuery) Unique(unique bool) *RefSchemaQuery {
 func (rsq *RefSchemaQuery) Order(o ...refschema.OrderOption) *RefSchemaQuery {
 	rsq.order = append(rsq.order, o...)
 	return rsq
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (rsq *RefSchemaQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: rsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(refschema.Table, refschema.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, refschema.UserTable, refschema.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first RefSchema entity from the query.
@@ -252,10 +276,22 @@ func (rsq *RefSchemaQuery) Clone() *RefSchemaQuery {
 		order:      append([]refschema.OrderOption{}, rsq.order...),
 		inters:     append([]Interceptor{}, rsq.inters...),
 		predicates: append([]predicate.RefSchema{}, rsq.predicates...),
+		withUser:   rsq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  rsq.sql.Clone(),
 		path: rsq.path,
 	}
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (rsq *RefSchemaQuery) WithUser(opts ...func(*UserQuery)) *RefSchemaQuery {
+	query := (&UserClient{config: rsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rsq.withUser = query
+	return rsq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -334,8 +370,11 @@ func (rsq *RefSchemaQuery) prepareQuery(ctx context.Context) error {
 
 func (rsq *RefSchemaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RefSchema, error) {
 	var (
-		nodes = []*RefSchema{}
-		_spec = rsq.querySpec()
+		nodes       = []*RefSchema{}
+		_spec       = rsq.querySpec()
+		loadedTypes = [1]bool{
+			rsq.withUser != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*RefSchema).scanValues(nil, columns)
@@ -343,6 +382,7 @@ func (rsq *RefSchemaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*R
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &RefSchema{config: rsq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(rsq.modifiers) > 0 {
@@ -357,12 +397,48 @@ func (rsq *RefSchemaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*R
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := rsq.withUser; query != nil {
+		if err := rsq.loadUser(ctx, query, nodes, nil,
+			func(n *RefSchema, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
 	for i := range rsq.loadTotal {
 		if err := rsq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
+}
+
+func (rsq *RefSchemaQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*RefSchema, init func(*RefSchema), assign func(*RefSchema, *User)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*RefSchema)
+	for i := range nodes {
+		fk := nodes[i].UserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (rsq *RefSchemaQuery) sqlCount(ctx context.Context) (int, error) {
@@ -392,6 +468,9 @@ func (rsq *RefSchemaQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != refschema.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if rsq.withUser != nil {
+			_spec.Node.AddColumnOnce(refschema.FieldUserID)
 		}
 	}
 	if ps := rsq.predicates; len(ps) > 0 {

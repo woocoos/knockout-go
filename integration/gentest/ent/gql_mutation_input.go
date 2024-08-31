@@ -11,6 +11,7 @@ type CreateUserInput struct {
 	Name   string
 	Money  *decimal.Decimal
 	Avatar *string
+	RefIDs []int
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -22,6 +23,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	if v := i.Avatar; v != nil {
 		m.SetAvatar(*v)
 	}
+	if v := i.RefIDs; len(v) > 0 {
+		m.AddRefIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateUserInput on the UserCreate builder.
@@ -32,11 +36,14 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	Name        *string
-	ClearMoney  bool
-	Money       *decimal.Decimal
-	ClearAvatar bool
-	Avatar      *string
+	Name         *string
+	ClearMoney   bool
+	Money        *decimal.Decimal
+	ClearAvatar  bool
+	Avatar       *string
+	ClearRefs    bool
+	AddRefIDs    []int
+	RemoveRefIDs []int
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
@@ -55,6 +62,15 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.Avatar; v != nil {
 		m.SetAvatar(*v)
+	}
+	if i.ClearRefs {
+		m.ClearRefs()
+	}
+	if v := i.AddRefIDs; len(v) > 0 {
+		m.AddRefIDs(v...)
+	}
+	if v := i.RemoveRefIDs; len(v) > 0 {
+		m.RemoveRefIDs(v...)
 	}
 }
 

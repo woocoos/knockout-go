@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/woocoos/entcache"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
@@ -317,6 +318,22 @@ func (c *RefSchemaClient) GetX(ctx context.Context, id int) *RefSchema {
 	return obj
 }
 
+// QueryUser queries the user edge of a RefSchema.
+func (c *RefSchemaClient) QueryUser(rs *RefSchema) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(refschema.Table, refschema.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, refschema.UserTable, refschema.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(rs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *RefSchemaClient) Hooks() []Hook {
 	return c.hooks.RefSchema
@@ -448,6 +465,22 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryRefs queries the refs edge of a User.
+func (c *UserClient) QueryRefs(u *User) *RefSchemaQuery {
+	query := (&RefSchemaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(refschema.Table, refschema.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.RefsTable, user.RefsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

@@ -38,6 +38,8 @@ type RefSchemaMutation struct {
 	id            *int
 	name          *string
 	clearedFields map[string]struct{}
+	user          *int
+	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*RefSchema, error)
 	predicates    []predicate.RefSchema
@@ -177,6 +179,69 @@ func (m *RefSchemaMutation) ResetName() {
 	m.name = nil
 }
 
+// SetUserID sets the "user_id" field.
+func (m *RefSchemaMutation) SetUserID(i int) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *RefSchemaMutation) UserID() (r int, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the RefSchema entity.
+// If the RefSchema object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RefSchemaMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *RefSchemaMutation) ResetUserID() {
+	m.user = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *RefSchemaMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[refschema.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *RefSchemaMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *RefSchemaMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *RefSchemaMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // Where appends a list predicates to the RefSchemaMutation builder.
 func (m *RefSchemaMutation) Where(ps ...predicate.RefSchema) {
 	m.predicates = append(m.predicates, ps...)
@@ -211,9 +276,12 @@ func (m *RefSchemaMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RefSchemaMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.name != nil {
 		fields = append(fields, refschema.FieldName)
+	}
+	if m.user != nil {
+		fields = append(fields, refschema.FieldUserID)
 	}
 	return fields
 }
@@ -225,6 +293,8 @@ func (m *RefSchemaMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case refschema.FieldName:
 		return m.Name()
+	case refschema.FieldUserID:
+		return m.UserID()
 	}
 	return nil, false
 }
@@ -236,6 +306,8 @@ func (m *RefSchemaMutation) OldField(ctx context.Context, name string) (ent.Valu
 	switch name {
 	case refschema.FieldName:
 		return m.OldName(ctx)
+	case refschema.FieldUserID:
+		return m.OldUserID(ctx)
 	}
 	return nil, fmt.Errorf("unknown RefSchema field %s", name)
 }
@@ -252,6 +324,13 @@ func (m *RefSchemaMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
+	case refschema.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown RefSchema field %s", name)
 }
@@ -259,13 +338,16 @@ func (m *RefSchemaMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *RefSchemaMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *RefSchemaMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -304,25 +386,37 @@ func (m *RefSchemaMutation) ResetField(name string) error {
 	case refschema.FieldName:
 		m.ResetName()
 		return nil
+	case refschema.FieldUserID:
+		m.ResetUserID()
+		return nil
 	}
 	return fmt.Errorf("unknown RefSchema field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RefSchemaMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, refschema.EdgeUser)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *RefSchemaMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case refschema.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RefSchemaMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -334,25 +428,42 @@ func (m *RefSchemaMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RefSchemaMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, refschema.EdgeUser)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *RefSchemaMutation) EdgeCleared(name string) bool {
+	switch name {
+	case refschema.EdgeUser:
+		return m.cleareduser
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *RefSchemaMutation) ClearEdge(name string) error {
+	switch name {
+	case refschema.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
 	return fmt.Errorf("unknown RefSchema unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *RefSchemaMutation) ResetEdge(name string) error {
+	switch name {
+	case refschema.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
 	return fmt.Errorf("unknown RefSchema edge %s", name)
 }
 
@@ -368,6 +479,9 @@ type UserMutation struct {
 	addmoney      *decimal.Decimal
 	avatar        *string
 	clearedFields map[string]struct{}
+	refs          map[int]struct{}
+	removedrefs   map[int]struct{}
+	clearedrefs   bool
 	done          bool
 	oldValue      func(context.Context) (*User, error)
 	predicates    []predicate.User
@@ -668,6 +782,60 @@ func (m *UserMutation) ResetAvatar() {
 	delete(m.clearedFields, user.FieldAvatar)
 }
 
+// AddRefIDs adds the "refs" edge to the RefSchema entity by ids.
+func (m *UserMutation) AddRefIDs(ids ...int) {
+	if m.refs == nil {
+		m.refs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.refs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRefs clears the "refs" edge to the RefSchema entity.
+func (m *UserMutation) ClearRefs() {
+	m.clearedrefs = true
+}
+
+// RefsCleared reports if the "refs" edge to the RefSchema entity was cleared.
+func (m *UserMutation) RefsCleared() bool {
+	return m.clearedrefs
+}
+
+// RemoveRefIDs removes the "refs" edge to the RefSchema entity by IDs.
+func (m *UserMutation) RemoveRefIDs(ids ...int) {
+	if m.removedrefs == nil {
+		m.removedrefs = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.refs, ids[i])
+		m.removedrefs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRefs returns the removed IDs of the "refs" edge to the RefSchema entity.
+func (m *UserMutation) RemovedRefsIDs() (ids []int) {
+	for id := range m.removedrefs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RefsIDs returns the "refs" edge IDs in the mutation.
+func (m *UserMutation) RefsIDs() (ids []int) {
+	for id := range m.refs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRefs resets all changes to the "refs" edge.
+func (m *UserMutation) ResetRefs() {
+	m.refs = nil
+	m.clearedrefs = false
+	m.removedrefs = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -882,48 +1050,84 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.refs != nil {
+		edges = append(edges, user.EdgeRefs)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeRefs:
+		ids := make([]ent.Value, 0, len(m.refs))
+		for id := range m.refs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedrefs != nil {
+		edges = append(edges, user.EdgeRefs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeRefs:
+		ids := make([]ent.Value, 0, len(m.removedrefs))
+		for id := range m.removedrefs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedrefs {
+		edges = append(edges, user.EdgeRefs)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
+	switch name {
+	case user.EdgeRefs:
+		return m.clearedrefs
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
+	switch name {
+	case user.EdgeRefs:
+		m.ResetRefs()
+		return nil
+	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

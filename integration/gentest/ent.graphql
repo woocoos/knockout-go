@@ -17,6 +17,7 @@ input CreateUserInput {
   头像
   """
   avatar: String
+  refIDs: [ID!]
 }
 """
 Define a Relay Cursor type:
@@ -126,6 +127,38 @@ type Query {
 type RefSchema implements Node {
   id: ID!
   name: String!
+  userID: ID!
+  user: User!
+}
+"""
+A connection to a list of items.
+"""
+type RefSchemaConnection {
+  """
+  A list of edges.
+  """
+  edges: [RefSchemaEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
+}
+"""
+An edge in a connection.
+"""
+type RefSchemaEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: RefSchema
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
 }
 """
 RefSchemaWhereInput is used for filtering RefSchema objects.
@@ -162,6 +195,18 @@ input RefSchemaWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
+  """
+  user_id field predicates
+  """
+  userID: ID
+  userIDNEQ: ID
+  userIDIn: [ID!]
+  userIDNotIn: [ID!]
+  """
+  user edge predicates
+  """
+  hasUser: Boolean
+  hasUserWith: [UserWhereInput!]
 }
 """
 The builtin Time type
@@ -186,6 +231,9 @@ input UpdateUserInput {
   """
   avatar: String
   clearAvatar: Boolean
+  addRefIDs: [ID!]
+  removeRefIDs: [ID!]
+  clearRefs: Boolean
 }
 type User implements Node {
   id: ID!
@@ -202,6 +250,32 @@ type User implements Node {
   头像
   """
   avatar: String
+  refs(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Filtering options for RefSchemas returned from the connection.
+    """
+    where: RefSchemaWhereInput
+  ): RefSchemaConnection!
 }
 """
 A connection to a list of items.
@@ -329,4 +403,9 @@ input UserWhereInput {
   avatarNotNil: Boolean
   avatarEqualFold: String
   avatarContainsFold: String
+  """
+  refs edge predicates
+  """
+  hasRefs: Boolean
+  hasRefsWith: [RefSchemaWhereInput!]
 }

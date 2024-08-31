@@ -5,6 +5,7 @@ import (
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"errors"
 	"github.com/shopspring/decimal"
@@ -18,7 +19,7 @@ type User struct {
 	ent.Schema
 }
 
-// annotation
+// Annotations of the User.
 func (User) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField("users"),
@@ -50,7 +51,9 @@ func (User) Fields() []ent.Field {
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("refs", RefSchema.Type).Annotations(entgql.RelayConnection()),
+	}
 }
 
 func (User) Mixin() []ent.Mixin {

@@ -49,9 +49,10 @@ func WithSimplePagination(ctx context.Context, sp *SimplePagination) context.Con
 	return context.WithValue(ctx, simplePaginationKey, sp)
 }
 
-// LimitRows returns a function that limits the rows of the selector based on the given partitionBy, limit, first, last and orderBy.
-// It is used for pagination template.
-func LimitRows(ctx context.Context, partitionBy string, limit int, first, last *int, orderBy ...sql.Querier) func(s *sql.Selector) {
+// LimitPerRow returns a query modifier that limits the number of (edges) rows returned
+// by the given partition and pagination. This helper function is used mainly by the paginated API to
+// override the default Limit behavior for limit returned per node and not limit for all query.
+func LimitPerRow(ctx context.Context, partitionBy string, limit int, first, last *int, orderBy ...sql.Querier) func(s *sql.Selector) {
 	offset := 0
 	if sp, ok := SimplePaginationFromContext(ctx); ok {
 		if first != nil {

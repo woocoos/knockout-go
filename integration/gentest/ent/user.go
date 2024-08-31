@@ -25,8 +25,33 @@ type User struct {
 	// money
 	Money *decimal.Decimal `json:"money,omitempty"`
 	// 头像
-	Avatar       string `json:"avatar,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Refs holds the value of the refs edge.
+	Refs []*RefSchema `json:"refs,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+	// totalCount holds the count of the edges above.
+	totalCount [1]map[string]int
+
+	namedRefs map[string][]*RefSchema
+}
+
+// RefsOrErr returns the Refs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) RefsOrErr() ([]*RefSchema, error) {
+	if e.loadedTypes[0] {
+		return e.Refs, nil
+	}
+	return nil, &NotLoadedError{edge: "refs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -101,6 +126,11 @@ func (u *User) Value(name string) (ent.Value, error) {
 	return u.selectValues.Get(name)
 }
 
+// QueryRefs queries the "refs" edge of the User entity.
+func (u *User) QueryRefs() *RefSchemaQuery {
+	return NewUserClient(u.config).QueryRefs(u)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -139,6 +169,30 @@ func (u *User) String() string {
 	builder.WriteString(u.Avatar)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedRefs returns the Refs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedRefs(name string) ([]*RefSchema, error) {
+	if u.Edges.namedRefs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedRefs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedRefs(name string, edges ...*RefSchema) {
+	if u.Edges.namedRefs == nil {
+		u.Edges.namedRefs = make(map[string][]*RefSchema)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedRefs[name] = []*RefSchema{}
+	} else {
+		u.Edges.namedRefs[name] = append(u.Edges.namedRefs[name], edges...)
+	}
 }
 
 // Users is a parsable slice of User.

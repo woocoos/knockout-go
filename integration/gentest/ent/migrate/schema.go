@@ -13,12 +13,21 @@ var (
 	RefTableColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeInt},
 	}
 	// RefTableTable holds the schema information for the "ref_table" table.
 	RefTableTable = &schema.Table{
 		Name:       "ref_table",
 		Columns:    RefTableColumns,
 		PrimaryKey: []*schema.Column{RefTableColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "ref_table_users_refs",
+				Columns:    []*schema.Column{RefTableColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -42,6 +51,7 @@ var (
 )
 
 func init() {
+	RefTableTable.ForeignKeys[0].RefTable = UsersTable
 	RefTableTable.Annotation = &entsql.Annotation{
 		Table: "ref_table",
 	}

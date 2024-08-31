@@ -193,7 +193,7 @@ func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, oneNode b
 										{{- $i := 0 }}{{ if $e.IsInverse }}{{ $i = 1 }}{{ end }}
 										{{- $fk = print $node.Package "." $e.PKConstant "[" $i "]" }}
 									{{- end }}
-									modify := pagination.LimitRows({{ $fk }}, limit, args.first, args.last, pager.orderExpr(query))
+									modify := pagination.LimitPerRow(ctx,{{ $fk }}, limit, args.first, args.last, pager.orderExpr(query))
 									query.modifiers = append(query.modifiers, modify)
 								}
 							} else {
