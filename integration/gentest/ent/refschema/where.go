@@ -4,6 +4,7 @@ package refschema
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/predicate"
 )
 
@@ -55,6 +56,11 @@ func IDLTE(id int) predicate.RefSchema {
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.RefSchema {
 	return predicate.RefSchema(sql.FieldEQ(FieldName, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v int) predicate.RefSchema {
+	return predicate.RefSchema(sql.FieldEQ(FieldUserID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -120,6 +126,49 @@ func NameEqualFold(v string) predicate.RefSchema {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.RefSchema {
 	return predicate.RefSchema(sql.FieldContainsFold(FieldName, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v int) predicate.RefSchema {
+	return predicate.RefSchema(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v int) predicate.RefSchema {
+	return predicate.RefSchema(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...int) predicate.RefSchema {
+	return predicate.RefSchema(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...int) predicate.RefSchema {
+	return predicate.RefSchema(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.RefSchema {
+	return predicate.RefSchema(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.RefSchema {
+	return predicate.RefSchema(func(s *sql.Selector) {
+		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -44,6 +44,16 @@ type RefSchemaWhereInput struct {
 	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
+
+	// "user_id" field predicates.
+	UserID      *int  `json:"userID,omitempty"`
+	UserIDNEQ   *int  `json:"userIDNEQ,omitempty"`
+	UserIDIn    []int `json:"userIDIn,omitempty"`
+	UserIDNotIn []int `json:"userIDNotIn,omitempty"`
+
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -180,7 +190,37 @@ func (i *RefSchemaWhereInput) P() (predicate.RefSchema, error) {
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, refschema.NameContainsFold(*i.NameContainsFold))
 	}
+	if i.UserID != nil {
+		predicates = append(predicates, refschema.UserIDEQ(*i.UserID))
+	}
+	if i.UserIDNEQ != nil {
+		predicates = append(predicates, refschema.UserIDNEQ(*i.UserIDNEQ))
+	}
+	if len(i.UserIDIn) > 0 {
+		predicates = append(predicates, refschema.UserIDIn(i.UserIDIn...))
+	}
+	if len(i.UserIDNotIn) > 0 {
+		predicates = append(predicates, refschema.UserIDNotIn(i.UserIDNotIn...))
+	}
 
+	if i.HasUser != nil {
+		p := refschema.HasUser()
+		if !*i.HasUser {
+			p = refschema.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasUserWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, refschema.HasUserWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyRefSchemaWhereInput
@@ -261,6 +301,10 @@ type UserWhereInput struct {
 	AvatarNotNil       bool     `json:"avatarNotNil,omitempty"`
 	AvatarEqualFold    *string  `json:"avatarEqualFold,omitempty"`
 	AvatarContainsFold *string  `json:"avatarContainsFold,omitempty"`
+
+	// "refs" edge predicates.
+	HasRefs     *bool                  `json:"hasRefs,omitempty"`
+	HasRefsWith []*RefSchemaWhereInput `json:"hasRefsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -497,6 +541,24 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 		predicates = append(predicates, user.AvatarContainsFold(*i.AvatarContainsFold))
 	}
 
+	if i.HasRefs != nil {
+		p := user.HasRefs()
+		if !*i.HasRefs {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasRefsWith) > 0 {
+		with := make([]predicate.RefSchema, 0, len(i.HasRefsWith))
+		for _, w := range i.HasRefsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasRefsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasRefsWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyUserWhereInput

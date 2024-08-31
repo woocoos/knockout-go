@@ -2,6 +2,7 @@ package pagination
 
 import (
 	"context"
+	"entgo.io/ent/dialect/sql"
 	"strconv"
 )
 
@@ -46,4 +47,46 @@ func WithSimplePagination(ctx context.Context, sp *SimplePagination) context.Con
 		return ctx
 	}
 	return context.WithValue(ctx, simplePaginationKey, sp)
+}
+
+// LimitPerRow returns a query modifier that limits the number of (edges) rows returned
+// by the given partition and pagination. This helper function is used mainly by the paginated API to
+// override the default Limit behavior for limit returned per node and not limit for all query.
+func LimitPerRow(ctx context.Context, partitionBy string, limit int, first, last *int, orderBy ...sql.Querier) func(s *sql.Selector) {
+	offset := 0
+	if sp, ok := SimplePaginationFromContext(ctx); ok {
+		if first != nil {
+			offset = (sp.PageIndex - sp.CurrentIndex - 1) * *first
+		}
+		if last != nil {
+			offset = (sp.CurrentIndex - sp.PageIndex - 1) * *last
+		}
+	}
+	return func(s *sql.Selector) {
+		d := sql.Dialect(s.Dialect())
+		s.SetDistinct(false)
+		with := d.With("src_query").
+			As(s.Clone()).
+			With("limited_query").
+			As(
+				d.Select("*").
+					AppendSelectExprAs(
+						sql.RowNumber().PartitionBy(partitionBy).OrderExpr(orderBy...),
+						"row_number",
+					).
+					From(d.Table("src_query")),
+			)
+		t := d.Table("limited_query").As(s.TableName())
+		if offset != 0 {
+			*s = *d.Select(s.UnqualifiedColumns()...).
+				From(t).
+				Where(sql.GT(t.C("row_number"), offset)).Limit(limit).
+				Prefix(with)
+		} else {
+			*s = *d.Select(s.UnqualifiedColumns()...).
+				From(t).
+				Where(sql.LTE(t.C("row_number"), limit)).
+				Prefix(with)
+		}
+	}
 }
