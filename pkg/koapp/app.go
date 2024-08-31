@@ -18,13 +18,15 @@ import (
 	"github.com/woocoos/knockout-go/pkg/snowflake"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"os"
+	"path/filepath"
 )
 
 const (
 	otelPathName = "otel"
 )
 
-// New initializes the Knockout application, trying to load common configurations from the configuration file and initialize them.
+// New initializes the Knockout application, will load common configurations from the configuration file and initialize them.
 //
 // This function will try to load the following configurations from the configuration file:
 //
@@ -32,6 +34,10 @@ const (
 //	Snowflake: Configuration for generating unique IDs, currently supports snowflake. Note that this configuration is global, if there are multiple application instances, you need to ensure that the configuration of each instance is consistent.
 func New(opts ...woocoo.Option) *woocoo.App {
 	app := woocoo.New(opts...)
+	if !app.AppConfiguration().Exists() {
+		wd, _ := os.Getwd()
+		panic(fmt.Errorf("configuration file not found: %s", filepath.Join(wd, "etc", "app.yaml")))
+	}
 	BuildAppComponents(app)
 	BuildCacheComponents(app.AppConfiguration())
 	return app

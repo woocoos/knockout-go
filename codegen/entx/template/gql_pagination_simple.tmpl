@@ -125,7 +125,7 @@ func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, oneNode b
 				{{- range $i, $fc := $collects }}
 					{{- $e := $fc.Edge }}
 					{{- /* If the edge is unique, we inherit the cardinality of the parent. */}}
-					{{ $oneNode := "false" }}{{- if $e.Unique }}{{ $oneNode = "oneNode" }}{{ end }}
+					{{- $oneNode := "false" }}{{ if $e.Unique }}{{ $oneNode = "oneNode" }}{{ end }}
 					case {{ range $i, $value := $fc.Mapping }}{{ if $i }}, {{ end }}"{{ $value }}"{{ end }}:
 						var (
 							alias = field.Alias
