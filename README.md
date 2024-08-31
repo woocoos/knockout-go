@@ -2,7 +2,9 @@
 
 knockout application sdk for go
 
-# Prepare
+see the knockout [documentation](https://woocoos.github.io/knockout-doc/) for more information.
+
+## Prepare
 
 - golang >= 1.22.5
 
