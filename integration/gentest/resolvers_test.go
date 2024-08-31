@@ -13,6 +13,7 @@ import (
 	"github.com/tsingsun/woocoo/pkg/gds"
 	"github.com/woocoos/knockout-go/integration/gentest/ent"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/migrate"
 	"github.com/woocoos/knockout-go/pkg/pagination"
 	"net/http/httptest"
 	"strconv"
@@ -37,7 +38,9 @@ func (s *TestSuite) SetupSuite() {
 	s.client = ent.NewClient(ent.Driver(dr), ent.Debug())
 	s.queryResolver = queryResolver{&Resolver{s.client}}
 	s.mutationResolver = mutationResolver{&Resolver{s.client}}
-	s.NoError(s.client.Schema.Create(context.Background()))
+	s.NoError(s.client.Schema.Create(context.Background(),
+		migrate.WithForeignKeys(false)),
+	)
 
 }
 
@@ -47,6 +50,7 @@ func TestTestSuite(t *testing.T) {
 
 func (s *TestSuite) refreshData() {
 	_, _ = s.client.User.Delete().Exec(context.Background())
+	_, _ = s.client.RefSchema.Delete().Exec(context.Background())
 	builder := make([]*ent.UserCreate, 0)
 	for i := 0; i < 20; i++ {
 		row := s.client.User.Create()
@@ -56,7 +60,7 @@ func (s *TestSuite) refreshData() {
 	refBuilder := make([]*ent.RefSchemaCreate, 0)
 	for i := 0; i < 20; i++ {
 		row := s.client.RefSchema.Create()
-		row.SetName("ref" + strconv.Itoa(i)).Mutation().SetUserID(1) //  user1
+		row.SetName("ref" + strconv.Itoa(i)).SetUserID(1) //  user1
 		refBuilder = append(refBuilder, row)
 	}
 
