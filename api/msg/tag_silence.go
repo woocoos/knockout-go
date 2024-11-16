@@ -25,7 +25,6 @@ type PostSilencesRequest struct {
 	PostableSilence `json:",inline"`
 }
 
-// PostSilencesResponse Create / update silence response
 type PostSilencesResponse struct {
 	SilenceID int `json:"silenceID,omitempty"`
 }
