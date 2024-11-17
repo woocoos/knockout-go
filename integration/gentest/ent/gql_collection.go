@@ -36,7 +36,6 @@ func (rs *RefSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx 
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-
 		case "user":
 			var (
 				alias = field.Alias
@@ -123,7 +122,6 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-
 		case "refs":
 			var (
 				alias = field.Alias
@@ -200,7 +198,7 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				}
 			}
 			if limit := paginateLimit(args.first, args.last); limit > 0 {
-				if oneNode {
+				if args.after == nil && args.last == nil {
 					pager.applyOrder(query.Limit(limit))
 				} else {
 					modify := pagination.LimitPerRow(ctx, user.RefsColumn, limit, args.first, args.last, pager.orderExpr(query))

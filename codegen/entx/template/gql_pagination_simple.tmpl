@@ -184,14 +184,17 @@ func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, oneNode b
 								}
 							}
 							if limit := paginateLimit(args.first, args.last); limit > 0 {
-								{{- /* Limit per row is not required, as there is only node returned by the top query. */}}
-								{{- $fk := print $node.Package "." $fc.Edge.ColumnConstant }}
-								{{- if $e.M2M }}
-									{{- $i := 0 }}{{ if $e.IsInverse }}{{ $i = 1 }}{{ end }}
-									{{- $fk = print $node.Package "." $e.PKConstant "[" $i "]" }}
-								{{- end }}
-								modify := pagination.LimitPerRow(ctx,{{ $fk }}, limit, args.first, args.last, pager.orderExpr(query))
-								query.modifiers = append(query.modifiers, modify)
+								if args.after == nil && args.last == nil {
+									pager.applyOrder(query.Limit(limit))
+								} else {
+									{{- $fk := print $node.Package "." $fc.Edge.ColumnConstant }}
+									{{- if $e.M2M }}
+										{{- $i := 0 }}{{ if $e.IsInverse }}{{ $i = 1 }}{{ end }}
+										{{- $fk = print $node.Package "." $e.PKConstant "[" $i "]" }}
+									{{- end }}
+									modify := pagination.LimitPerRow(ctx,{{ $fk }}, limit, args.first, args.last, pager.orderExpr(query))
+									query.modifiers = append(query.modifiers, modify)
+								}
 							} else {
 								query = pager.applyOrder(query)
 							}

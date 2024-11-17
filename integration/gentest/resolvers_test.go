@@ -8,6 +8,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gin-gonic/gin"
+	kjson "github.com/knadh/koanf/parsers/json"
+	"github.com/knadh/koanf/providers/rawbytes"
+	"github.com/knadh/koanf/v2"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/suite"
 	"github.com/tsingsun/woocoo/pkg/gds"
@@ -148,6 +151,37 @@ query user($id: GID!) {
 		r.Header.Set("Content-Type", "application/json")
 		srv.ServeHTTP(w, r)
 		s.Contains(w.Body.String(), `{"id":"1","name":"user0"}`)
+	})
+	s.Run("node-ref", func() {
+		w := httptest.NewRecorder()
+		id := base64.StdEncoding.EncodeToString([]byte("users:1"))
+		gb, err := graphQLQueryToRequestBody(`
+query user($id: GID!) {
+	node(id: $id) {
+    	... on User {
+			id
+			refs(first:2) {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+	    }
+    }
+}
+`, map[string]any{"id": id})
+
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		kj := koanf.New(".")
+		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+		s.Require().NoError(err)
+		s.Contains(w.Body.String(), `{"name":"ref0"}`)
+		s.Len(kj.Slices("data.node.refs.edges"), 2)
 	})
 	s.Run("nodes", func() {
 		w := httptest.NewRecorder()
