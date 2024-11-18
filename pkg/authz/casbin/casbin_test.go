@@ -295,7 +295,7 @@ func TestRedisCallback(t *testing.T) {
 		m, err := json.Marshal(msg)
 		require.NoError(t, err)
 		redis.Publish("/casbin", string(m))
-		assert.NoError(t, wctest.RunWait(t, time.Second*3, func() error {
+		assert.NoError(t, wctest.RunWait(t.Log, time.Second*3, func() error {
 			time.Sleep(time.Second * 2)
 			return nil
 		}))
@@ -310,7 +310,7 @@ func TestRedisCallback(t *testing.T) {
 		ok := authorizer.Enforcer.HasPolicy("alice", "data1", "remove")
 		assert.True(t, ok)
 		redis.Publish("/casbin", string(m))
-		assert.NoError(t, wctest.RunWait(t, time.Second*3, func() error {
+		assert.NoError(t, wctest.RunWait(t.Log, time.Second*3, func() error {
 			time.Sleep(time.Second * 2)
 			return nil
 		}))
