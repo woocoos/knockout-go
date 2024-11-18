@@ -184,8 +184,7 @@ func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, oneNode b
 								}
 							}
 							if limit := paginateLimit(args.first, args.last); limit > 0 {
-								{{- /* Limit per row is not required, as there is only node returned by the top query. */}}
-								if oneNode {
+								if args.after == nil && args.last == nil {
 									pager.applyOrder(query.Limit(limit))
 								} else {
 									{{- $fk := print $node.Package "." $fc.Edge.ColumnConstant }}

@@ -75,8 +75,21 @@ type ComplexityRoot struct {
 	}
 
 	RefSchema struct {
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
+		ID     func(childComplexity int) int
+		Name   func(childComplexity int) int
+		User   func(childComplexity int) int
+		UserID func(childComplexity int) int
+	}
+
+	RefSchemaConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	RefSchemaEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	User struct {
@@ -86,6 +99,7 @@ type ComplexityRoot struct {
 		IsExtend  func(childComplexity int) int
 		Money     func(childComplexity int) int
 		Name      func(childComplexity int) int
+		Refs      func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.RefSchemaWhereInput) int
 	}
 
 	UserConnection struct {
@@ -286,6 +300,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RefSchema.Name(childComplexity), true
 
+	case "RefSchema.user":
+		if e.complexity.RefSchema.User == nil {
+			break
+		}
+
+		return e.complexity.RefSchema.User(childComplexity), true
+
+	case "RefSchema.userID":
+		if e.complexity.RefSchema.UserID == nil {
+			break
+		}
+
+		return e.complexity.RefSchema.UserID(childComplexity), true
+
+	case "RefSchemaConnection.edges":
+		if e.complexity.RefSchemaConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.RefSchemaConnection.Edges(childComplexity), true
+
+	case "RefSchemaConnection.pageInfo":
+		if e.complexity.RefSchemaConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.RefSchemaConnection.PageInfo(childComplexity), true
+
+	case "RefSchemaConnection.totalCount":
+		if e.complexity.RefSchemaConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.RefSchemaConnection.TotalCount(childComplexity), true
+
+	case "RefSchemaEdge.cursor":
+		if e.complexity.RefSchemaEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.RefSchemaEdge.Cursor(childComplexity), true
+
+	case "RefSchemaEdge.node":
+		if e.complexity.RefSchemaEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.RefSchemaEdge.Node(childComplexity), true
+
 	case "User.avatar":
 		if e.complexity.User.Avatar == nil {
 			break
@@ -327,6 +390,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Name(childComplexity), true
+
+	case "User.refs":
+		if e.complexity.User.Refs == nil {
+			break
+		}
+
+		args, err := ec.field_User_refs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.User.Refs(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["where"].(*ent.RefSchemaWhereInput)), true
 
 	case "UserConnection.edges":
 		if e.complexity.UserConnection.Edges == nil {
@@ -707,6 +782,57 @@ func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs 
 	return args, nil
 }
 
+func (ec *executionContext) field_User_refs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.RefSchemaWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg4, err = ec.unmarshalORefSchemaWhereInput2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -794,6 +920,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 				return ec.fieldContext_User_money(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "refs":
+				return ec.fieldContext_User_refs(ctx, field)
 			case "isExtend":
 				return ec.fieldContext_User_isExtend(ctx, field)
 			}
@@ -863,6 +991,8 @@ func (ec *executionContext) fieldContext_Mutation_createUserByInput(ctx context.
 				return ec.fieldContext_User_money(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "refs":
+				return ec.fieldContext_User_refs(ctx, field)
 			case "isExtend":
 				return ec.fieldContext_User_isExtend(ctx, field)
 			}
@@ -932,6 +1062,8 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_money(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "refs":
+				return ec.fieldContext_User_refs(ctx, field)
 			case "isExtend":
 				return ec.fieldContext_User_isExtend(ctx, field)
 			}
@@ -1445,6 +1577,8 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 				return ec.fieldContext_User_money(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "refs":
+				return ec.fieldContext_User_refs(ctx, field)
 			case "isExtend":
 				return ec.fieldContext_User_isExtend(ctx, field)
 			}
@@ -1682,6 +1816,350 @@ func (ec *executionContext) fieldContext_RefSchema_name(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _RefSchema_userID(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchema) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchema_userID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchema_userID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchema",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RefSchema_user(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchema) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchema_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchema_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchema",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "money":
+				return ec.fieldContext_User_money(ctx, field)
+			case "avatar":
+				return ec.fieldContext_User_avatar(ctx, field)
+			case "refs":
+				return ec.fieldContext_User_refs(ctx, field)
+			case "isExtend":
+				return ec.fieldContext_User_isExtend(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RefSchemaConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchemaConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchemaConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.RefSchemaEdge)
+	fc.Result = res
+	return ec.marshalORefSchemaEdge2ᚕᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchemaConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchemaConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_RefSchemaEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_RefSchemaEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RefSchemaEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RefSchemaConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchemaConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchemaConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchemaConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchemaConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RefSchemaConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchemaConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchemaConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchemaConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchemaConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RefSchemaEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchemaEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchemaEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RefSchema)
+	fc.Result = res
+	return ec.marshalORefSchema2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchemaEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchemaEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_RefSchema_id(ctx, field)
+			case "name":
+				return ec.fieldContext_RefSchema_name(ctx, field)
+			case "userID":
+				return ec.fieldContext_RefSchema_userID(ctx, field)
+			case "user":
+				return ec.fieldContext_RefSchema_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RefSchema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RefSchemaEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.RefSchemaEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RefSchemaEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RefSchemaEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RefSchemaEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -1892,6 +2370,69 @@ func (ec *executionContext) fieldContext_User_avatar(_ context.Context, field gr
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_refs(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_refs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Refs(ctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["where"].(*ent.RefSchemaWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.RefSchemaConnection)
+	fc.Result = res
+	return ec.marshalNRefSchemaConnection2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_refs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_RefSchemaConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_RefSchemaConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_RefSchemaConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RefSchemaConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_User_refs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -2131,6 +2672,8 @@ func (ec *executionContext) fieldContext_UserEdge_node(_ context.Context, field 
 				return ec.fieldContext_User_money(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "refs":
+				return ec.fieldContext_User_refs(ctx, field)
 			case "isExtend":
 				return ec.fieldContext_User_isExtend(ctx, field)
 			}
@@ -3964,7 +4507,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "money", "avatar"}
+	fieldsInOrder := [...]string{"name", "money", "avatar", "refIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3992,6 +4535,13 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.Avatar = data
+		case "refIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("refIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RefIDs = data
 		}
 	}
 
@@ -4005,7 +4555,7 @@ func (ec *executionContext) unmarshalInputRefSchemaWhereInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "userID", "userIDNEQ", "userIDIn", "userIDNotIn", "hasUser", "hasUserWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4180,6 +4730,48 @@ func (ec *executionContext) unmarshalInputRefSchemaWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.NameContainsFold = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		case "userIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDNEQ"))
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDNEQ = data
+		case "userIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDIn"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDIn = data
+		case "userIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDNotIn"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserIDNotIn = data
+		case "hasUser":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasUser = data
+		case "hasUserWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUserWith"))
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐUserWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasUserWith = data
 		}
 	}
 
@@ -4193,7 +4785,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "money", "clearMoney", "avatar", "clearAvatar"}
+	fieldsInOrder := [...]string{"name", "money", "clearMoney", "avatar", "clearAvatar", "addRefIDs", "removeRefIDs", "clearRefs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4235,6 +4827,27 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearAvatar = data
+		case "addRefIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addRefIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddRefIDs = data
+		case "removeRefIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeRefIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveRefIDs = data
+		case "clearRefs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearRefs"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearRefs = data
 		}
 	}
 
@@ -4286,7 +4899,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "money", "moneyNEQ", "moneyIn", "moneyNotIn", "moneyGT", "moneyGTE", "moneyLT", "moneyLTE", "moneyIsNil", "moneyNotNil", "avatar", "avatarNEQ", "avatarIn", "avatarNotIn", "avatarGT", "avatarGTE", "avatarLT", "avatarLTE", "avatarContains", "avatarHasPrefix", "avatarHasSuffix", "avatarIsNil", "avatarNotNil", "avatarEqualFold", "avatarContainsFold"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "money", "moneyNEQ", "moneyIn", "moneyNotIn", "moneyGT", "moneyGTE", "moneyLT", "moneyLTE", "moneyIsNil", "moneyNotNil", "avatar", "avatarNEQ", "avatarIn", "avatarNotIn", "avatarGT", "avatarGTE", "avatarLT", "avatarLTE", "avatarContains", "avatarHasPrefix", "avatarHasSuffix", "avatarIsNil", "avatarNotNil", "avatarEqualFold", "avatarContainsFold", "hasRefs", "hasRefsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4692,6 +5305,20 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.AvatarContainsFold = data
+		case "hasRefs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRefs"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasRefs = data
+		case "hasRefsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRefsWith"))
+			data, err := ec.unmarshalORefSchemaWhereInput2ᚕᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasRefsWith = data
 		}
 	}
 
@@ -4993,10 +5620,138 @@ func (ec *executionContext) _RefSchema(ctx context.Context, sel ast.SelectionSet
 		case "id":
 			out.Values[i] = ec._RefSchema_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._RefSchema_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "userID":
+			out.Values[i] = ec._RefSchema_userID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._RefSchema_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var refSchemaConnectionImplementors = []string{"RefSchemaConnection"}
+
+func (ec *executionContext) _RefSchemaConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.RefSchemaConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, refSchemaConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RefSchemaConnection")
+		case "edges":
+			out.Values[i] = ec._RefSchemaConnection_edges(ctx, field, obj)
+		case "pageInfo":
+			out.Values[i] = ec._RefSchemaConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._RefSchemaConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var refSchemaEdgeImplementors = []string{"RefSchemaEdge"}
+
+func (ec *executionContext) _RefSchemaEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.RefSchemaEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, refSchemaEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RefSchemaEdge")
+		case "node":
+			out.Values[i] = ec._RefSchemaEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._RefSchemaEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5053,6 +5808,42 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_money(ctx, field, obj)
 		case "avatar":
 			out.Values[i] = ec._User_avatar(ctx, field, obj)
+		case "refs":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_refs(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "isExtend":
 			field := field
 
@@ -5699,6 +6490,16 @@ func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPag
 	return ec._PageInfo(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNRefSchemaConnection2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaConnection(ctx context.Context, sel ast.SelectionSet, v *ent.RefSchemaConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RefSchemaConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNRefSchemaWhereInput2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaWhereInput(ctx context.Context, v interface{}) (*ent.RefSchemaWhereInput, error) {
 	res, err := ec.unmarshalInputRefSchemaWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -6212,6 +7013,61 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋwoocoosᚋknockoutᚑgo�
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalORefSchema2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchema(ctx context.Context, sel ast.SelectionSet, v *ent.RefSchema) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RefSchema(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalORefSchemaEdge2ᚕᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.RefSchemaEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalORefSchemaEdge2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalORefSchemaEdge2ᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaEdge(ctx context.Context, sel ast.SelectionSet, v *ent.RefSchemaEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RefSchemaEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalORefSchemaWhereInput2ᚕᚖgithubᚗcomᚋwoocoosᚋknockoutᚑgoᚋintegrationᚋgentestᚋentᚐRefSchemaWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.RefSchemaWhereInput, error) {

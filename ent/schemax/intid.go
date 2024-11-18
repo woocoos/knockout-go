@@ -14,13 +14,7 @@ type IntID struct {
 
 func (id IntID) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("id").SchemaType(id.SchemaType()).
+		field.Int("id").
 			Annotations(entproto.Field(1)),
-	}
-}
-
-func (IntID) SchemaType() map[string]string {
-	return map[string]string{
-		"mysql": "int",
 	}
 }

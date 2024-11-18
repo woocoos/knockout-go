@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/tsingsun/woocoo/pkg/cache/lfu"
 	"github.com/tsingsun/woocoo/pkg/conf"
+	"github.com/tsingsun/woocoo/pkg/gds"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/woocoos/knockout-go/api/fs"
@@ -280,7 +281,7 @@ func (t *apiSuite) TestMsg() {
 		resp, err := t.sdk.Msg().AlertAPI.PostAlerts(context.Background(), &msg.PostAlertsRequest{
 			PostableAlerts: msg.PostableAlerts{
 				{
-					EndsAt: time.Now(),
+					EndsAt: gds.Ptr(time.Now()),
 					Alert: &msg.Alert{
 						Labels: map[string]string{
 							"summary": "test",
