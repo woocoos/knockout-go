@@ -307,7 +307,8 @@ func TestRedisCallback(t *testing.T) {
 		}
 		m, err := json.Marshal(msg)
 		require.NoError(t, err)
-		ok := authorizer.Enforcer.HasPolicy("alice", "data1", "remove")
+		ok, err := authorizer.Enforcer.HasPolicy("alice", "data1", "remove")
+		require.NoError(t, err)
 		assert.True(t, ok)
 		redis.Publish("/casbin", string(m))
 		assert.NoError(t, wctest.RunWait(t.Log, time.Second*3, func() error {

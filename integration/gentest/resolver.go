@@ -9,6 +9,8 @@ import (
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
+const DeleteUser1Panic = "not implemented: DeleteUser1 for test"
+
 type Resolver struct{ client *ent.Client }
 
 // NewSchema creates a graphql executable schema.

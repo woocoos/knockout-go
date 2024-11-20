@@ -74,10 +74,10 @@
 
 {{ template "import" $ }}
 
-{{ $gqlNodes := $.Nodes }}
-{{ $gqlNodes = filterNodes $.Nodes (skipMode "type") }}
+{{ $gqlNodes := filterNodes $.Nodes (skipMode "type") }}
 
 import (
+    "entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/woocoos/knockout-go/pkg/pagination"
 	{{- range $n := $gqlNodes }}
@@ -362,7 +362,7 @@ func fieldArgs(ctx context.Context, whereInput any, path ...string) map[string]a
 func unmarshalArgs(ctx context.Context, whereInput any, args map[string]any) map[string]any {
 	for _, k := range []string{firstField, lastField} {
 		v, ok := args[k]
-		if !ok {
+		if !ok || v == nil {
 			continue
 		}
 		i, err := graphql.UnmarshalInt(v)
