@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/tsingsun/woocoo/pkg/gds"
 	"github.com/woocoos/knockout-go/integration/gentest/ent"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/migrate"
 	"github.com/woocoos/knockout-go/pkg/pagination"
@@ -126,6 +127,13 @@ func graphQLQueryToRequestBody(query string, variables map[string]any) (string, 
 		return "", err
 	}
 	return string(jsonData), nil
+}
+
+func (s *TestSuite) TestGlobalID() {
+	id, err := ent.GlobalID(refschema.Table, "1")
+	s.Require().NoError(err)
+	_, err = s.client.NoderEx(context.Background(), id)
+	s.True(ent.IsNotFound(err))
 }
 
 func (s *TestSuite) TestNode() {

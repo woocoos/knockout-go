@@ -5,8 +5,7 @@
 {{ $pkg := base $.Config.Package }}
 {{ template "header" $ }}
 
-{{ $gqlNodes := $.Nodes }}
-{{ $gqlNodes = filterNodes $.Nodes (skipMode "type") }}
+{{ $gqlNodes := filterNodes $.Nodes (skipMode "type") }}
 
 {{- range $n := $gqlNodes }}
 	// GlobalID returns the global identifier for the given {{ $n.Name }} node.
@@ -33,7 +32,7 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 func GlobalID(tp,id string) (string,error) {
 	switch tp {
 	{{- range $n := $gqlNodes }}
-	case {{ quote $n.Name }}:
+	case {{ $n.Package }}.Table:
 		break
 	{{- end }}
 	default:

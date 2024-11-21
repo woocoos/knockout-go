@@ -12,6 +12,8 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 )
 
 // GlobalID returns the global identifier for the given RefSchema node.
@@ -43,9 +45,9 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 // GlobalID returns the global identifier for the given type and id.
 func GlobalID(tp, id string) (string, error) {
 	switch tp {
-	case "RefSchema":
+	case refschema.Table:
 		break
-	case "User":
+	case user.Table:
 		break
 	default:
 		return "", fmt.Errorf("invalid type %q", tp)

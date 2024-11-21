@@ -148,7 +148,7 @@ func (c *Client) noder(ctx context.Context, table string, id {{ $idType }}) (Nod
 					}
 				}
 			{{- end }}
-			return query.Only(entcache.WithRefEntryKey(ctx, "{{ $n.Name }}",id))
+			return query.Only(entcache.WithRefEntryKey(ctx, {{ $n.Package }}.Table,id))
 	{{- end }}
 	default:
 		return nil, fmt.Errorf("cannot resolve noder from table %q: %w", table, errNodeInvalidID)
