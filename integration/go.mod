@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tsingsun/woocoo v0.5.1
+	github.com/tsingsun/woocoo v0.5.2-0.20241202093219-65c540512afa
 	github.com/vektah/gqlparser/v2 v2.5.19
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2
 	github.com/woocoos/entcache v0.0.0-20231206055445-856f0148efa5

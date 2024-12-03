@@ -30,8 +30,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tsingsun/woocoo v0.5.1
-	github.com/tsingsun/woocoo/contrib/gql v0.0.3-0.20240522021626-a2b6e6d10802
+	github.com/tsingsun/woocoo v0.5.2-0.20241202093219-65c540512afa
+	github.com/tsingsun/woocoo/contrib/gql v0.0.3-0.20241202100427-ec3ba92be926
 	github.com/tsingsun/woocoo/contrib/telemetry v0.1.5-0.20240522021626-a2b6e6d10802
 	github.com/vektah/gqlparser/v2 v2.5.19
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2

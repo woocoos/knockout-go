@@ -31,10 +31,13 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	return &Config{
+	cfg := &Config{
 		BasePath:  "http://localhost:10072/api/v2/",
 		UserAgent: "oasgen/1.0.0/go",
+		Headers:   make(map[string]string),
 	}
+	cfg.Headers["User-Agent"] = cfg.UserAgent
+	return cfg
 }
 
 // APIClient manages communication with the Alertmanager API API v0.0.1 endpoints.
@@ -142,7 +145,6 @@ func (c *APIClient) prepareRequest(method, path, contentType string, body any) (
 	} else {
 		req, err = http.NewRequest(method, path, nil)
 	}
-	req.Header.Set("User-Agent", c.cfg.UserAgent)
 	req.Header.Set("Content-Type", contentType)
 	for k, v := range c.cfg.Headers {
 		req.Header.Set(k, v)

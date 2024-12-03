@@ -21,7 +21,6 @@ type ClusterStatus struct {
 }
 
 type GettableAlert struct {
-	*Alert `json:",inline"`
 	// Annotations A set of labels. Labels are key/value pairs that are attached to
 	// alerts. Labels are used to specify identifying attributes of alerts,
 	// such as their tenant, user , instance, and job.
@@ -35,6 +34,7 @@ type GettableAlert struct {
 	StartsAt    time.Time   `binding:"required" json:"startsAt" time_format:"2006-01-02T15:04:05Z07:00"`
 	Status      AlertStatus `binding:"required" json:"status"`
 	UpdatedAt   time.Time   `binding:"required" json:"updatedAt" time_format:"2006-01-02T15:04:05Z07:00"`
+	*Alert      `json:",inline"`
 }
 
 // LabelSet A set of labels. Labels are key/value pairs that are attached to
@@ -122,10 +122,10 @@ type AlertmanagerStatus struct {
 type GettableAlerts []*GettableAlert
 
 type GettableSilence struct {
-	*Silence  `json:",inline"`
 	ID        int           `binding:"required" json:"id"`
 	Status    SilenceStatus `binding:"required" json:"status"`
 	UpdatedAt time.Time     `binding:"required" json:"updatedAt" time_format:"2006-01-02T15:04:05Z07:00"`
+	*Silence  `json:",inline"`
 }
 
 type GettableSilences []*GettableSilence
@@ -133,7 +133,6 @@ type GettableSilences []*GettableSilence
 type Matchers []*Matcher
 
 type PostableAlert struct {
-	*Alert `json:",inline"`
 	// Annotations A set of labels. Labels are key/value pairs that are attached to
 	// alerts. Labels are used to specify identifying attributes of alerts,
 	// such as their tenant, user , instance, and job.
@@ -143,41 +142,18 @@ type PostableAlert struct {
 	Annotations LabelSet   `binding:"required" json:"annotations,omitempty"`
 	EndsAt      *time.Time `json:"endsAt,omitempty" time_format:"2006-01-02T15:04:05Z07:00"`
 	StartsAt    *time.Time `json:"startsAt,omitempty" time_format:"2006-01-02T15:04:05Z07:00"`
+	*Alert      `json:",inline"`
 }
 
 type PostableAlerts []*PostableAlert
 
 type PostableSilence struct {
-	*Silence `json:",inline"`
 	ID       int `json:"id,omitempty"`
+	*Silence `json:",inline"`
 }
 
 // PushData Push data is for notify clients.
 type PushData json.RawMessage
-
-// AlertStatusState defines the type for the state.state enum field.
-type AlertStatusState string
-
-// AlertStatusState values.
-const (
-	AlertStatusStateUnprocessed AlertStatusState = "unprocessed"
-	AlertStatusStateActive      AlertStatusState = "active"
-	AlertStatusStateSuppressed  AlertStatusState = "suppressed"
-)
-
-func (s AlertStatusState) String() string {
-	return string(s)
-}
-
-// AlertStatusStateValidator is a validator for the AlertStatusState field enum values.
-func AlertStatusStateValidator(s AlertStatusState) error {
-	switch s {
-	case AlertStatusStateUnprocessed, AlertStatusStateActive, AlertStatusStateSuppressed:
-		return nil
-	default:
-		return fmt.Errorf("AlertStatusState does not allow the value '%s'", s)
-	}
-}
 
 // SilenceStatusState defines the type for the state.state enum field.
 type SilenceStatusState string
@@ -200,6 +176,30 @@ func SilenceStatusStateValidator(s SilenceStatusState) error {
 		return nil
 	default:
 		return fmt.Errorf("SilenceStatusState does not allow the value '%s'", s)
+	}
+}
+
+// AlertStatusState defines the type for the state.state enum field.
+type AlertStatusState string
+
+// AlertStatusState values.
+const (
+	AlertStatusStateUnprocessed AlertStatusState = "unprocessed"
+	AlertStatusStateActive      AlertStatusState = "active"
+	AlertStatusStateSuppressed  AlertStatusState = "suppressed"
+)
+
+func (s AlertStatusState) String() string {
+	return string(s)
+}
+
+// AlertStatusStateValidator is a validator for the AlertStatusState field enum values.
+func AlertStatusStateValidator(s AlertStatusState) error {
+	switch s {
+	case AlertStatusStateUnprocessed, AlertStatusStateActive, AlertStatusStateSuppressed:
+		return nil
+	default:
+		return fmt.Errorf("AlertStatusState does not allow the value '%s'", s)
 	}
 }
 
