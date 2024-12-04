@@ -56,18 +56,20 @@ func NewResolverPlugin(opt ...Option) *ResolverPlugin {
 	return r
 }
 
-func (r ResolverPlugin) Name() string {
+func (r *ResolverPlugin) Name() string {
 	return "ent-resolver"
 }
 
 // Implement gqlgen api.ResolverImplementer
-func (r ResolverPlugin) Implement(prevImplementation string, f *codegen.Field) (val string) {
+func (r *ResolverPlugin) Implement(prevImplementation string, f *codegen.Field) (val string) {
 	var (
 		err error
 	)
-	r.rewriter, err = NewRewriter(r.config.Resolver.Dir())
-	if err != nil {
-		panic(err)
+	if r.rewriter == nil {
+		r.rewriter, err = NewRewriter(r.config.Resolver.Dir())
+		if err != nil {
+			panic(err)
+		}
 	}
 	if r.config != nil {
 		rs := f.Object.ResolverInterface.String()
@@ -92,7 +94,7 @@ func (r ResolverPlugin) Implement(prevImplementation string, f *codegen.Field) (
 }
 
 // GenerateCode implement api.CodeGenerator
-func (r ResolverPlugin) GenerateCode(data *codegen.Data) error {
+func (r *ResolverPlugin) GenerateCode(data *codegen.Data) error {
 	fi, err := os.Stat(data.Config.Resolver.Filename)
 	// just override the resolver.go in this time if file is new created.
 	if errors.Is(err, fs.ErrNotExist) || time.Now().Sub(fi.ModTime()) < time.Second*5 {
@@ -104,7 +106,7 @@ func (r ResolverPlugin) GenerateCode(data *codegen.Data) error {
 	return nil
 }
 
-func (r ResolverPlugin) FormatFile(path string) error {
+func (r *ResolverPlugin) FormatFile(path string) error {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("format file:read file %s: %w", path, err)
@@ -119,7 +121,7 @@ func (r ResolverPlugin) FormatFile(path string) error {
 	return nil
 }
 
-func (r ResolverPlugin) OverrideResolverStruct(config *config.Config) error {
+func (r *ResolverPlugin) OverrideResolverStruct(config *config.Config) error {
 	b := &bytes.Buffer{}
 	err := r.resolverTpl.ExecuteTemplate(b, "resolver", config)
 	if err != nil {
@@ -140,7 +142,7 @@ func (r ResolverPlugin) OverrideResolverStruct(config *config.Config) error {
 	return nil
 }
 
-func (r ResolverPlugin) Mutation(f *codegen.Field) (string, error) {
+func (r *ResolverPlugin) Mutation(f *codegen.Field) (string, error) {
 	var (
 		b   = &bytes.Buffer{}
 		err error
@@ -160,7 +162,7 @@ func (r ResolverPlugin) Mutation(f *codegen.Field) (string, error) {
 	return b.String(), err
 }
 
-func (r ResolverPlugin) Query(f *codegen.Field) (string, error) {
+func (r *ResolverPlugin) Query(f *codegen.Field) (string, error) {
 	var (
 		err error
 		b   = &bytes.Buffer{}
