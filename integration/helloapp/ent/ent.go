@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
 )
 
@@ -73,6 +74,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			hello.Table: hello.ValidColumn,
 			world.Table: world.ValidColumn,
 		})
 	})

@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
 
 	"entgo.io/ent/dialect/sql"
@@ -13,8 +14,23 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 1)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
 	graph.Nodes[0] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   hello.Table,
+			Columns: hello.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: hello.FieldID,
+			},
+		},
+		Type: "Hello",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			hello.FieldTenantID: {Type: field.TypeInt, Column: hello.FieldTenantID},
+			hello.FieldName:     {Type: field.TypeString, Column: hello.FieldName},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   world.Table,
 			Columns: world.Columns,
@@ -38,6 +54,56 @@ var schemaGraph = func() *sqlgraph.Schema {
 // All update, update-one and query builders implement this interface.
 type predicateAdder interface {
 	addPredicate(func(s *sql.Selector))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (hq *HelloQuery) addPredicate(pred func(s *sql.Selector)) {
+	hq.predicates = append(hq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the HelloQuery builder.
+func (hq *HelloQuery) Filter() *HelloFilter {
+	return &HelloFilter{config: hq.config, predicateAdder: hq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *HelloMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the HelloMutation builder.
+func (m *HelloMutation) Filter() *HelloFilter {
+	return &HelloFilter{config: m.config, predicateAdder: m}
+}
+
+// HelloFilter provides a generic filtering capability at runtime for HelloQuery.
+type HelloFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *HelloFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *HelloFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(hello.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *HelloFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(hello.FieldTenantID))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *HelloFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(hello.FieldName))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -69,7 +135,7 @@ type WorldFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorldFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

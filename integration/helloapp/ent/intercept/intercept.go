@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent"
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/predicate"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
 )
@@ -68,6 +69,33 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 	return f(ctx, query)
 }
 
+// The HelloFunc type is an adapter to allow the use of ordinary function as a Querier.
+type HelloFunc func(context.Context, *ent.HelloQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f HelloFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.HelloQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.HelloQuery", q)
+}
+
+// The TraverseHello type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseHello func(context.Context, *ent.HelloQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseHello) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseHello) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.HelloQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.HelloQuery", q)
+}
+
 // The WorldFunc type is an adapter to allow the use of ordinary function as a Querier.
 type WorldFunc func(context.Context, *ent.WorldQuery) (ent.Value, error)
 
@@ -98,6 +126,8 @@ func (f TraverseWorld) Traverse(ctx context.Context, q ent.Query) error {
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.HelloQuery:
+		return &query[*ent.HelloQuery, predicate.Hello, hello.OrderOption]{typ: ent.TypeHello, tq: q}, nil
 	case *ent.WorldQuery:
 		return &query[*ent.WorldQuery, predicate.World, world.OrderOption]{typ: ent.TypeWorld, tq: q}, nil
 	default:

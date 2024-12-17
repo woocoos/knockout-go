@@ -12,6 +12,7 @@ import (
 	casbinent "github.com/woocoos/casbin-ent-adapter/ent"
 	"github.com/woocoos/knockout-go/ent/schemax"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent"
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	_ "github.com/woocoos/knockout-go/integration/helloapp/ent/runtime"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
 	"github.com/woocoos/knockout-go/pkg/authz"
@@ -92,11 +93,6 @@ func Test_WorldWithTenant(t *testing.T) {
 
 	initCasbin(ctx)
 
-	// ctx without tenant_id
-	if err := client.World.Create().Exec(ctx); err == nil {
-		t.Fatal("expect tenant creation to fail, but got:", err)
-	}
-
 	tid := rand.Int()
 	tctx := identity.WithTenantID(ctx, tid)
 	tctx = security.WithContext(tctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "1"}))
@@ -105,38 +101,84 @@ func Test_WorldWithTenant(t *testing.T) {
 	authorizer := security.DefaultAuthorizer.(*casbin.Authorizer)
 	_, err := authorizer.Enforcer.AddRoleForUserInDomain("1", strconv.Itoa(tid), strconv.Itoa(tid))
 	require.NoError(t, err)
-	arnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "World")
-	_, err = authorizer.Enforcer.AddPolicy("1", arnp, "read", "allow")
+	helloArnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "Hello")
+	_, err = authorizer.Enforcer.AddPolicy("1", helloArnp, "read", "allow")
 	require.NoError(t, err)
-	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/abc", "read", "allow")
-	require.NoError(t, err)
-	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), arnp+"name/cba:power_by/0", "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), helloArnp+"name/abc", "read", "allow")
 	require.NoError(t, err)
 	// set action policy
 	_, err = authorizer.Enforcer.AddPolicy("1", "resource:*", "read", "allow")
 	require.NoError(t, err)
-	// set tenant_id to 1 should be not working
-	err = client.World.Create().SetID(id).SetName("abc").SetTenantID(1111).Exec(tctx)
-	assert.NoError(t, err)
-	assert.False(t, client.World.Query().Where(world.ID(1111)).ExistX(tctx))
 
-	c, err := client.World.Query().Count(tctx)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, c)
+	worldArnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "World")
+	_, err = authorizer.Enforcer.AddPolicy("1", worldArnp, "read", "allow")
+	require.NoError(t, err)
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+"name/abc", "read", "allow")
+	require.NoError(t, err)
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+"name/cba:power_by/0", "read", "allow")
+	require.NoError(t, err)
+	// set action policy
+	_, err = authorizer.Enforcer.AddPolicy("1", "resource:*", "read", "allow")
+	require.NoError(t, err)
 
-	err = client.World.UpdateOneID(id).SetName("cba").SetPowerBy("0").Exec(tctx)
-	assert.NoError(t, err)
+	t.Run("tenant", func(t *testing.T) {
+		// ctx without tenant_id
+		if err := client.World.Create().Exec(ctx); err == nil {
+			t.Fatal("expect tenant creation to fail, but got:", err)
+		}
 
-	row := client.World.GetX(tctx, id)
-	assert.Equal(t, "cba", row.Name)
+		// set tenant_id to 1 should be not working
+		err = client.World.Create().SetID(id).SetName("abc").SetTenantID(1111).Exec(tctx)
+		assert.NoError(t, err)
+		assert.False(t, client.World.Query().Where(world.ID(1111)).ExistX(tctx))
 
-	assert.NoError(t, client.World.DeleteOneID(id).Exec(tctx))
+		c, err := client.World.Query().Count(tctx)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, c)
 
-	err = client.World.Create().SetName("abc").Exec(tctx)
-	assert.NoError(t, err)
-	c, err = client.World.Query().Where(world.TenantID(tid)).Count(schemax.SkipTenantPrivacy(tctx))
-	assert.NoError(t, err)
-	assert.Equal(t, 1, c)
+		err = client.World.UpdateOneID(id).SetName("cba").SetPowerBy("0").Exec(tctx)
+		assert.NoError(t, err)
+
+		row := client.World.GetX(tctx, id)
+		assert.Equal(t, "cba", row.Name)
+
+		assert.NoError(t, client.World.DeleteOneID(id).Exec(tctx))
+
+		err = client.World.Create().SetName("abc").Exec(tctx)
+		assert.NoError(t, err)
+		c, err = client.World.Query().Where(world.TenantID(tid)).Count(schemax.SkipTenantPrivacy(tctx))
+		assert.NoError(t, err)
+		assert.Equal(t, 1, c)
+	})
+	t.Run("with storageKey", func(t *testing.T) {
+		// ctx without tenant_id
+		if err := client.Hello.Create().Exec(ctx); err == nil {
+			t.Fatal("expect tenant creation to fail, but got:", err)
+		}
+
+		// set tenant_id to 1 should be not working
+		err = client.Hello.Create().SetID(id).SetName("abc").SetTenantID(1111).Exec(tctx)
+		assert.NoError(t, err)
+		assert.False(t, client.Hello.Query().Where(hello.ID(1111)).ExistX(tctx))
+
+		c, err := client.Hello.Query().Count(tctx)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, c)
+
+		err = client.Hello.UpdateOneID(id).SetName("cba").Exec(tctx)
+		assert.NoError(t, err)
+
+		_, err = client.Hello.Get(tctx, id)
+		assert.Error(t, err, "only query name=abc")
+
+		assert.NoError(t, client.Hello.DeleteOneID(id).Exec(tctx))
+
+		err = client.Hello.Create().SetName("abc").Exec(tctx)
+		assert.NoError(t, err)
+		c, err = client.Hello.Query().Where(hello.TenantID(tid)).Count(schemax.SkipTenantPrivacy(tctx))
+		assert.NoError(t, err)
+		assert.Equal(t, 1, c)
+	})
 }
 
 func Test_SoftDelete(t *testing.T) {

@@ -32,6 +32,8 @@ func TestNewTenantMixin(t *testing.T) {
 
 	cst := map[string]string{"test": "test"}
 	mixin = NewTenantMixin[MockQuery, MockMutator](app, NewMockQuery,
-		WithTenantMixinSchemaType[MockQuery, MockMutator](cst))
+		WithTenantMixinSchemaType[MockQuery, MockMutator](cst), WithTenantMixinStorageKey[MockQuery, MockMutator]("org_id"))
 	assert.Equal(t, cst, mixin.schemaType)
+	assert.Equal(t, "org_id", mixin.storageKey)
+
 }

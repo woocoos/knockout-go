@@ -6,5 +6,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Hello is the predicate function for hello builders.
+type Hello func(*sql.Selector)
+
 // World is the predicate function for world builders.
 type World func(*sql.Selector)

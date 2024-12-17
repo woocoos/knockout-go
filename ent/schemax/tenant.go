@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var (
+const (
 	FieldTenantID = "tenant_id"
 )
 
@@ -51,6 +51,8 @@ type TenantMixin[T Query, Q Mutator] struct {
 	// schemaType overrides the default database type with a custom
 	// schema type (per dialect) for int.
 	schemaType map[string]string
+	// storageKey is the key used to ent StorageKey.
+	storageKey string
 }
 
 type TenantMixinOption[T Query, Q Mutator] func(*TenantMixin[T, Q])
@@ -63,6 +65,13 @@ func WithTenantMixinSchemaType[T Query, Q Mutator](schemaType map[string]string)
 	}
 }
 
+// WithTenantMixinStorageKey sets the tenant field for ent StorageKey.
+func WithTenantMixinStorageKey[T Query, Q Mutator](storageKey string) TenantMixinOption[T, Q] {
+	return func(m *TenantMixin[T, Q]) {
+		m.storageKey = storageKey
+	}
+}
+
 // NewTenantMixin returns a mixin that adds a tenant_id field and inject resource query.
 //
 // app is the application code, the same as the one defined in knockout backend.
@@ -72,6 +81,7 @@ func NewTenantMixin[T Query, Q Mutator](app string, newQuery func(ent.Query) (T,
 		app:          app,
 		newQueryFunc: newQuery,
 		schemaType:   SnowFlakeID{}.SchemaType(),
+		storageKey:   FieldTenantID,
 	}
 	for _, opt := range opts {
 		opt(&val)
@@ -81,11 +91,11 @@ func NewTenantMixin[T Query, Q Mutator](app string, newQuery func(ent.Query) (T,
 
 func (d TenantMixin[T, Q]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int(FieldTenantID).Immutable().SchemaType(d.schemaType),
+		field.Int(FieldTenantID).Immutable().SchemaType(d.schemaType).StorageKey(d.storageKey),
 	}
 }
 
-// Interceptors of the SoftDeleteMixin.
+// Interceptors of the TenantMixin.
 func (d TenantMixin[T, Q]) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
 		ent.TraverseFunc(func(ctx context.Context, q ent.Query) error {
@@ -141,7 +151,7 @@ func (d TenantMixin[T, Q]) Hooks() []ent.Hook {
 // P adds a storage-level predicate to the queries and mutations.
 func (d TenantMixin[T, Q]) P(w Query, tid int) {
 	w.WhereP(
-		sql.FieldEQ(FieldTenantID, tid),
+		sql.FieldEQ(d.storageKey, tid),
 	)
 }
 
@@ -172,7 +182,7 @@ func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 	}
 
 	w.WhereP(func(selector *sql.Selector) {
-		rules := getTenantRules(flts, tidstr, selector)
+		rules := d.getTenantRules(flts, tidstr, selector)
 		if len(rules) > 0 {
 			selector.Where(sql.Or(rules...))
 		}
@@ -182,11 +192,11 @@ func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 
 // getTenantRules returns the tenant resource conditions for the current user.
 // if field rule is not having value after "/", it will be ignored, and like * effect.
-func getTenantRules(filers []string, tid string, selector *sql.Selector) []*sql.Predicate {
+func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector *sql.Selector) []*sql.Predicate {
 	v := make([]*sql.Predicate, 0, len(filers))
 	for _, flt := range filers {
 		if flt == "" {
-			v = append(v, sql.EQ(selector.C(FieldTenantID), tid))
+			v = append(v, sql.EQ(selector.C(d.storageKey), tid))
 			continue
 		}
 		fs := strings.Split(flt, ":")

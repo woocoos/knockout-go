@@ -8,6 +8,18 @@ import (
 )
 
 var (
+	// HellosColumns holds the columns for the "hellos" table.
+	HellosColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "org_id", Type: field.TypeInt, SchemaType: map[string]string{"mysql": "bigint"}},
+		{Name: "name", Type: field.TypeString},
+	}
+	// HellosTable holds the schema information for the "hellos" table.
+	HellosTable = &schema.Table{
+		Name:       "hellos",
+		Columns:    HellosColumns,
+		PrimaryKey: []*schema.Column{HellosColumns[0]},
+	}
 	// WorldsColumns holds the columns for the "worlds" table.
 	WorldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -24,6 +36,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		HellosTable,
 		WorldsTable,
 	}
 )
