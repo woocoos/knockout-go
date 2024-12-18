@@ -26,8 +26,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Hello",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			hello.FieldTenantID: {Type: field.TypeInt, Column: hello.FieldTenantID},
 			hello.FieldName:     {Type: field.TypeString, Column: hello.FieldName},
+			hello.FieldTenantID: {Type: field.TypeInt, Column: hello.FieldTenantID},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -41,8 +41,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "World",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			world.FieldTenantID:  {Type: field.TypeInt, Column: world.FieldTenantID},
 			world.FieldDeletedAt: {Type: field.TypeTime, Column: world.FieldDeletedAt},
+			world.FieldTenantID:  {Type: field.TypeInt, Column: world.FieldTenantID},
 			world.FieldName:      {Type: field.TypeString, Column: world.FieldName},
 			world.FieldPowerBy:   {Type: field.TypeString, Column: world.FieldPowerBy},
 		},
@@ -96,14 +96,14 @@ func (f *HelloFilter) WhereID(p entql.IntP) {
 	f.Where(p.Field(hello.FieldID))
 }
 
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *HelloFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(hello.FieldTenantID))
-}
-
 // WhereName applies the entql string predicate on the name field.
 func (f *HelloFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(hello.FieldName))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *HelloFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(hello.FieldTenantID))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -146,14 +146,14 @@ func (f *WorldFilter) WhereID(p entql.IntP) {
 	f.Where(p.Field(world.FieldID))
 }
 
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *WorldFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(world.FieldTenantID))
-}
-
 // WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
 func (f *WorldFilter) WhereDeletedAt(p entql.TimeP) {
 	f.Where(p.Field(world.FieldDeletedAt))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *WorldFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(world.FieldTenantID))
 }
 
 // WhereName applies the entql string predicate on the name field.

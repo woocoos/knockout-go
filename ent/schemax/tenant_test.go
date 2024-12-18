@@ -28,12 +28,9 @@ func TestNewTenantMixin(t *testing.T) {
 	mixin := NewTenantMixin[MockQuery, MockMutator](app, NewMockQuery)
 	assert.Equal(t, app, mixin.app)
 	assert.NotNil(t, mixin.newQueryFunc)
-	assert.Equal(t, SnowFlakeID{}.SchemaType(), mixin.schemaType)
 
-	cst := map[string]string{"test": "test"}
 	mixin = NewTenantMixin[MockQuery, MockMutator](app, NewMockQuery,
-		WithTenantMixinSchemaType[MockQuery, MockMutator](cst), WithTenantMixinStorageKey[MockQuery, MockMutator]("org_id"))
-	assert.Equal(t, cst, mixin.schemaType)
+		WithTenantMixinStorageKey[MockQuery, MockMutator]("org_id"))
 	assert.Equal(t, "org_id", mixin.storageKey)
 
 }

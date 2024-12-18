@@ -19,15 +19,15 @@ type HelloCreate struct {
 	hooks    []Hook
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (hc *HelloCreate) SetTenantID(i int) *HelloCreate {
-	hc.mutation.SetTenantID(i)
-	return hc
-}
-
 // SetName sets the "name" field.
 func (hc *HelloCreate) SetName(s string) *HelloCreate {
 	hc.mutation.SetName(s)
+	return hc
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (hc *HelloCreate) SetTenantID(i int) *HelloCreate {
+	hc.mutation.SetTenantID(i)
 	return hc
 }
 
@@ -71,11 +71,11 @@ func (hc *HelloCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (hc *HelloCreate) check() error {
-	if _, ok := hc.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Hello.tenant_id"`)}
-	}
 	if _, ok := hc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Hello.name"`)}
+	}
+	if _, ok := hc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Hello.tenant_id"`)}
 	}
 	return nil
 }
@@ -109,13 +109,13 @@ func (hc *HelloCreate) createSpec() (*Hello, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := hc.mutation.TenantID(); ok {
-		_spec.SetField(hello.FieldTenantID, field.TypeInt, value)
-		_node.TenantID = value
-	}
 	if value, ok := hc.mutation.Name(); ok {
 		_spec.SetField(hello.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := hc.mutation.TenantID(); ok {
+		_spec.SetField(hello.FieldTenantID, field.TypeInt, value)
+		_node.TenantID = value
 	}
 	return _node, _spec
 }

@@ -12,10 +12,10 @@ const (
 	Label = "hello"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldTenantID holds the string denoting the tenant_id field in the database.
-	FieldTenantID = "org_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "org_id"
 	// Table holds the table name of the hello in the database.
 	Table = "hellos"
 )
@@ -23,8 +23,8 @@ const (
 // Columns holds all SQL columns for hello fields.
 var Columns = []string{
 	FieldID,
-	FieldTenantID,
 	FieldName,
+	FieldTenantID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -55,12 +55,12 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByTenantID orders the results by the tenant_id field.
-func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
-}
-
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }

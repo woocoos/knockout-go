@@ -262,12 +262,12 @@ func (hq *HelloQuery) Clone() *HelloQuery {
 // Example:
 //
 //	var v []struct {
-//		TenantID int `json:"tenant_id,omitempty"`
+//		Name string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Hello.Query().
-//		GroupBy(hello.FieldTenantID).
+//		GroupBy(hello.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (hq *HelloQuery) GroupBy(field string, fields ...string) *HelloGroupBy {
@@ -285,11 +285,11 @@ func (hq *HelloQuery) GroupBy(field string, fields ...string) *HelloGroupBy {
 // Example:
 //
 //	var v []struct {
-//		TenantID int `json:"tenant_id,omitempty"`
+//		Name string `json:"name,omitempty"`
 //	}
 //
 //	client.Hello.Query().
-//		Select(hello.FieldTenantID).
+//		Select(hello.FieldName).
 //		Scan(ctx, &v)
 func (hq *HelloQuery) Select(fields ...string) *HelloSelect {
 	hq.ctx.Fields = append(hq.ctx.Fields, fields...)

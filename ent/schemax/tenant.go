@@ -4,7 +4,6 @@ import (
 	"context"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"fmt"
 	"github.com/tsingsun/woocoo/pkg/security"
@@ -33,39 +32,33 @@ func ifSkipTenantPrivacy(ctx context.Context) bool {
 
 // TenantMixin helps to generate a tenant_id field and inject resource query.
 //
-//	 type World struct {
-//		    ent.Schema
-//	 }
+//		 type World struct {
+//			    ent.Schema
+//		 }
 //
-//	 func (World) Mixin() []ent.Mixin {
-//		    return []ent.Mixin{
-//		    	schemax.NewTenantMixin[intercept.Query, *gen.Client](intercept.NewQuery),
-//		    }
-//	 }
+//		 func (World) Mixin() []ent.Mixin {
+//			    return []ent.Mixin{
+//			    	schemax.NewTenantMixin[intercept.Query, *gen.Client](intercept.NewQuery),
+//			    }
+//		 }
+//	  func (World) Fields() []ent.Field {
+//				return []ent.Field{
+//					field.Int(schemax.FieldTenantID).Immutable(),
+//				}
+//	  }
 type TenantMixin[T Query, Q Mutator] struct {
 	mixin.Schema
 	// application code, defined in configuration file `appName`
 	app string
 	// the NewQuery returns the generic Query interface for the given typed query.
 	newQueryFunc func(ent.Query) (T, error)
-	// schemaType overrides the default database type with a custom
-	// schema type (per dialect) for int.
-	schemaType map[string]string
 	// storageKey is the key used to ent StorageKey.
 	storageKey string
 }
 
 type TenantMixinOption[T Query, Q Mutator] func(*TenantMixin[T, Q])
 
-// WithTenantMixinSchemaType sets the tenant field for ent SchemaType. By default,
-// in NewTenantMixin, it will be set to bigint for SnowFlakeID.
-func WithTenantMixinSchemaType[T Query, Q Mutator](schemaType map[string]string) TenantMixinOption[T, Q] {
-	return func(m *TenantMixin[T, Q]) {
-		m.schemaType = schemaType
-	}
-}
-
-// WithTenantMixinStorageKey sets the tenant field for ent StorageKey.
+// WithTenantMixinStorageKey sets the tenant field for ent StorageKey if you custom the field name which is not `tenant_id`.
 func WithTenantMixinStorageKey[T Query, Q Mutator](storageKey string) TenantMixinOption[T, Q] {
 	return func(m *TenantMixin[T, Q]) {
 		m.storageKey = storageKey
@@ -80,19 +73,12 @@ func NewTenantMixin[T Query, Q Mutator](app string, newQuery func(ent.Query) (T,
 	val := TenantMixin[T, Q]{
 		app:          app,
 		newQueryFunc: newQuery,
-		schemaType:   SnowFlakeID{}.SchemaType(),
 		storageKey:   FieldTenantID,
 	}
 	for _, opt := range opts {
 		opt(&val)
 	}
 	return val
-}
-
-func (d TenantMixin[T, Q]) Fields() []ent.Field {
-	return []ent.Field{
-		field.Int(FieldTenantID).Immutable().SchemaType(d.schemaType).StorageKey(d.storageKey),
-	}
 }
 
 // Interceptors of the TenantMixin.

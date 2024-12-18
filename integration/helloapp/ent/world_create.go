@@ -20,12 +20,6 @@ type WorldCreate struct {
 	hooks    []Hook
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (wc *WorldCreate) SetTenantID(i int) *WorldCreate {
-	wc.mutation.SetTenantID(i)
-	return wc
-}
-
 // SetDeletedAt sets the "deleted_at" field.
 func (wc *WorldCreate) SetDeletedAt(t time.Time) *WorldCreate {
 	wc.mutation.SetDeletedAt(t)
@@ -37,6 +31,12 @@ func (wc *WorldCreate) SetNillableDeletedAt(t *time.Time) *WorldCreate {
 	if t != nil {
 		wc.SetDeletedAt(*t)
 	}
+	return wc
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (wc *WorldCreate) SetTenantID(i int) *WorldCreate {
+	wc.mutation.SetTenantID(i)
 	return wc
 }
 
@@ -150,13 +150,13 @@ func (wc *WorldCreate) createSpec() (*World, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := wc.mutation.TenantID(); ok {
-		_spec.SetField(world.FieldTenantID, field.TypeInt, value)
-		_node.TenantID = value
-	}
 	if value, ok := wc.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = value
+	}
+	if value, ok := wc.mutation.TenantID(); ok {
+		_spec.SetField(world.FieldTenantID, field.TypeInt, value)
+		_node.TenantID = value
 	}
 	if value, ok := wc.mutation.Name(); ok {
 		_spec.SetField(world.FieldName, field.TypeString, value)

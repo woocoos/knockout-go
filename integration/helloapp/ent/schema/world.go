@@ -31,6 +31,7 @@ func (World) Mixin() []ent.Mixin {
 
 func (World) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int(schemax.FieldTenantID).Immutable(),
 		field.String("name"),
 		field.String("power_by").Optional().Default("0"),
 	}

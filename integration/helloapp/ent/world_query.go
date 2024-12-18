@@ -262,12 +262,12 @@ func (wq *WorldQuery) Clone() *WorldQuery {
 // Example:
 //
 //	var v []struct {
-//		TenantID int `json:"tenant_id,omitempty"`
+//		DeletedAt time.Time `json:"deleted_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.World.Query().
-//		GroupBy(world.FieldTenantID).
+//		GroupBy(world.FieldDeletedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (wq *WorldQuery) GroupBy(field string, fields ...string) *WorldGroupBy {
@@ -285,11 +285,11 @@ func (wq *WorldQuery) GroupBy(field string, fields ...string) *WorldGroupBy {
 // Example:
 //
 //	var v []struct {
-//		TenantID int `json:"tenant_id,omitempty"`
+//		DeletedAt time.Time `json:"deleted_at,omitempty"`
 //	}
 //
 //	client.World.Query().
-//		Select(world.FieldTenantID).
+//		Select(world.FieldDeletedAt).
 //		Scan(ctx, &v)
 func (wq *WorldQuery) Select(fields ...string) *WorldSelect {
 	wq.ctx.Fields = append(wq.ctx.Fields, fields...)

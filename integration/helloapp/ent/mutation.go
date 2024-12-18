@@ -35,9 +35,9 @@ type HelloMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	name          *string
 	tenant_id     *int
 	addtenant_id  *int
-	name          *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Hello, error)
@@ -148,6 +148,42 @@ func (m *HelloMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
+// SetName sets the "name" field.
+func (m *HelloMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *HelloMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Hello entity.
+// If the Hello object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HelloMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *HelloMutation) ResetName() {
+	m.name = nil
+}
+
 // SetTenantID sets the "tenant_id" field.
 func (m *HelloMutation) SetTenantID(i int) {
 	m.tenant_id = &i
@@ -204,42 +240,6 @@ func (m *HelloMutation) ResetTenantID() {
 	m.addtenant_id = nil
 }
 
-// SetName sets the "name" field.
-func (m *HelloMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *HelloMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Hello entity.
-// If the Hello object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HelloMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *HelloMutation) ResetName() {
-	m.name = nil
-}
-
 // Where appends a list predicates to the HelloMutation builder.
 func (m *HelloMutation) Where(ps ...predicate.Hello) {
 	m.predicates = append(m.predicates, ps...)
@@ -275,11 +275,11 @@ func (m *HelloMutation) Type() string {
 // AddedFields().
 func (m *HelloMutation) Fields() []string {
 	fields := make([]string, 0, 2)
-	if m.tenant_id != nil {
-		fields = append(fields, hello.FieldTenantID)
-	}
 	if m.name != nil {
 		fields = append(fields, hello.FieldName)
+	}
+	if m.tenant_id != nil {
+		fields = append(fields, hello.FieldTenantID)
 	}
 	return fields
 }
@@ -289,10 +289,10 @@ func (m *HelloMutation) Fields() []string {
 // schema.
 func (m *HelloMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case hello.FieldTenantID:
-		return m.TenantID()
 	case hello.FieldName:
 		return m.Name()
+	case hello.FieldTenantID:
+		return m.TenantID()
 	}
 	return nil, false
 }
@@ -302,10 +302,10 @@ func (m *HelloMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *HelloMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case hello.FieldTenantID:
-		return m.OldTenantID(ctx)
 	case hello.FieldName:
 		return m.OldName(ctx)
+	case hello.FieldTenantID:
+		return m.OldTenantID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Hello field %s", name)
 }
@@ -315,19 +315,19 @@ func (m *HelloMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *HelloMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case hello.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
 	case hello.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case hello.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Hello field %s", name)
@@ -393,11 +393,11 @@ func (m *HelloMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *HelloMutation) ResetField(name string) error {
 	switch name {
-	case hello.FieldTenantID:
-		m.ResetTenantID()
-		return nil
 	case hello.FieldName:
 		m.ResetName()
+		return nil
+	case hello.FieldTenantID:
+		m.ResetTenantID()
 		return nil
 	}
 	return fmt.Errorf("unknown Hello field %s", name)
@@ -457,9 +457,9 @@ type WorldMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	deleted_at    *time.Time
 	tenant_id     *int
 	addtenant_id  *int
-	deleted_at    *time.Time
 	name          *string
 	power_by      *string
 	clearedFields map[string]struct{}
@@ -572,6 +572,55 @@ func (m *WorldMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (m *WorldMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *WorldMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the World entity.
+// If the World object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorldMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *WorldMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[world.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *WorldMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[world.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *WorldMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, world.FieldDeletedAt)
+}
+
 // SetTenantID sets the "tenant_id" field.
 func (m *WorldMutation) SetTenantID(i int) {
 	m.tenant_id = &i
@@ -626,55 +675,6 @@ func (m *WorldMutation) AddedTenantID() (r int, exists bool) {
 func (m *WorldMutation) ResetTenantID() {
 	m.tenant_id = nil
 	m.addtenant_id = nil
-}
-
-// SetDeletedAt sets the "deleted_at" field.
-func (m *WorldMutation) SetDeletedAt(t time.Time) {
-	m.deleted_at = &t
-}
-
-// DeletedAt returns the value of the "deleted_at" field in the mutation.
-func (m *WorldMutation) DeletedAt() (r time.Time, exists bool) {
-	v := m.deleted_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDeletedAt returns the old "deleted_at" field's value of the World entity.
-// If the World object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorldMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
-	}
-	return oldValue.DeletedAt, nil
-}
-
-// ClearDeletedAt clears the value of the "deleted_at" field.
-func (m *WorldMutation) ClearDeletedAt() {
-	m.deleted_at = nil
-	m.clearedFields[world.FieldDeletedAt] = struct{}{}
-}
-
-// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
-func (m *WorldMutation) DeletedAtCleared() bool {
-	_, ok := m.clearedFields[world.FieldDeletedAt]
-	return ok
-}
-
-// ResetDeletedAt resets all changes to the "deleted_at" field.
-func (m *WorldMutation) ResetDeletedAt() {
-	m.deleted_at = nil
-	delete(m.clearedFields, world.FieldDeletedAt)
 }
 
 // SetName sets the "name" field.
@@ -797,11 +797,11 @@ func (m *WorldMutation) Type() string {
 // AddedFields().
 func (m *WorldMutation) Fields() []string {
 	fields := make([]string, 0, 4)
-	if m.tenant_id != nil {
-		fields = append(fields, world.FieldTenantID)
-	}
 	if m.deleted_at != nil {
 		fields = append(fields, world.FieldDeletedAt)
+	}
+	if m.tenant_id != nil {
+		fields = append(fields, world.FieldTenantID)
 	}
 	if m.name != nil {
 		fields = append(fields, world.FieldName)
@@ -817,10 +817,10 @@ func (m *WorldMutation) Fields() []string {
 // schema.
 func (m *WorldMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case world.FieldTenantID:
-		return m.TenantID()
 	case world.FieldDeletedAt:
 		return m.DeletedAt()
+	case world.FieldTenantID:
+		return m.TenantID()
 	case world.FieldName:
 		return m.Name()
 	case world.FieldPowerBy:
@@ -834,10 +834,10 @@ func (m *WorldMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *WorldMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case world.FieldTenantID:
-		return m.OldTenantID(ctx)
 	case world.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
+	case world.FieldTenantID:
+		return m.OldTenantID(ctx)
 	case world.FieldName:
 		return m.OldName(ctx)
 	case world.FieldPowerBy:
@@ -851,19 +851,19 @@ func (m *WorldMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *WorldMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case world.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
 	case world.FieldDeletedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDeletedAt(v)
+		return nil
+	case world.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
 		return nil
 	case world.FieldName:
 		v, ok := value.(string)
@@ -958,11 +958,11 @@ func (m *WorldMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *WorldMutation) ResetField(name string) error {
 	switch name {
-	case world.FieldTenantID:
-		m.ResetTenantID()
-		return nil
 	case world.FieldDeletedAt:
 		m.ResetDeletedAt()
+		return nil
+	case world.FieldTenantID:
+		m.ResetTenantID()
 		return nil
 	case world.FieldName:
 		m.ResetName()

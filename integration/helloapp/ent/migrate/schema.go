@@ -11,8 +11,8 @@ var (
 	// HellosColumns holds the columns for the "hellos" table.
 	HellosColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "org_id", Type: field.TypeInt, SchemaType: map[string]string{"mysql": "bigint"}},
 		{Name: "name", Type: field.TypeString},
+		{Name: "org_id", Type: field.TypeInt},
 	}
 	// HellosTable holds the schema information for the "hellos" table.
 	HellosTable = &schema.Table{
@@ -23,8 +23,8 @@ var (
 	// WorldsColumns holds the columns for the "worlds" table.
 	WorldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "tenant_id", Type: field.TypeInt, SchemaType: map[string]string{"mysql": "bigint"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "name", Type: field.TypeString},
 		{Name: "power_by", Type: field.TypeString, Nullable: true, Default: "0"},
 	}

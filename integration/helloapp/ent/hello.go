@@ -16,10 +16,10 @@ type Hello struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// TenantID holds the value of the "tenant_id" field.
-	TenantID int `json:"tenant_id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name         string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID     int `json:"tenant_id,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -53,17 +53,17 @@ func (h *Hello) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			h.ID = int(value.Int64)
-		case hello.FieldTenantID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
-			} else if value.Valid {
-				h.TenantID = int(value.Int64)
-			}
 		case hello.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				h.Name = value.String
+			}
+		case hello.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				h.TenantID = int(value.Int64)
 			}
 		default:
 			h.selectValues.Set(columns[i], values[i])
@@ -101,11 +101,11 @@ func (h *Hello) String() string {
 	var builder strings.Builder
 	builder.WriteString("Hello(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", h.ID))
-	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", h.TenantID))
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(h.Name)
+	builder.WriteString(", ")
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", h.TenantID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -32,5 +32,6 @@ func (Hello) Mixin() []ent.Mixin {
 func (Hello) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
+		field.Int(schemax.FieldTenantID).StorageKey("org_id").Immutable(),
 	}
 }

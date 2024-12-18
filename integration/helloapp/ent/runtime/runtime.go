@@ -29,7 +29,7 @@ func init() {
 	worldFields := schema.World{}.Fields()
 	_ = worldFields
 	// worldDescPowerBy is the schema descriptor for power_by field.
-	worldDescPowerBy := worldFields[1].Descriptor()
+	worldDescPowerBy := worldFields[2].Descriptor()
 	// world.DefaultPowerBy holds the default value on creation for the power_by field.
 	world.DefaultPowerBy = worldDescPowerBy.Default.(string)
 }
