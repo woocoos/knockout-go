@@ -34,13 +34,13 @@ func NewResolver(opts ...Option) *Resolver {
 }
 
 // NewSchema creates a graphql executable schema.
-func NewSchema(opts ...Option) graphql.ExecutableSchema {
+func NewSchema(resolver *Resolver) graphql.ExecutableSchema {
     {{- $pkg := "" }}
     {{- if not (eq .Resolver.Package .Exec.ImportPath) }}
         {{- $pkg = printf "%s%s" .Exec.Package "."}}
     {{- end }}
     return {{$pkg}}NewExecutableSchema({{$pkg}}Config{
-        Resolvers: NewResolver(opts...),
+        Resolvers: resolver,
     })
 }
 
