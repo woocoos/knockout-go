@@ -73,7 +73,7 @@ func ChangeRelayNodeType() entgql.SchemaHook {
 //     Noder: add entcache context
 func WithGqlWithTemplates() entgql.ExtensionOption {
 	nodeTpl := gen.MustParse(gen.NewTemplate("node").
-		Funcs(entgql.TemplateFuncs).ParseFS(_templates, "template/node.tmpl"))
+		Funcs(entgql.TemplateFuncs).ParseFS(_templates, "template/node.tmpl", "template/pagination.tmpl"))
 	return entgql.WithTemplates(append(entgql.AllTemplates, nodeTpl)...)
 }
 
