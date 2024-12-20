@@ -101,7 +101,7 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 				return nil, err
 			}
 		}
-		return query.Only(entcache.WithRefEntryKey(ctx, refschema.Table, id))
+		return query.Only(entcache.WithRefEntryKey(ctx, "RefSchema", id))
 	case user.Table:
 		query := c.User.Query().
 			Where(user.ID(id))
@@ -110,7 +110,7 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 				return nil, err
 			}
 		}
-		return query.Only(entcache.WithRefEntryKey(ctx, user.Table, id))
+		return query.Only(entcache.WithRefEntryKey(ctx, "User", id))
 	default:
 		return nil, fmt.Errorf("cannot resolve noder from table %q: %w", table, errNodeInvalidID)
 	}

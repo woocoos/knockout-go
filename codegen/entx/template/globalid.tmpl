@@ -32,7 +32,7 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 func GlobalID(tp,id string) (string,error) {
 	switch tp {
 	{{- range $n := $gqlNodes }}
-	case {{ $n.Package }}.Table:
+	case {{ quote $n.Name }}:
 		break
 	{{- end }}
 	default:
