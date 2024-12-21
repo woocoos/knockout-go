@@ -141,7 +141,7 @@ func (s *TestSuite) TestNode() {
 	srv.AddTransport(transport.POST{})
 	s.Run("node", func() {
 		w := httptest.NewRecorder()
-		id := base64.StdEncoding.EncodeToString([]byte("users:1"))
+		id := base64.StdEncoding.EncodeToString([]byte("User:1"))
 		gb, err := graphQLQueryToRequestBody(`
 query user($id: GID!) {
 	node(id: $id) {
@@ -161,7 +161,7 @@ query user($id: GID!) {
 	})
 	s.Run("node-ref", func() {
 		w := httptest.NewRecorder()
-		id := base64.StdEncoding.EncodeToString([]byte("users:1"))
+		id := base64.StdEncoding.EncodeToString([]byte("User:1"))
 		gb, err := graphQLQueryToRequestBody(`
 query user($id: GID!) {
 	node(id: $id) {

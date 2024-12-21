@@ -93,7 +93,7 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
-	case refschema.Table:
+	case "RefSchema":
 		query := c.RefSchema.Query().
 			Where(refschema.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
@@ -102,7 +102,7 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			}
 		}
 		return query.Only(entcache.WithRefEntryKey(ctx, "RefSchema", id))
-	case user.Table:
+	case "User":
 		query := c.User.Query().
 			Where(user.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
@@ -184,7 +184,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
-	case refschema.Table:
+	case "RefSchema":
 		query := c.RefSchema.Query().
 			Where(refschema.IDIn(ids...))
 		query, err := query.CollectFields(ctx, refschemaImplementors...)
@@ -200,7 +200,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case user.Table:
+	case "User":
 		query := c.User.Query().
 			Where(user.IDIn(ids...))
 		query, err := query.CollectFields(ctx, userImplementors...)
