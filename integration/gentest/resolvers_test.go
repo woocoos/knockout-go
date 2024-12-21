@@ -193,8 +193,8 @@ query user($id: GID!) {
 	s.Run("nodes", func() {
 		w := httptest.NewRecorder()
 		ids := []string{
-			base64.StdEncoding.EncodeToString([]byte("users:1")),
-			base64.StdEncoding.EncodeToString([]byte("users:2")),
+			base64.StdEncoding.EncodeToString([]byte("User:1")),
+			base64.StdEncoding.EncodeToString([]byte("User:2")),
 		}
 		gb, err := graphQLQueryToRequestBody(`
 query user($ids: [GID!]!) {
