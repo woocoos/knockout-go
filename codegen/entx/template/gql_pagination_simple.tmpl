@@ -48,12 +48,7 @@
 		{{ $r }}.Limit(limit)
 	}
 	if sp,ok := pagination.SimplePaginationFromContext(ctx);ok {
-        if first != nil {
-            {{ $r }}.Offset((sp.PageIndex - sp.CurrentIndex - 1) * *first)
-        }
-        if last != nil {
-            {{ $r }}.Offset((sp.CurrentIndex - sp.PageIndex - 1) * *last)
-        }
+        {{ $r }}.Offset(sp.Offset(first, last))
     }
 	if field := collectedField(ctx, edgesField, nodeField); field != nil {
 		if err := {{ $r }}.collectField(ctx, limit == 1,graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
@@ -184,7 +179,13 @@ func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, oneNode b
 								}
 							}
 							if limit := paginateLimit(args.first, args.last); limit > 0 {
-								if args.after == nil && args.last == nil {
+							    {{- /* Limit per row is not required, as there is only node returned by the top query. */}}
+                                var offset int
+                                sp, ok := pagination.SimplePaginationFromContext(ctx)
+                                if ok {
+                                    offset = sp.Offset(args.first, args.last)
+                                }
+								if (!ok && args.after == nil && args.before == nil) {
 									pager.applyOrder(query.Limit(limit))
 								} else {
 									{{- $fk := print $node.Package "." $fc.Edge.ColumnConstant }}
@@ -192,7 +193,7 @@ func ({{ $receiver }} *{{ $query }}) collectField(ctx context.Context, oneNode b
 										{{- $i := 0 }}{{ if $e.IsInverse }}{{ $i = 1 }}{{ end }}
 										{{- $fk = print $node.Package "." $e.PKConstant "[" $i "]" }}
 									{{- end }}
-									modify := pagination.LimitPerRow(ctx,{{ $fk }}, limit, args.first, args.last, pager.orderExpr(query))
+									modify := pagination.LimitPerRow({{ $fk }}, limit, offset, pager.orderExpr(query))
 									query.modifiers = append(query.modifiers, modify)
 								}
 							} else {

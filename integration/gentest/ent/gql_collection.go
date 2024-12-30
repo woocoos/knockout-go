@@ -198,10 +198,15 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				}
 			}
 			if limit := paginateLimit(args.first, args.last); limit > 0 {
-				if args.after == nil && args.last == nil {
+				var offset int
+				sp, ok := pagination.SimplePaginationFromContext(ctx)
+				if ok {
+					offset = sp.Offset(args.first, args.last)
+				}
+				if !ok && args.after == nil && args.before == nil {
 					pager.applyOrder(query.Limit(limit))
 				} else {
-					modify := pagination.LimitPerRow(ctx, user.RefsColumn, limit, args.first, args.last, pager.orderExpr(query))
+					modify := pagination.LimitPerRow(user.RefsColumn, limit, offset, pager.orderExpr(query))
 					query.modifiers = append(query.modifiers, modify)
 				}
 			} else {

@@ -35,6 +35,17 @@ func NewSimplePagination(p, c string) (sp *SimplePagination, err error) {
 	return sp, nil
 }
 
+// Offset returns the offset for the given first and last values.
+func (sp *SimplePagination) Offset(first, last *int) (offset int) {
+	if first != nil {
+		offset = (sp.PageIndex - sp.CurrentIndex - 1) * *first
+	}
+	if last != nil {
+		offset = (sp.CurrentIndex - sp.PageIndex - 1) * *last
+	}
+	return
+}
+
 // SimplePaginationFromContext returns the SimplePagination from the given context.
 func SimplePaginationFromContext(ctx context.Context) (*SimplePagination, bool) {
 	sp, ok := ctx.Value(simplePaginationKey).(*SimplePagination)
@@ -52,16 +63,7 @@ func WithSimplePagination(ctx context.Context, sp *SimplePagination) context.Con
 // LimitPerRow returns a query modifier that limits the number of (edges) rows returned
 // by the given partition and pagination. This helper function is used mainly by the paginated API to
 // override the default Limit behavior for limit returned per node and not limit for all query.
-func LimitPerRow(ctx context.Context, partitionBy string, limit int, first, last *int, orderBy ...sql.Querier) func(s *sql.Selector) {
-	offset := 0
-	if sp, ok := SimplePaginationFromContext(ctx); ok {
-		if first != nil {
-			offset = (sp.PageIndex - sp.CurrentIndex - 1) * *first
-		}
-		if last != nil {
-			offset = (sp.CurrentIndex - sp.PageIndex - 1) * *last
-		}
-	}
+func LimitPerRow(partitionBy string, limit, offset int, orderBy ...sql.Querier) func(s *sql.Selector) {
 	return func(s *sql.Selector) {
 		d := sql.Dialect(s.Dialect())
 		s.SetDistinct(false)

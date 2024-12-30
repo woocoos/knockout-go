@@ -17,6 +17,7 @@ import (
 	"github.com/woocoos/knockout-go/integration/gentest/ent"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/migrate"
+	"github.com/woocoos/knockout-go/pkg/middleware"
 	"github.com/woocoos/knockout-go/pkg/pagination"
 	"net/http/httptest"
 	"strconv"
@@ -107,11 +108,22 @@ func (s *TestSuite) TestUsers_SimplePagination() {
 
 	s.Run("simple before", func() {
 		ctx := pagination.WithSimplePagination(context.Background(), &pagination.SimplePagination{PageIndex: 1, CurrentIndex: 3})
+		// id < 5 order by id desc
 		users, err := s.queryResolver.Users(ctx, nil, nil, &ent.Cursor{ID: 5}, gds.Ptr(2), nil, nil)
 		s.NoError(err)
 		s.Len(users.Edges, 2)
 		s.Equal(1, users.Edges[0].Node.ID)
 		s.Equal(2, users.Edges[1].Node.ID)
+	})
+
+	s.Run("empty cursor", func() {
+		ctx := pagination.WithSimplePagination(context.Background(), &pagination.SimplePagination{PageIndex: 1, CurrentIndex: 3})
+		// order by id desc
+		users, err := s.queryResolver.Users(ctx, nil, nil, nil, gds.Ptr(2), nil, nil)
+		s.NoError(err)
+		s.Len(users.Edges, 2)
+		s.Equal(17, users.Edges[0].Node.ID, "order by id desc default")
+		s.Equal(18, users.Edges[1].Node.ID, "order by id desc default")
 	})
 }
 
@@ -160,9 +172,7 @@ query user($id: GID!) {
 		s.Contains(w.Body.String(), `{"id":"1","name":"user0"}`)
 	})
 	s.Run("node-ref", func() {
-		w := httptest.NewRecorder()
-		id := base64.StdEncoding.EncodeToString([]byte("User:1"))
-		gb, err := graphQLQueryToRequestBody(`
+		qstr := `
 query user($id: GID!) {
 	node(id: $id) {
     	... on User {
@@ -177,18 +187,45 @@ query user($id: GID!) {
 	    }
     }
 }
-`, map[string]any{"id": id})
+`
+		s.Run("no page", func() {
+			w := httptest.NewRecorder()
+			id := base64.StdEncoding.EncodeToString([]byte("User:1"))
+			gb, err := graphQLQueryToRequestBody(qstr, map[string]any{"id": id})
 
-		s.Require().NoError(err)
-		bd := strings.NewReader(gb)
-		r := httptest.NewRequest("POST", "/graphql/query", bd)
-		r.Header.Set("Content-Type", "application/json")
-		srv.ServeHTTP(w, r)
-		kj := koanf.New(".")
-		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
-		s.Require().NoError(err)
-		s.Contains(w.Body.String(), `{"name":"ref0"}`)
-		s.Len(kj.Slices("data.node.refs.edges"), 2)
+			s.Require().NoError(err)
+			bd := strings.NewReader(gb)
+			r := httptest.NewRequest("POST", "/graphql/query", bd)
+			r.Header.Set("Content-Type", "application/json")
+			srv.ServeHTTP(w, r)
+			kj := koanf.New(".")
+			err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+			s.Require().NoError(err)
+			s.Contains(w.Body.String(), `{"name":"ref0"}`)
+			s.Len(kj.Slices("data.node.refs.edges"), 2)
+		})
+		s.Run("with page query", func() {
+			srv := handler.New(NewSchema(s.client))
+			srv.AddTransport(transport.POST{})
+			srv.AroundResponses(middleware.SimplePagination())
+			w := httptest.NewRecorder()
+			id := base64.StdEncoding.EncodeToString([]byte("User:1"))
+			gb, err := graphQLQueryToRequestBody(qstr, map[string]any{"id": id})
+
+			s.Require().NoError(err)
+			bd := strings.NewReader(gb)
+			ctx, _ := gin.CreateTestContext(w)
+			r := httptest.NewRequestWithContext(ctx, "POST", "/graphql/query?p=2", bd)
+			ctx.Request = r
+			r.Header.Set("Content-Type", "application/json")
+			srv.ServeHTTP(w, r)
+			kj := koanf.New(".")
+			err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+			s.Require().NoError(err)
+			s.Contains(w.Body.String(), `{"name":"ref2"}`)
+			s.Contains(w.Body.String(), `{"name":"ref3"}`)
+			s.Len(kj.Slices("data.node.refs.edges"), 2)
+		})
 	})
 	s.Run("nodes", func() {
 		w := httptest.NewRecorder()
