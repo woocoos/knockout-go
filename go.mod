@@ -35,7 +35,7 @@ require (
 	github.com/tsingsun/woocoo/contrib/telemetry v0.1.5-0.20240522021626-a2b6e6d10802
 	github.com/vektah/gqlparser/v2 v2.5.19
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2
-	github.com/woocoos/entcache v0.0.0-20231206055445-856f0148efa5
+	github.com/woocoos/entcache v0.1.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.26.0
 	go.opentelemetry.io/otel v1.26.0
 	golang.org/x/oauth2 v0.20.0

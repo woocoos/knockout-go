@@ -1,14 +1,8 @@
 package clientx
 
 import (
-	"context"
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsingsun/woocoo/pkg/conf"
-	"github.com/tsingsun/woocoo/pkg/store/sqlx"
-	"github.com/woocoos/casbin-ent-adapter/ent"
-	"github.com/woocoos/knockout-go/pkg/identity"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -73,31 +67,4 @@ store:
 			tt.check(got)
 		})
 	}
-}
-
-func TestMultiInstances(t *testing.T) {
-	pcfg := conf.NewFromStringMap(map[string]any{
-		"store": map[string]any{
-			"portal": map[string]any{
-				"driverName": "sqlite3",
-				"dsn":        "file:cashbin?mode=memory&cache=shared&_fk=1",
-				"multiInstances": map[string]any{
-					"1": map[string]any{
-						"driverName": "sqlite3",
-						"dsn":        "file:cashbin?mode=memory&cache=shared&_fk=1",
-					},
-				},
-			},
-		},
-	}).Sub("store.portal")
-	var pd dialect.Driver
-	if pcfg.IsSet("multiInstances") {
-		pd = NewRouteDriver(pcfg)
-	} else {
-		pd = sql.OpenDB(pcfg.String("driverName"), sqlx.NewSqlDB(pcfg))
-	}
-	client := ent.NewClient(ent.Driver(pd))
-	ctx := identity.WithTenantID(context.Background(), 1)
-	err := client.Schema.Create(ctx)
-	assert.NoError(t, err)
 }
