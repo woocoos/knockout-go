@@ -125,7 +125,7 @@ func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (bool, 
 		return au.Enforcer.Enforce(args.User.Identity().Name(), string(args.Action), args.ActionVerb)
 	}
 	// read is the access name.
-	return au.Enforcer.Enforce(args.User.Identity().Name(), tenant, string(args.Action), args.ActionVerb)
+	return au.Enforcer.Enforce(args.User.Identity().Name(), strconv.Itoa(tenant), string(args.Action), args.ActionVerb)
 }
 
 // QueryAllowedResourceConditions returns the allowed resource conditions for the user in domain.
