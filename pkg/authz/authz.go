@@ -7,8 +7,16 @@ import (
 )
 
 const (
-	ArnSplit   = ":"
-	blockSplit = "/"
+	ActionTypeRead  string = "read"
+	ActionTypeWrite string = "write"
+	// ActionTypeSchema to resource: ent schema and so on
+	ActionTypeSchema string = "schema"
+)
+
+const (
+	fieldTenantID = "tenant_id"
+	ArnSplit      = ":"
+	blockSplit    = "/"
 )
 
 const (
@@ -22,7 +30,7 @@ func FormatArnPrefix(app, domain, resource string) string {
 
 // ReplaceTenantID 替换资源中的tenant_id
 func ReplaceTenantID(input string, tenantID int) string {
-	return strings.Replace(input, ArnSplit+"tenant_id"+ArnSplit, ArnSplit+strconv.Itoa(tenantID)+ArnSplit, -1)
+	return strings.Replace(input, ArnSplit+fieldTenantID+ArnSplit, ArnSplit+strconv.Itoa(tenantID)+ArnSplit, -1)
 }
 
 // FormatResourceArn 格式化资源ARN

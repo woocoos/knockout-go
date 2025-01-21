@@ -83,7 +83,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
-	github.com/tsingsun/woocoo/contrib/gql v0.0.3-0.20241202100427-ec3ba92be926 // indirect
+	github.com/tsingsun/woocoo/contrib/gql v0.0.3-0.20250119164019-10d449dc5734 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect

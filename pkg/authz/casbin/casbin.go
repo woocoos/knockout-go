@@ -2,12 +2,15 @@ package casbin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
 	rediswatcher "github.com/casbin/redis-watcher/v2"
+	"github.com/tsingsun/woocoo/pkg/cache"
+	"github.com/tsingsun/woocoo/pkg/cache/lfu"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/security"
 	entadapter "github.com/woocoos/casbin-ent-adapter"
@@ -31,6 +34,8 @@ type (
 		baseEnforcer *casbin.Enforcer
 		Watcher      persist.Watcher
 		autoSave     bool
+		// local cache
+		cache cache.Cache
 	}
 )
 
@@ -47,15 +52,33 @@ type (
 //	    channel: "/casbin"
 //	model: /path/to/model.conf
 //	policy: /path/to/policy.csv
+//	cache:
+//	  size: 1000
+//	  ttl:  1m
 //
 // .
 // autoSave in watcher callback should be false. but set false will cause casbin main nodes lost save data.
 // we will improve in the future.current use database unique index to avoid duplicate data.
+//
+// cache.ttl default 1 minute.
 func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err error) {
 	au = &Authorizer{}
 	for _, opt := range opts {
 		opt(au)
 	}
+	if err = au.setCasbin(cnf); err != nil {
+		return
+	}
+	if cnf.IsSet("cache") {
+		if au.cache, err = lfu.NewTinyLFU(cnf.Sub("cache")); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (au *Authorizer) setCasbin(cnf *conf.Configuration) (err error) {
 	// model
 	var dsl, policy any
 	m := cnf.String("model")
@@ -92,8 +115,7 @@ func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err
 	if err != nil {
 		return
 	}
-
-	return
+	return nil
 }
 
 func (au *Authorizer) Prepare(ctx context.Context, kind security.ArnKind, arnParts ...string) (*security.EvalArgs, error) {
@@ -103,7 +125,7 @@ func (au *Authorizer) Prepare(ctx context.Context, kind security.ArnKind, arnPar
 	}
 	args := &security.EvalArgs{
 		User:       user,
-		ActionVerb: "read",
+		ActionVerb: authz.ActionTypeRead,
 	}
 	switch kind {
 	case security.ArnKindWeb, security.ArnKindGql:
@@ -130,28 +152,43 @@ func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (bool, 
 
 // QueryAllowedResourceConditions returns the allowed resource conditions for the user in domain.
 // if the user don't have any permission, return nil.
-func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *security.EvalArgs) ([]string, error) {
+// A ResourceCondition's operation should be use `data`.
+func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *security.EvalArgs) (conditions []string, err error) {
 	tenant, ok := identity.TenantIDLoadFromContext(ctx)
 	if !ok {
 		return nil, identity.ErrMisTenantID
 	}
-	permissions := au.baseEnforcer.GetPermissionsForUserInDomain(args.User.Identity().Name(), strconv.Itoa(tenant))
-	if len(permissions) == 0 {
-		return nil, nil
-	}
-	var objectConditions []string
+	uid := args.User.Identity().Name()
 	prefix := string(args.Resource)
-	for _, policy := range permissions {
-		// policy {sub, domain, obj, act}
-		if policy[3] == "read" {
-			if !strings.HasPrefix(policy[2], prefix) {
-				continue
+	var cachekey string
+	if au.cache != nil {
+		cachekey = strconv.Itoa(tenant) + "_" + uid + "_" + prefix
+		if err = au.cache.Get(ctx, cachekey, &conditions); err != nil {
+			if !errors.Is(err, cache.ErrCacheMiss) {
+				return nil, err
 			}
-			objectConditions = append(objectConditions, strings.TrimPrefix(policy[2], prefix))
+		} else {
+			return conditions, nil
 		}
 	}
-
-	return objectConditions, nil
+	permissions := au.baseEnforcer.GetPermissionsForUserInDomain(args.User.Identity().Name(), strconv.Itoa(tenant))
+	if len(permissions) > 0 {
+		for _, policy := range permissions {
+			// policy {sub, domain, obj, act}
+			if policy[3] == authz.ActionTypeSchema {
+				if !strings.HasPrefix(policy[2], prefix) {
+					continue
+				}
+				conditions = append(conditions, strings.TrimPrefix(policy[2], prefix))
+			}
+		}
+	}
+	if au.cache != nil {
+		if err = au.cache.Set(ctx, cachekey, conditions); err != nil {
+			return nil, err
+		}
+	}
+	return conditions, nil
 }
 
 func (au *Authorizer) buildWatcher(cnf *conf.Configuration) (err error) {

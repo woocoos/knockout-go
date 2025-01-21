@@ -66,6 +66,10 @@ func TestNewAuthorization(t *testing.T) {
 						"autoSave": true,
 						"model":    test.Tmp(`rbac_model.conf`),
 						"policy":   test.Tmp(`rbac_policy.csv`),
+						"cache": map[string]any{
+							"size": 1000,
+							"ttl":  "1h",
+						},
 					})
 				}(),
 				opts: []Option{},
@@ -429,19 +433,50 @@ web:
 }
 
 func TestAuthorizer_QueryAllowedResourceConditions(t *testing.T) {
-	casbinFilePrepare("resources")
-	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
-		"expireTime": 10 * time.Second,
-		"model":      test.Tmp(`resources_model.conf`),
-		"policy":     test.Tmp(`resources_policy.csv`),
-	}))
-	require.NoError(t, err)
-	ctx := identity.WithTenantID(context.Background(), 10000)
-	condions, err := authorizer.QueryAllowedResourceConditions(ctx, &security.EvalArgs{
-		User:     security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "alice"}),
-		Action:   "read",
-		Resource: ":10000:World",
+	t.Run("default", func(t *testing.T) {
+		casbinFilePrepare("resources")
+		authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
+			"expireTime": 10 * time.Second,
+			"model":      test.Tmp(`resources_model.conf`),
+			"policy":     test.Tmp(`resources_policy.csv`),
+			"cache": map[string]any{
+				"size": 100,
+			},
+		}))
+		require.NoError(t, err)
+		ctx := identity.WithTenantID(context.Background(), 10000)
+		ea := &security.EvalArgs{
+			User:     security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "alice"}),
+			Action:   "schema",
+			Resource: ":10000:World",
+		}
+		condions, err := authorizer.QueryAllowedResourceConditions(ctx, ea)
+		require.NoError(t, err)
+		assert.Equal(t, []string{":name/cba:power_by/0"}, condions)
 	})
-	require.NoError(t, err)
-	assert.Equal(t, []string{":name/cba:power_by/0"}, condions)
+	t.Run("cache", func(t *testing.T) {
+		casbinFilePrepare("resources")
+		authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
+			"expireTime": 10 * time.Second,
+			"model":      test.Tmp(`resources_model.conf`),
+			"policy":     test.Tmp(`resources_policy.csv`),
+			"cache": map[string]any{
+				"size": 100,
+			},
+		}))
+		require.NoError(t, err)
+		ctx := identity.WithTenantID(context.Background(), 10000)
+		ea := &security.EvalArgs{
+			User:     security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "alice"}),
+			Action:   "schema",
+			Resource: ":10000:World",
+		}
+		condions, err := authorizer.QueryAllowedResourceConditions(ctx, ea)
+		require.NoError(t, err)
+		assert.Equal(t, []string{":name/cba:power_by/0"}, condions)
+		// from cache
+		condions, err = authorizer.QueryAllowedResourceConditions(ctx, ea)
+		require.NoError(t, err)
+		assert.Equal(t, []string{":name/cba:power_by/0"}, condions)
+	})
 }

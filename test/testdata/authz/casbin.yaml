@@ -90,7 +90,7 @@ resources:
     p, alice, 10000, resource:*, read, allow
     p, alice, 10000, resource:userMenus, read, allow
     p, alice, 10000, resource:userRootOrgs, read, allow
-    p, alice, 10000, :10000:World:name/cba:power_by/0, read, allow
+    p, alice, 10000, :10000:World:name/cba:power_by/0, schema, allow
     p, admin, 10000, resource:userPermissions, read, allow
     p, alice, 10000, resource:node, read, allow
     g, alice, admin, 10000

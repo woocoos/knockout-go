@@ -102,25 +102,29 @@ func Test_WorldWithTenant(t *testing.T) {
 	_, err := authorizer.Enforcer.AddRoleForUserInDomain("1", strconv.Itoa(tid), strconv.Itoa(tid))
 	require.NoError(t, err)
 	helloArnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "Hello")
-	_, err = authorizer.Enforcer.AddPolicy("1", helloArnp, "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", helloArnp, authz.ActionTypeSchema, "allow")
 	require.NoError(t, err)
-	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), helloArnp+"name/abc", "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), helloArnp+"name/abc", authz.ActionTypeSchema, "allow")
 	require.NoError(t, err)
 	// set action policy
 	_, err = authorizer.Enforcer.AddPolicy("1", "resource:*", "read", "allow")
 	require.NoError(t, err)
 
 	worldArnp := authz.FormatArnPrefix("", strconv.Itoa(tid), "World")
-	_, err = authorizer.Enforcer.AddPolicy("1", worldArnp, "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", worldArnp, authz.ActionTypeSchema, "allow")
 	require.NoError(t, err)
-	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+"name/abc", "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+"name/abc", authz.ActionTypeSchema, "allow")
 	require.NoError(t, err)
-	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+"name/cba:power_by/0", "read", "allow")
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+"name/cba:power_by/0", authz.ActionTypeSchema, "allow")
 	require.NoError(t, err)
+
 	// set action policy
 	_, err = authorizer.Enforcer.AddPolicy("1", "resource:*", "read", "allow")
 	require.NoError(t, err)
+	// tenant privacy
+	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+":name/cba:power_by/0", authz.ActionTypeSchema, "allow")
 
+	require.NoError(t, err)
 	t.Run("tenant", func(t *testing.T) {
 		// ctx without tenant_id
 		if err := client.World.Create().Exec(ctx); err == nil {
