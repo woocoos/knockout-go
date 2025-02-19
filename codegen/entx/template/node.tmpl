@@ -36,7 +36,9 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
-    "github.com/woocoos/entcache"
+	{{ if $.Config.Annotations.EntCache }}
+        "github.com/woocoos/entcache"
+    {{ end }}
 )
 
 // Noder wraps the basic Node method.
@@ -148,7 +150,11 @@ func (c *Client) noder(ctx context.Context, table string, id {{ $idType }}) (Nod
 					}
 				}
 			{{- end }}
-			return query.Only(entcache.WithRefEntryKey(ctx, {{ quote $n.Name }},id))
+			{{- if $.Config.Annotations.EntCache }}
+			    return query.Only(entcache.WithRefEntryKey(ctx, {{ quote $n.Name }},id))
+			{{- else }}
+				return query.Only(ctx)
+			{{- end }}
 	{{- end }}
 	default:
 		return nil, fmt.Errorf("cannot resolve noder from table %q: %w", table, errNodeInvalidID)

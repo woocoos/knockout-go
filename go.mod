@@ -3,9 +3,9 @@ module github.com/woocoos/knockout-go
 go 1.23.0
 
 require (
-	ariga.io/atlas v0.25.1-0.20240717145915-af51d3945208
+	ariga.io/atlas v0.31.1-0.20250212144724-069be8033e83
 	entgo.io/contrib v0.6.0
-	entgo.io/ent v0.14.1
+	entgo.io/ent v0.14.2
 	github.com/99designs/gqlgen v0.17.56
 	github.com/XSAM/otelsql v0.31.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.8
@@ -35,11 +35,11 @@ require (
 	github.com/tsingsun/woocoo/contrib/telemetry v0.1.5-0.20240522021626-a2b6e6d10802
 	github.com/vektah/gqlparser/v2 v2.5.19
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2
-	github.com/woocoos/entcache v0.1.0
+	github.com/woocoos/entcache v0.2.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.26.0
 	go.opentelemetry.io/otel v1.26.0
 	golang.org/x/oauth2 v0.20.0
-	golang.org/x/tools v0.24.0
+	golang.org/x/tools v0.30.0
 )
 
 require (
@@ -143,13 +143,13 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 // indirect
-	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
