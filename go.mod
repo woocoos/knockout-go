@@ -30,7 +30,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tsingsun/woocoo v0.5.2
+	github.com/tsingsun/woocoo v0.5.4
 	github.com/tsingsun/woocoo/contrib/gql v0.0.3-0.20250119164019-10d449dc5734
 	github.com/tsingsun/woocoo/contrib/telemetry v0.1.5-0.20240522021626-a2b6e6d10802
 	github.com/vektah/gqlparser/v2 v2.5.19
