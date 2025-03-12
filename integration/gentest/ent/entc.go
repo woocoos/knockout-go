@@ -19,7 +19,7 @@ func main() {
 		entgql.WithWhereInputs(true),
 		entgql.WithConfigPath("./gqlgen.yml"),
 		entgql.WithSchemaPath("./ent.graphql"),
-		entgql.WithSchemaHook(entx.ChangeRelayNodeType()),
+		entgql.WithSchemaHook(entx.ChangeRelayNodeType(), entx.DecimalScalar()),
 	)
 	if err != nil {
 		log.Fatalf("creating entgql extension: %v", err)

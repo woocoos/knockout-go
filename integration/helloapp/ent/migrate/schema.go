@@ -24,9 +24,9 @@ var (
 	WorldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_by", Type: field.TypeInt},
-		{Name: "created_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "TIMESTAMP(3)", "postgres": "TIMESTAMP(3)"}},
 		{Name: "updated_by", Type: field.TypeInt, Nullable: true},
-		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "TIMESTAMP(3)", "postgres": "TIMESTAMP(3)"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "name", Type: field.TypeString},

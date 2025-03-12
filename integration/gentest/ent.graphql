@@ -25,6 +25,10 @@ https://relay.dev/graphql/connections.htm#sec-Cursor
 """
 scalar Cursor
 """
+Arbitrary-precision fixed-point decimal numbers
+"""
+scalar Decimal
+"""
 An object with a Global ID,for using in Noder interface.
 """
 scalar GID

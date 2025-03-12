@@ -1,4 +1,3 @@
-scalar Decimal
 type Mutation {
     # createUser will not auto generate the logic.
     createUser(name: String!, money: Decimal): User!
