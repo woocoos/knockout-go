@@ -91,6 +91,19 @@ func DecimalScalar() entgql.SchemaHook {
 				Kind:        ast.Scalar,
 				Name:        "Decimal",
 				Description: "Arbitrary-precision fixed-point decimal numbers",
+				Directives: ast.DirectiveList{&ast.Directive{
+					Name:     "goModel",
+					Location: ast.LocationObject,
+					Arguments: ast.ArgumentList{
+						{
+							Name: "model",
+							Value: &ast.Value{
+								Kind: ast.StringValue,
+								Raw:  "github.com/woocoos/knockout-go/ent/schemax/typex.Decimal",
+							},
+						},
+					},
+				}},
 			}
 		}
 		return nil

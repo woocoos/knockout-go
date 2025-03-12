@@ -59,6 +59,19 @@ func ChangeRelayNodeType() entgql.SchemaHook {
 				Kind:        ast.Scalar,
 				Name:        "GID",
 				Description: "An object with a Global ID,for using in Noder interface.",
+				Directives: ast.DirectiveList{&ast.Directive{
+					Name:     "goModel",
+					Location: ast.LocationObject,
+					Arguments: ast.ArgumentList{
+						{
+							Name: "model",
+							Value: &ast.Value{
+								Kind: ast.StringValue,
+								Raw:  "github.com/99designs/gqlgen/graphql.ID",
+							},
+						},
+					},
+				}},
 			}
 		}
 		return nil
