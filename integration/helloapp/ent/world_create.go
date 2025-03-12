@@ -20,6 +20,54 @@ type WorldCreate struct {
 	hooks    []Hook
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (wc *WorldCreate) SetCreatedBy(i int) *WorldCreate {
+	wc.mutation.SetCreatedBy(i)
+	return wc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (wc *WorldCreate) SetCreatedAt(t time.Time) *WorldCreate {
+	wc.mutation.SetCreatedAt(t)
+	return wc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (wc *WorldCreate) SetNillableCreatedAt(t *time.Time) *WorldCreate {
+	if t != nil {
+		wc.SetCreatedAt(*t)
+	}
+	return wc
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (wc *WorldCreate) SetUpdatedBy(i int) *WorldCreate {
+	wc.mutation.SetUpdatedBy(i)
+	return wc
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (wc *WorldCreate) SetNillableUpdatedBy(i *int) *WorldCreate {
+	if i != nil {
+		wc.SetUpdatedBy(*i)
+	}
+	return wc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wc *WorldCreate) SetUpdatedAt(t time.Time) *WorldCreate {
+	wc.mutation.SetUpdatedAt(t)
+	return wc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (wc *WorldCreate) SetNillableUpdatedAt(t *time.Time) *WorldCreate {
+	if t != nil {
+		wc.SetUpdatedAt(*t)
+	}
+	return wc
+}
+
 // SetDeletedAt sets the "deleted_at" field.
 func (wc *WorldCreate) SetDeletedAt(t time.Time) *WorldCreate {
 	wc.mutation.SetDeletedAt(t)
@@ -103,6 +151,13 @@ func (wc *WorldCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (wc *WorldCreate) defaults() error {
+	if _, ok := wc.mutation.CreatedAt(); !ok {
+		if world.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized world.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := world.DefaultCreatedAt()
+		wc.mutation.SetCreatedAt(v)
+	}
 	if _, ok := wc.mutation.PowerBy(); !ok {
 		v := world.DefaultPowerBy
 		wc.mutation.SetPowerBy(v)
@@ -112,6 +167,12 @@ func (wc *WorldCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (wc *WorldCreate) check() error {
+	if _, ok := wc.mutation.CreatedBy(); !ok {
+		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "World.created_by"`)}
+	}
+	if _, ok := wc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "World.created_at"`)}
+	}
 	if _, ok := wc.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "World.tenant_id"`)}
 	}
@@ -149,6 +210,22 @@ func (wc *WorldCreate) createSpec() (*World, *sqlgraph.CreateSpec) {
 	if id, ok := wc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := wc.mutation.CreatedBy(); ok {
+		_spec.SetField(world.FieldCreatedBy, field.TypeInt, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := wc.mutation.CreatedAt(); ok {
+		_spec.SetField(world.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := wc.mutation.UpdatedBy(); ok {
+		_spec.SetField(world.FieldUpdatedBy, field.TypeInt, value)
+		_node.UpdatedBy = value
+	}
+	if value, ok := wc.mutation.UpdatedAt(); ok {
+		_spec.SetField(world.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	if value, ok := wc.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)

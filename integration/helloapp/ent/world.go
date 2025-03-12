@@ -17,6 +17,14 @@ type World struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy int `json:"created_by,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedBy holds the value of the "updated_by" field.
+	UpdatedBy int `json:"updated_by,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
@@ -33,11 +41,11 @@ func (*World) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case world.FieldID, world.FieldTenantID:
+		case world.FieldID, world.FieldCreatedBy, world.FieldUpdatedBy, world.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case world.FieldName, world.FieldPowerBy:
 			values[i] = new(sql.NullString)
-		case world.FieldDeletedAt:
+		case world.FieldCreatedAt, world.FieldUpdatedAt, world.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -60,6 +68,30 @@ func (w *World) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			w.ID = int(value.Int64)
+		case world.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				w.CreatedBy = int(value.Int64)
+			}
+		case world.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				w.CreatedAt = value.Time
+			}
+		case world.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				w.UpdatedBy = int(value.Int64)
+			}
+		case world.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				w.UpdatedAt = value.Time
+			}
 		case world.FieldDeletedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
@@ -120,6 +152,18 @@ func (w *World) String() string {
 	var builder strings.Builder
 	builder.WriteString("World(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", w.ID))
+	builder.WriteString("created_by=")
+	builder.WriteString(fmt.Sprintf("%v", w.CreatedBy))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(w.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(fmt.Sprintf("%v", w.UpdatedBy))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(w.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(w.DeletedAt.Format(time.ANSIC))
 	builder.WriteString(", ")

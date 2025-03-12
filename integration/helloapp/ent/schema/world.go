@@ -24,6 +24,7 @@ func (World) Annotations() []schema.Annotation {
 func (World) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		schemax.IntID{},
+		schemax.AuditMixin{Precision: 3},
 		schemax.NewTenantMixin[intercept.Query, *gen.Client]("", intercept.NewQuery),
 		schemax.NewSoftDeleteMixin[intercept.Query, *gen.Client](intercept.NewQuery),
 	}

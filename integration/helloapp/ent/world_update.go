@@ -28,6 +28,53 @@ func (wu *WorldUpdate) Where(ps ...predicate.World) *WorldUpdate {
 	return wu
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (wu *WorldUpdate) SetUpdatedBy(i int) *WorldUpdate {
+	wu.mutation.ResetUpdatedBy()
+	wu.mutation.SetUpdatedBy(i)
+	return wu
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (wu *WorldUpdate) SetNillableUpdatedBy(i *int) *WorldUpdate {
+	if i != nil {
+		wu.SetUpdatedBy(*i)
+	}
+	return wu
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (wu *WorldUpdate) AddUpdatedBy(i int) *WorldUpdate {
+	wu.mutation.AddUpdatedBy(i)
+	return wu
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (wu *WorldUpdate) ClearUpdatedBy() *WorldUpdate {
+	wu.mutation.ClearUpdatedBy()
+	return wu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wu *WorldUpdate) SetUpdatedAt(t time.Time) *WorldUpdate {
+	wu.mutation.SetUpdatedAt(t)
+	return wu
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (wu *WorldUpdate) SetNillableUpdatedAt(t *time.Time) *WorldUpdate {
+	if t != nil {
+		wu.SetUpdatedAt(*t)
+	}
+	return wu
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (wu *WorldUpdate) ClearUpdatedAt() *WorldUpdate {
+	wu.mutation.ClearUpdatedAt()
+	return wu
+}
+
 // SetDeletedAt sets the "deleted_at" field.
 func (wu *WorldUpdate) SetDeletedAt(t time.Time) *WorldUpdate {
 	wu.mutation.SetDeletedAt(t)
@@ -123,6 +170,21 @@ func (wu *WorldUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := wu.mutation.UpdatedBy(); ok {
+		_spec.SetField(world.FieldUpdatedBy, field.TypeInt, value)
+	}
+	if value, ok := wu.mutation.AddedUpdatedBy(); ok {
+		_spec.AddField(world.FieldUpdatedBy, field.TypeInt, value)
+	}
+	if wu.mutation.UpdatedByCleared() {
+		_spec.ClearField(world.FieldUpdatedBy, field.TypeInt)
+	}
+	if value, ok := wu.mutation.UpdatedAt(); ok {
+		_spec.SetField(world.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if wu.mutation.UpdatedAtCleared() {
+		_spec.ClearField(world.FieldUpdatedAt, field.TypeTime)
+	}
 	if value, ok := wu.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)
 	}
@@ -156,6 +218,53 @@ type WorldUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *WorldMutation
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (wuo *WorldUpdateOne) SetUpdatedBy(i int) *WorldUpdateOne {
+	wuo.mutation.ResetUpdatedBy()
+	wuo.mutation.SetUpdatedBy(i)
+	return wuo
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (wuo *WorldUpdateOne) SetNillableUpdatedBy(i *int) *WorldUpdateOne {
+	if i != nil {
+		wuo.SetUpdatedBy(*i)
+	}
+	return wuo
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (wuo *WorldUpdateOne) AddUpdatedBy(i int) *WorldUpdateOne {
+	wuo.mutation.AddUpdatedBy(i)
+	return wuo
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (wuo *WorldUpdateOne) ClearUpdatedBy() *WorldUpdateOne {
+	wuo.mutation.ClearUpdatedBy()
+	return wuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wuo *WorldUpdateOne) SetUpdatedAt(t time.Time) *WorldUpdateOne {
+	wuo.mutation.SetUpdatedAt(t)
+	return wuo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (wuo *WorldUpdateOne) SetNillableUpdatedAt(t *time.Time) *WorldUpdateOne {
+	if t != nil {
+		wuo.SetUpdatedAt(*t)
+	}
+	return wuo
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (wuo *WorldUpdateOne) ClearUpdatedAt() *WorldUpdateOne {
+	wuo.mutation.ClearUpdatedAt()
+	return wuo
 }
 
 // SetDeletedAt sets the "deleted_at" field.
@@ -282,6 +391,21 @@ func (wuo *WorldUpdateOne) sqlSave(ctx context.Context) (_node *World, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := wuo.mutation.UpdatedBy(); ok {
+		_spec.SetField(world.FieldUpdatedBy, field.TypeInt, value)
+	}
+	if value, ok := wuo.mutation.AddedUpdatedBy(); ok {
+		_spec.AddField(world.FieldUpdatedBy, field.TypeInt, value)
+	}
+	if wuo.mutation.UpdatedByCleared() {
+		_spec.ClearField(world.FieldUpdatedBy, field.TypeInt)
+	}
+	if value, ok := wuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(world.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if wuo.mutation.UpdatedAtCleared() {
+		_spec.ClearField(world.FieldUpdatedAt, field.TypeTime)
 	}
 	if value, ok := wuo.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)

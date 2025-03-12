@@ -5,6 +5,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"errors"
@@ -14,23 +15,34 @@ import (
 	"time"
 )
 
+// AuditMixin is a mixin that adds created_at, created_by, updated_at, and updated_by fields to the schema.
 type AuditMixin struct {
 	mixin.Schema
+	// Precision is the precision of the time.Time field.
+	Precision int
 }
 
 func (e AuditMixin) Fields() []ent.Field {
+	ca := field.Time("created_at").Immutable().Default(time.Now).Immutable()
+	ua := field.Time("updated_at").Optional()
+	if e.Precision > 0 {
+		st := map[string]string{
+			dialect.Postgres: fmt.Sprintf("TIMESTAMP(%d)", e.Precision),
+			dialect.MySQL:    fmt.Sprintf("TIMESTAMP(%d)", e.Precision),
+		}
+		ca = ca.SchemaType(st)
+		ua = ua.SchemaType(st)
+	}
 	return []ent.Field{
 		field.Int("created_by").Immutable().
 			Annotations(entgql.Skip(entgql.SkipMutationCreateInput), entproto.Field(2)),
-		field.Time("created_at").Immutable().Default(time.Now).Immutable().
-			Annotations(entgql.OrderField("createdAt"), entgql.Skip(entgql.SkipMutationCreateInput),
-				entproto.Field(3)),
+		ca.Annotations(entgql.OrderField("createdAt"), entgql.Skip(entgql.SkipMutationCreateInput),
+			entproto.Field(3)),
 		field.Int("updated_by").Optional().
 			Annotations(entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
 				entproto.Field(4)),
-		field.Time("updated_at").Optional().
-			Annotations(entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
-				entproto.Field(5)),
+		ua.Annotations(entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+			entproto.Field(5)),
 	}
 }
 

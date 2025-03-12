@@ -41,6 +41,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "World",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			world.FieldCreatedBy: {Type: field.TypeInt, Column: world.FieldCreatedBy},
+			world.FieldCreatedAt: {Type: field.TypeTime, Column: world.FieldCreatedAt},
+			world.FieldUpdatedBy: {Type: field.TypeInt, Column: world.FieldUpdatedBy},
+			world.FieldUpdatedAt: {Type: field.TypeTime, Column: world.FieldUpdatedAt},
 			world.FieldDeletedAt: {Type: field.TypeTime, Column: world.FieldDeletedAt},
 			world.FieldTenantID:  {Type: field.TypeInt, Column: world.FieldTenantID},
 			world.FieldName:      {Type: field.TypeString, Column: world.FieldName},
@@ -144,6 +148,26 @@ func (f *WorldFilter) Where(p entql.P) {
 // WhereID applies the entql int predicate on the id field.
 func (f *WorldFilter) WhereID(p entql.IntP) {
 	f.Where(p.Field(world.FieldID))
+}
+
+// WhereCreatedBy applies the entql int predicate on the created_by field.
+func (f *WorldFilter) WhereCreatedBy(p entql.IntP) {
+	f.Where(p.Field(world.FieldCreatedBy))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *WorldFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(world.FieldCreatedAt))
+}
+
+// WhereUpdatedBy applies the entql int predicate on the updated_by field.
+func (f *WorldFilter) WhereUpdatedBy(p entql.IntP) {
+	f.Where(p.Field(world.FieldUpdatedBy))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *WorldFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(world.FieldUpdatedAt))
 }
 
 // WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.

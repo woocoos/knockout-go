@@ -22,6 +22,7 @@ import (
 	"math/rand"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func open(ctx context.Context) *ent.Client {
@@ -65,25 +66,24 @@ func Test_CreateWorld(t *testing.T) {
 	client := open(ctx)
 	defer client.Close()
 
-	if err := client.World.Create().Exec(ctx); err == nil {
-		t.Fatal("expect tenant creation to fail, but got:", err)
-	}
+	tn := time.Now()
+	err := client.World.Create().SetCreatedAt(tn).Exec(ctx)
+	require.Error(t, err, "expect tenant creation to fail, but got nil")
 
 	tctx := identity.WithTenantID(ctx, 1)
 	tctx = security.WithContext(tctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{
 		"sub": "1",
 	}))
-	if err := client.World.Create().SetName("woocoo").SetTenantID(1).Exec(tctx); err != nil {
-		t.Fatal("expect tenant creation to succeed, but got:", err)
-	}
+	err = client.World.Create().SetName("woocoo").SetTenantID(1).Exec(tctx)
+	assert.NoError(t, err, "expect tenant creation to succeed")
 
-	if _, err := client.World.Query().Count(ctx); err == nil {
-		t.Fatal("expect tenant query to fail, but got:", err)
-	}
+	_, err = client.World.Query().Count(ctx)
+	assert.Error(t, err, "expect tenant query to fail")
 
-	if _, err := client.World.Query().Count(tctx); err != nil {
-		t.Fatal("expect tenant query to succeed, but got:", err)
-	}
+	row, err := client.World.Query().All(tctx)
+	require.NoError(t, err, "expect tenant query to succeed")
+	assert.Empty(t, row[0].CreatedAt.Location().String(), "sqlite datetime miss timezone")
+	assert.EqualValues(t, tn.Unix(), row[0].CreatedAt.Unix())
 }
 
 func Test_WorldWithTenant(t *testing.T) {

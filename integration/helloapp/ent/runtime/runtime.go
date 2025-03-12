@@ -3,6 +3,8 @@
 package runtime
 
 import (
+	"time"
+
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/schema"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
@@ -20,14 +22,22 @@ func init() {
 	worldMixin := schema.World{}.Mixin()
 	worldMixinHooks1 := worldMixin[1].Hooks()
 	worldMixinHooks2 := worldMixin[2].Hooks()
+	worldMixinHooks3 := worldMixin[3].Hooks()
 	world.Hooks[0] = worldMixinHooks1[0]
 	world.Hooks[1] = worldMixinHooks2[0]
-	worldMixinInters1 := worldMixin[1].Interceptors()
+	world.Hooks[2] = worldMixinHooks3[0]
 	worldMixinInters2 := worldMixin[2].Interceptors()
-	world.Interceptors[0] = worldMixinInters1[0]
-	world.Interceptors[1] = worldMixinInters2[0]
+	worldMixinInters3 := worldMixin[3].Interceptors()
+	world.Interceptors[0] = worldMixinInters2[0]
+	world.Interceptors[1] = worldMixinInters3[0]
+	worldMixinFields1 := worldMixin[1].Fields()
+	_ = worldMixinFields1
 	worldFields := schema.World{}.Fields()
 	_ = worldFields
+	// worldDescCreatedAt is the schema descriptor for created_at field.
+	worldDescCreatedAt := worldMixinFields1[1].Descriptor()
+	// world.DefaultCreatedAt holds the default value on creation for the created_at field.
+	world.DefaultCreatedAt = worldDescCreatedAt.Default.(func() time.Time)
 	// worldDescPowerBy is the schema descriptor for power_by field.
 	worldDescPowerBy := worldFields[2].Descriptor()
 	// world.DefaultPowerBy holds the default value on creation for the power_by field.
@@ -35,6 +45,6 @@ func init() {
 }
 
 const (
-	Version = "v0.14.1"                                         // Version of ent codegen.
-	Sum     = "h1:fUERL506Pqr92EPHJqr8EYxbPioflJo6PudkrEA8a/s=" // Sum of ent codegen.
+	Version = "v0.14.2"                                         // Version of ent codegen.
+	Sum     = "h1:ywld/j2Rx4EmnIKs8eZ29cbFA1zpB+DA9TLL5l3rlq0=" // Sum of ent codegen.
 )

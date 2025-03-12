@@ -457,6 +457,12 @@ type WorldMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	created_by    *int
+	addcreated_by *int
+	created_at    *time.Time
+	updated_by    *int
+	addupdated_by *int
+	updated_at    *time.Time
 	deleted_at    *time.Time
 	tenant_id     *int
 	addtenant_id  *int
@@ -570,6 +576,217 @@ func (m *WorldMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *WorldMutation) SetCreatedBy(i int) {
+	m.created_by = &i
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *WorldMutation) CreatedBy() (r int, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the World entity.
+// If the World object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorldMutation) OldCreatedBy(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds i to the "created_by" field.
+func (m *WorldMutation) AddCreatedBy(i int) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += i
+	} else {
+		m.addcreated_by = &i
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *WorldMutation) AddedCreatedBy() (r int, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *WorldMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *WorldMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *WorldMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the World entity.
+// If the World object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorldMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *WorldMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *WorldMutation) SetUpdatedBy(i int) {
+	m.updated_by = &i
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *WorldMutation) UpdatedBy() (r int, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the World entity.
+// If the World object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorldMutation) OldUpdatedBy(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (m *WorldMutation) AddUpdatedBy(i int) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += i
+	} else {
+		m.addupdated_by = &i
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *WorldMutation) AddedUpdatedBy() (r int, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *WorldMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[world.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *WorldMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[world.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *WorldMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, world.FieldUpdatedBy)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WorldMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WorldMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the World entity.
+// If the World object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorldMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *WorldMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[world.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *WorldMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[world.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WorldMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, world.FieldUpdatedAt)
 }
 
 // SetDeletedAt sets the "deleted_at" field.
@@ -796,7 +1013,19 @@ func (m *WorldMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorldMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 8)
+	if m.created_by != nil {
+		fields = append(fields, world.FieldCreatedBy)
+	}
+	if m.created_at != nil {
+		fields = append(fields, world.FieldCreatedAt)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, world.FieldUpdatedBy)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, world.FieldUpdatedAt)
+	}
 	if m.deleted_at != nil {
 		fields = append(fields, world.FieldDeletedAt)
 	}
@@ -817,6 +1046,14 @@ func (m *WorldMutation) Fields() []string {
 // schema.
 func (m *WorldMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case world.FieldCreatedBy:
+		return m.CreatedBy()
+	case world.FieldCreatedAt:
+		return m.CreatedAt()
+	case world.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case world.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case world.FieldDeletedAt:
 		return m.DeletedAt()
 	case world.FieldTenantID:
@@ -834,6 +1071,14 @@ func (m *WorldMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *WorldMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case world.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case world.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case world.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case world.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case world.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
 	case world.FieldTenantID:
@@ -851,6 +1096,34 @@ func (m *WorldMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *WorldMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case world.FieldCreatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case world.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case world.FieldUpdatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case world.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	case world.FieldDeletedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -887,6 +1160,12 @@ func (m *WorldMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *WorldMutation) AddedFields() []string {
 	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, world.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, world.FieldUpdatedBy)
+	}
 	if m.addtenant_id != nil {
 		fields = append(fields, world.FieldTenantID)
 	}
@@ -898,6 +1177,10 @@ func (m *WorldMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *WorldMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case world.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case world.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
 	case world.FieldTenantID:
 		return m.AddedTenantID()
 	}
@@ -909,6 +1192,20 @@ func (m *WorldMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *WorldMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case world.FieldCreatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case world.FieldUpdatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
 	case world.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
@@ -924,6 +1221,12 @@ func (m *WorldMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *WorldMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(world.FieldUpdatedBy) {
+		fields = append(fields, world.FieldUpdatedBy)
+	}
+	if m.FieldCleared(world.FieldUpdatedAt) {
+		fields = append(fields, world.FieldUpdatedAt)
+	}
 	if m.FieldCleared(world.FieldDeletedAt) {
 		fields = append(fields, world.FieldDeletedAt)
 	}
@@ -944,6 +1247,12 @@ func (m *WorldMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *WorldMutation) ClearField(name string) error {
 	switch name {
+	case world.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case world.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
 	case world.FieldDeletedAt:
 		m.ClearDeletedAt()
 		return nil
@@ -958,6 +1267,18 @@ func (m *WorldMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *WorldMutation) ResetField(name string) error {
 	switch name {
+	case world.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case world.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case world.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case world.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case world.FieldDeletedAt:
 		m.ResetDeletedAt()
 		return nil
