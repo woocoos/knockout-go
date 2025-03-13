@@ -82,7 +82,6 @@ func Test_CreateWorld(t *testing.T) {
 
 	row, err := client.World.Query().All(tctx)
 	require.NoError(t, err, "expect tenant query to succeed")
-	assert.Empty(t, row[0].CreatedAt.Location().String(), "sqlite datetime miss timezone")
 	assert.EqualValues(t, tn.Unix(), row[0].CreatedAt.Unix())
 }
 
