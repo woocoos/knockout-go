@@ -31,11 +31,13 @@ type decimalBuilder struct {
 }
 
 // Precision sets the precision and scale of the decimal field.
+// There is some special in sqlite3, because numeric type will trans as float. so we use Text type to keep the precision that
+// put by decimal.Decimal
 func (b *decimalBuilder) Precision(precision, scale int) *decimalBuilder {
 	b.SchemaType(map[string]string{
-		dialect.MySQL:    fmt.Sprintf("decimal(%d,%d)", precision, scale),
-		dialect.SQLite:   fmt.Sprintf("decimal(%d,%d)", precision, scale),
-		dialect.Postgres: fmt.Sprintf("decimal(%d,%d)", precision, scale),
+		dialect.MySQL:    fmt.Sprintf("DECIMAL(%d,%d)", precision, scale),
+		dialect.SQLite:   fmt.Sprintf("TEXT"),
+		dialect.Postgres: fmt.Sprintf("DECIMAL(%d,%d)", precision, scale),
 	})
 	return b
 }
