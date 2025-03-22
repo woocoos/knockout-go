@@ -186,8 +186,8 @@ github.com/go-viper/mapstructure/v2 v2.2.1 h1:ZAaOCxANMuZx5RCeg0mBdEZk7DZasvvZIx
 github.com/go-viper/mapstructure/v2 v2.2.1/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/goccy/go-json v0.10.4 h1:JSwxQzIqKfmFX1swYPpUThQZp/Ka4wzJdK0LWVytLPM=
 github.com/goccy/go-json v0.10.4/go.mod h1:oq7eo15ShAhp70Anwd5lgX2pLfOS3QCiwU/PULtXL6M=
-github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
-github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
+github.com/golang-jwt/jwt/v5 v5.2.2 h1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=
+github.com/golang-jwt/jwt/v5 v5.2.2/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
 github.com/golang/mock v1.4.4 h1:l75CXGRSwbaYNpl/Z2X1XIIAMSCquvXgpVZDhwEIJsc=
@@ -336,8 +336,8 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/tjfoc/gmsm v1.3.2 h1:7JVkAn5bvUJ7HtU08iW6UiD+UTmJTIToHCfeFzkcCxM=
 github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=
-github.com/tsingsun/woocoo v0.5.5 h1:1RIbxyl4ZXkXbTQtc10M0v2WzpyiS5Y2Tksu6q1Gu6Q=
-github.com/tsingsun/woocoo v0.5.5/go.mod h1:hRGlaEsYOt4kY/XpPIis9T2DD0l9QpOH2alhWvK3FLM=
+github.com/tsingsun/woocoo v0.5.6 h1:cECutpEwR0VBk7pSNcbYfbDunPgRKpXU5NzSq2iFRQE=
+github.com/tsingsun/woocoo v0.5.6/go.mod h1:tkhnofsWAdguYrpNb6n+10OqxkFWgrmv/PEpQzL/rKQ=
 github.com/tsingsun/woocoo/contrib/gql v0.1.0 h1:OvdURIAj9WJ2Toslq/tUqq4X7q3J+2aSLLqONJwo5wA=
 github.com/tsingsun/woocoo/contrib/gql v0.1.0/go.mod h1:6AhjRhyOBXalW2GmeKHlqM5+OaIryE3QIjKE5pscyus=
 github.com/tsingsun/woocoo/contrib/telemetry v0.58.0 h1:h88yKuHoNGwpUA2de1ezRvKK1Y5ltzl3IczXcSFXzT0=
