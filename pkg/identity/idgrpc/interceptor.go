@@ -2,7 +2,9 @@ package idgrpc
 
 import (
 	"context"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/tsingsun/woocoo/pkg/conf"
+	"github.com/tsingsun/woocoo/pkg/security"
 	"github.com/tsingsun/woocoo/rpc/grpcx"
 	"github.com/tsingsun/woocoo/rpc/grpcx/interceptor"
 	"github.com/woocoos/knockout-go/pkg/identity"
@@ -12,16 +14,22 @@ import (
 )
 
 const (
-	name          = "tenant"
-	headerKeyPath = "headerKey"
+	tenantName       = "tenant"
+	tidHeaderKeyPath = "headerKey"
+	userName         = "user"
 )
 
 func init() {
 	th := &TenantHandler{}
-	grpcx.RegisterUnaryClientInterceptor(name, th.UnaryClientInterceptor)
-	grpcx.RegisterStreamClientInterceptor(name, th.StreamClientInterceptor)
-	grpcx.RegisterGrpcUnaryInterceptor(name, th.UnaryServerInterceptor)
-	grpcx.RegisterGrpcStreamInterceptor(name, th.StreamServerInterceptor)
+	grpcx.RegisterUnaryClientInterceptor(tenantName, th.UnaryClientInterceptor)
+	grpcx.RegisterStreamClientInterceptor(tenantName, th.StreamClientInterceptor)
+	grpcx.RegisterGrpcUnaryInterceptor(tenantName, th.UnaryServerInterceptor)
+	grpcx.RegisterGrpcStreamInterceptor(tenantName, th.StreamServerInterceptor)
+	id := &IdentityHandler{}
+	grpcx.RegisterUnaryClientInterceptor(userName, id.UnaryClientInterceptor)
+	grpcx.RegisterStreamClientInterceptor(userName, id.StreamClientInterceptor)
+	grpcx.RegisterGrpcUnaryInterceptor(userName, id.UnaryServerInterceptor)
+	grpcx.RegisterGrpcStreamInterceptor(userName, id.StreamServerInterceptor)
 }
 
 type TenantHandler struct{}
@@ -42,7 +50,7 @@ func (t *TenantHandler) ExtractTenantID(ctx context.Context, headerKey string) (
 }
 
 func getHeaderKey(cfg *conf.Configuration) string {
-	headerKey := cfg.String(headerKeyPath)
+	headerKey := cfg.String(tidHeaderKeyPath)
 	if headerKey == "" {
 		headerKey = identity.TenantHeaderKey
 	}
@@ -89,6 +97,58 @@ func (t *TenantHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.St
 		}
 		ws := interceptor.WrapServerStream(stream)
 		ws.WrappedContext = newctx
+		return handler(srv, ws)
+	}
+}
+
+type IdentityHandler struct{}
+
+func (i *IdentityHandler) UnaryClientInterceptor(cfg *conf.Configuration) grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		if id, err := identity.UserIDFromContextAsInt(ctx); err == nil {
+			ctx = metadata.AppendToOutgoingContext(ctx, identity.UserHeaderKey, strconv.Itoa(id))
+		}
+		return invoker(ctx, method, req, reply, cc, opts...)
+	}
+}
+
+func (i *IdentityHandler) StreamClientInterceptor(cfg *conf.Configuration) grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		if id, err := identity.UserIDFromContextAsInt(ctx); err == nil {
+			ctx = metadata.AppendToOutgoingContext(ctx, identity.UserHeaderKey, strconv.Itoa(id))
+		}
+		return streamer(ctx, desc, cc, method, opts...)
+	}
+}
+
+func (i *IdentityHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+		if md, ok := metadata.FromIncomingContext(ctx); ok {
+			if ids := md.Get(identity.UserHeaderKey); len(ids) > 0 {
+				ctx = security.WithContext(ctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{
+					"sub": ids[0],
+				}))
+			}
+		}
+		return handler(ctx, req)
+	}
+}
+
+func (i *IdentityHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.StreamServerInterceptor {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		md, ok := metadata.FromIncomingContext(stream.Context())
+		if !ok {
+			return handler(srv, stream)
+		}
+		ids := md.Get(identity.UserHeaderKey)
+		if len(ids) == 0 {
+			return handler(srv, stream)
+		}
+		ctx := security.WithContext(stream.Context(), security.NewGenericPrincipalByClaims(jwt.MapClaims{
+			"sub": ids[0],
+		}))
+		ws := interceptor.WrapServerStream(stream)
+		ws.WrappedContext = ctx
 		return handler(srv, ws)
 	}
 }

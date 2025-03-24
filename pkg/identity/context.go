@@ -11,6 +11,7 @@ import (
 const (
 	TenantContextKey = "_woocoos/knockout/tenant_id"
 	TenantHeaderKey  = "X-Tenant-ID"
+	UserHeaderKey    = "X-User-ID"
 )
 
 var (

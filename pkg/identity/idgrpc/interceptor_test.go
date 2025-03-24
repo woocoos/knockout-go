@@ -2,6 +2,8 @@ package idgrpc
 
 import (
 	"context"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/tsingsun/woocoo/pkg/security"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,7 +28,7 @@ func TestExtractTenantID(t *testing.T) {
 func TestUnaryClientInterceptor(t *testing.T) {
 	handler := &TenantHandler{}
 	cfg := conf.NewFromStringMap(map[string]any{
-		headerKeyPath: "testHeader",
+		tidHeaderKeyPath: "testHeader",
 	})
 	interceptor := handler.UnaryClientInterceptor(cfg)
 
@@ -83,6 +85,70 @@ func TestStreamServerInterceptor(t *testing.T) {
 		id, ok := identity.TenantIDLoadFromContext(stream.Context())
 		assert.True(t, ok)
 		assert.Equal(t, 123, id)
+		return nil
+	})
+
+	assert.NoError(t, err)
+}
+
+func TestIdentityUnaryClientInterceptor(t *testing.T) {
+	handler := &IdentityHandler{}
+	cfg := conf.New()
+	interceptor := handler.UnaryClientInterceptor(cfg)
+
+	ctx := security.WithContext(context.Background(), security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "456"}))
+	err := interceptor(ctx, "method", nil, nil, nil, func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
+		md, ok := metadata.FromOutgoingContext(ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "456", md.Get(identity.UserHeaderKey)[0])
+		return nil
+	})
+
+	assert.NoError(t, err)
+}
+
+func TestIdentityStreamClientInterceptor(t *testing.T) {
+	handler := &IdentityHandler{}
+	cfg := conf.New()
+	interceptor := handler.StreamClientInterceptor(cfg)
+
+	ctx := security.WithContext(context.Background(), security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "456"}))
+	_, err := interceptor(ctx, nil, nil, "method", func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		md, ok := metadata.FromOutgoingContext(ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "456", md.Get(identity.UserHeaderKey)[0])
+		return nil, nil
+	})
+
+	assert.NoError(t, err)
+}
+
+func TestIdentityUnaryServerInterceptor(t *testing.T) {
+	handler := &IdentityHandler{}
+	cfg := conf.New()
+	interceptor := handler.UnaryServerInterceptor(cfg)
+
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.UserHeaderKey, "456"))
+	_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+		principal, ok := security.FromContext(ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "456", principal.Identity().Name())
+		return nil, nil
+	})
+
+	assert.NoError(t, err)
+}
+
+func TestIdentityStreamServerInterceptor(t *testing.T) {
+	handler := &IdentityHandler{}
+	cfg := conf.New()
+	interceptor := handler.StreamServerInterceptor(cfg)
+
+	stream := &mockServerStream{ctx: metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.UserHeaderKey, "456"))}
+	err := interceptor(nil, stream, nil, func(srv any, stream grpc.ServerStream) error {
+		principal, ok := security.FromContext(stream.Context())
+		assert.True(t, ok)
+		assert.Equal(t, "456", principal.Identity().Name())
 		return nil
 	})
 
