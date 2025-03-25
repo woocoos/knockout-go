@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	tenantName       = "tenant"
-	tidHeaderKeyPath = "headerKey"
-	userName         = "user"
+	tenantName    = "tenant"
+	headerKeyPath = "headerKey"
+	userName      = "user"
 )
 
 func init() {
@@ -35,7 +35,7 @@ func init() {
 type TenantHandler struct{}
 
 // ExtractTenantID extracts the tenant ID from the metadata and returns the updated context.
-func (t *TenantHandler) ExtractTenantID(ctx context.Context, headerKey string) (context.Context, error) {
+func (h TenantHandler) ExtractTenantID(ctx context.Context, headerKey string) (context.Context, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
 		if ids := md.Get(headerKey); len(ids) > 0 {
@@ -49,16 +49,16 @@ func (t *TenantHandler) ExtractTenantID(ctx context.Context, headerKey string) (
 	return ctx, nil
 }
 
-func getHeaderKey(cfg *conf.Configuration) string {
-	headerKey := cfg.String(tidHeaderKeyPath)
+func (h TenantHandler) getHeaderKey(cfg *conf.Configuration) string {
+	headerKey := cfg.String(headerKeyPath)
 	if headerKey == "" {
 		headerKey = identity.TenantHeaderKey
 	}
 	return headerKey
 }
 
-func (t *TenantHandler) UnaryClientInterceptor(cfg *conf.Configuration) grpc.UnaryClientInterceptor {
-	headerKey := getHeaderKey(cfg)
+func (h TenantHandler) UnaryClientInterceptor(cfg *conf.Configuration) grpc.UnaryClientInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if id, ok := identity.TenantIDLoadFromContext(ctx); ok {
 			ctx = metadata.AppendToOutgoingContext(ctx, headerKey, strconv.Itoa(id))
@@ -67,8 +67,8 @@ func (t *TenantHandler) UnaryClientInterceptor(cfg *conf.Configuration) grpc.Una
 	}
 }
 
-func (t *TenantHandler) StreamClientInterceptor(cfg *conf.Configuration) grpc.StreamClientInterceptor {
-	headerKey := getHeaderKey(cfg)
+func (h TenantHandler) StreamClientInterceptor(cfg *conf.Configuration) grpc.StreamClientInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		if id, ok := identity.TenantIDLoadFromContext(ctx); ok {
 			ctx = metadata.AppendToOutgoingContext(ctx, headerKey, strconv.Itoa(id))
@@ -77,10 +77,10 @@ func (t *TenantHandler) StreamClientInterceptor(cfg *conf.Configuration) grpc.St
 	}
 }
 
-func (t *TenantHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.UnaryServerInterceptor {
-	headerKey := getHeaderKey(cfg)
+func (h TenantHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.UnaryServerInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-		ctx, err = t.ExtractTenantID(ctx, headerKey)
+		ctx, err = h.ExtractTenantID(ctx, headerKey)
 		if err != nil {
 			return nil, err
 		}
@@ -88,10 +88,10 @@ func (t *TenantHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.Una
 	}
 }
 
-func (t *TenantHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.StreamServerInterceptor {
-	headerKey := getHeaderKey(cfg)
+func (h TenantHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.StreamServerInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		newctx, err := t.ExtractTenantID(stream.Context(), headerKey)
+		newctx, err := h.ExtractTenantID(stream.Context(), headerKey)
 		if err != nil {
 			return err
 		}
@@ -103,28 +103,39 @@ func (t *TenantHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.St
 
 type IdentityHandler struct{}
 
-func (i *IdentityHandler) UnaryClientInterceptor(cfg *conf.Configuration) grpc.UnaryClientInterceptor {
+func (IdentityHandler) getHeaderKey(cfg *conf.Configuration) string {
+	headerKey := cfg.String(headerKeyPath)
+	if headerKey == "" {
+		headerKey = identity.UserHeaderKey
+	}
+	return headerKey
+}
+
+func (h IdentityHandler) UnaryClientInterceptor(cfg *conf.Configuration) grpc.UnaryClientInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if id, err := identity.UserIDFromContextAsInt(ctx); err == nil {
-			ctx = metadata.AppendToOutgoingContext(ctx, identity.UserHeaderKey, strconv.Itoa(id))
+			ctx = metadata.AppendToOutgoingContext(ctx, headerKey, strconv.Itoa(id))
 		}
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}
 }
 
-func (i *IdentityHandler) StreamClientInterceptor(cfg *conf.Configuration) grpc.StreamClientInterceptor {
+func (h IdentityHandler) StreamClientInterceptor(cfg *conf.Configuration) grpc.StreamClientInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		if id, err := identity.UserIDFromContextAsInt(ctx); err == nil {
-			ctx = metadata.AppendToOutgoingContext(ctx, identity.UserHeaderKey, strconv.Itoa(id))
+			ctx = metadata.AppendToOutgoingContext(ctx, headerKey, strconv.Itoa(id))
 		}
 		return streamer(ctx, desc, cc, method, opts...)
 	}
 }
 
-func (i *IdentityHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.UnaryServerInterceptor {
+func (h IdentityHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.UnaryServerInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		if md, ok := metadata.FromIncomingContext(ctx); ok {
-			if ids := md.Get(identity.UserHeaderKey); len(ids) > 0 {
+			if ids := md.Get(headerKey); len(ids) > 0 {
 				ctx = security.WithContext(ctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{
 					"sub": ids[0],
 				}))
@@ -134,13 +145,14 @@ func (i *IdentityHandler) UnaryServerInterceptor(cfg *conf.Configuration) grpc.U
 	}
 }
 
-func (i *IdentityHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.StreamServerInterceptor {
+func (h IdentityHandler) StreamServerInterceptor(cfg *conf.Configuration) grpc.StreamServerInterceptor {
+	headerKey := h.getHeaderKey(cfg)
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		md, ok := metadata.FromIncomingContext(stream.Context())
 		if !ok {
 			return handler(srv, stream)
 		}
-		ids := md.Get(identity.UserHeaderKey)
+		ids := md.Get(headerKey)
 		if len(ids) == 0 {
 			return handler(srv, stream)
 		}

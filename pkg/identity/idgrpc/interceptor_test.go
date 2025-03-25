@@ -28,7 +28,7 @@ func TestExtractTenantID(t *testing.T) {
 func TestUnaryClientInterceptor(t *testing.T) {
 	handler := &TenantHandler{}
 	cfg := conf.NewFromStringMap(map[string]any{
-		tidHeaderKeyPath: "testHeader",
+		headerKeyPath: "testHeader",
 	})
 	interceptor := handler.UnaryClientInterceptor(cfg)
 
@@ -93,14 +93,16 @@ func TestStreamServerInterceptor(t *testing.T) {
 
 func TestIdentityUnaryClientInterceptor(t *testing.T) {
 	handler := &IdentityHandler{}
-	cfg := conf.New()
+	cfg := conf.NewFromStringMap(map[string]any{
+		headerKeyPath: "testHeader",
+	})
 	interceptor := handler.UnaryClientInterceptor(cfg)
 
 	ctx := security.WithContext(context.Background(), security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "456"}))
 	err := interceptor(ctx, "method", nil, nil, nil, func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
 		md, ok := metadata.FromOutgoingContext(ctx)
 		assert.True(t, ok)
-		assert.Equal(t, "456", md.Get(identity.UserHeaderKey)[0])
+		assert.Equal(t, "456", md.Get("testHeader")[0])
 		return nil
 	})
 
