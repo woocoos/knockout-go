@@ -17,8 +17,9 @@ func TestExtractTenantID(t *testing.T) {
 	handler := &TenantHandler{}
 	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.TenantHeaderKey, "123"))
 
-	newCtx, err := handler.ExtractTenantID(ctx, identity.TenantHeaderKey)
+	newCtx, exists, err := handler.extractTenantID(ctx, identity.TenantHeaderKey)
 	assert.NoError(t, err)
+	assert.True(t, exists)
 
 	id, ok := identity.TenantIDLoadFromContext(newCtx)
 	assert.True(t, ok)
@@ -64,15 +65,25 @@ func TestUnaryServerInterceptor(t *testing.T) {
 	cfg := conf.New()
 	interceptor := handler.UnaryServerInterceptor(cfg)
 
-	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.TenantHeaderKey, "123"))
-	_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
-		id, ok := identity.TenantIDLoadFromContext(ctx)
-		assert.True(t, ok)
-		assert.Equal(t, 123, id)
-		return nil, nil
-	})
+	t.Run("ok", func(t *testing.T) {
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.TenantHeaderKey, "123"))
+		_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+			id, ok := identity.TenantIDLoadFromContext(ctx)
+			assert.True(t, ok)
+			assert.Equal(t, 123, id)
+			return nil, nil
+		})
 
-	assert.NoError(t, err)
+		assert.NoError(t, err)
+	})
+	t.Run("error", func(t *testing.T) {
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.TenantHeaderKey, "abc"))
+		_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+			return nil, nil
+		})
+
+		assert.Error(t, err)
+	})
 }
 
 func TestStreamServerInterceptor(t *testing.T) {
@@ -130,15 +141,25 @@ func TestIdentityUnaryServerInterceptor(t *testing.T) {
 	cfg := conf.New()
 	interceptor := handler.UnaryServerInterceptor(cfg)
 
-	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.UserHeaderKey, "456"))
-	_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
-		principal, ok := security.FromContext(ctx)
-		assert.True(t, ok)
-		assert.Equal(t, "456", principal.Identity().Name())
-		return nil, nil
-	})
+	t.Run("ok", func(t *testing.T) {
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(identity.UserHeaderKey, "456"))
+		_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+			principal, ok := security.FromContext(ctx)
+			assert.True(t, ok)
+			assert.Equal(t, "456", principal.Identity().Name())
+			return nil, nil
+		})
 
-	assert.NoError(t, err)
+		assert.NoError(t, err)
+	})
+	t.Run("no-exists", func(t *testing.T) {
+		ctx := context.Background()
+		_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+			return nil, nil
+		})
+
+		assert.NoError(t, err)
+	})
 }
 
 func TestIdentityStreamServerInterceptor(t *testing.T) {
