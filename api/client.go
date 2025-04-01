@@ -28,6 +28,8 @@ type SDK struct {
 	plugins      map[string]Plugin
 	signer       *httpx.Signature
 	signerClient *client
+
+	tokenSource oauth2.TokenSource
 }
 
 type client struct {
@@ -56,6 +58,8 @@ func NewSDK(cnf *conf.Configuration) (sdk *SDK, err error) {
 		return nil, err
 	}
 
+	sdk.tokenSource = cfg.OAuth2.GetTokenSource()
+
 	if cnf.IsSet("signer") {
 		sdk.signer, err = httpx.NewSignature(
 			httpx.WithConfiguration(cnf.Sub("signer")),
@@ -80,6 +84,34 @@ func NewSDK(cnf *conf.Configuration) (sdk *SDK, err error) {
 		})
 	}
 	return
+}
+
+// DefaultSDK creates a new SDK with default configuration.
+func DefaultSDK(cfg *conf.Configuration) (sdk *SDK, err error) {
+	defaultCfg := map[string]any{
+		"client": map[string]any{
+			"timeout": "2s",
+		},
+		"signer": map[string]any{
+			"authScheme":  "KO-HMAC-SHA1",
+			"authHeaders": []string{"timestamp", "nonce"},
+			"signedLookups": map[string]any{
+				"accessToken": "header:authorization>bearer",
+				"url":         "CanonicalUri",
+			},
+			"nonceLen": 12,
+		},
+	}
+	ncfg := conf.NewFromStringMap(defaultCfg)
+	if err = ncfg.ParserOperator().Merge(cfg.ParserOperator()); err != nil {
+		return nil, err
+	}
+	return NewSDK(ncfg)
+}
+
+// GetToken returns the token of the token source.
+func (sdk *SDK) GetToken() (*oauth2.Token, error) {
+	return sdk.tokenSource.Token()
 }
 
 // RegisterPlugin registers a plugin. Plugins are used to extend the SDK.

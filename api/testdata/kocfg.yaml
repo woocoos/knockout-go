@@ -1,0 +1,60 @@
+all:
+  kosdk:
+    client:
+      timeout: 2s
+      oauth2:
+        clientID: 206734260394752
+        clientSecret: T2UlqISVFq4DR9InXamj3l74iWdu3Tyr
+        endpoint:
+          tokenURL: http://127.0.0.1:10070/token
+        scopes:
+        storeKey: local
+    signer:
+      authScheme: "KO-HMAC-SHA1"
+      authHeaders:  ["timestamp", "nonce"]
+      signedLookups:
+        accessToken: "header:authorization>bearer"
+        timestamp:
+        nonce:
+        url: CanonicalUri
+      nonceLen: 12
+    plugin:
+      fs:
+        basePath: http://127.0.0.1:8080
+        headers:
+          "X-Tenant-ID": 1
+        providers:
+          - kind: minio
+            tenantID: 1
+            accessKeyID: test
+            accessKeySecret: test1234
+            endpoint: http://127.0.0.1:10070
+            endpointImmutable: false
+            stsEndpoint: http://127.0.0.1:10070
+            region: minio
+            roleArn: arn:aws:s3:::*
+            policy: ""
+            durationSeconds: 3600
+            bucket: fstest
+            bucketUrl: http://192.168.0.17:32650/fstest,
+      msg:
+        basePath: http://127.0.0.1:10070
+  cache:
+    memory:
+      driverName: local
+      size: 10000
+      samples: 10000
+
+default:
+  kosdk:
+    client:
+      timeout: 5s
+      oauth2:
+        clientID: 206734260394752
+        clientSecret: T2UlqISVFq4DR9InXamj3l74iWdu3Tyr
+        endpoint:
+          tokenURL: http://127.0.0.1:10070/token
+        scopes:
+        storeKey: local
+    signer:
+      nonceLen: 20

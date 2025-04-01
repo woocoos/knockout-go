@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -64,56 +65,6 @@ type AssumedRoleUser struct {
 	Arn           string
 	AssumedRoleID string `xml:"AssumeRoleId"`
 }
-
-var (
-	cnfStr = `
-kosdk:
-  client:
-    timeout: 2s
-    oauth2:
-      clientID: 206734260394752
-      clientSecret: T2UlqISVFq4DR9InXamj3l74iWdu3Tyr
-      endpoint:
-        tokenURL: http://127.0.0.1:10070/token
-      scopes:
-      storeKey: local
-  signer:
-    authScheme: "KO-HMAC-SHA1"
-    authHeaders:  ["timestamp", "nonce"]
-    signedLookups:
-      accessToken: "header:authorization>bearer"
-      timestamp:
-      nonce:
-      url: CanonicalUri
-    nonceLen: 12
-  plugin:
-    fs:
-      basePath: http://127.0.0.1:8080
-      headers:
-        "X-Tenant-ID": 1
-      providers:
-      - kind: minio
-        tenantID: 1
-        accessKeyID: test
-        accessKeySecret: test1234
-        endpoint: http://127.0.0.1:10070
-        endpointImmutable: false
-        stsEndpoint: http://127.0.0.1:10070
-        region: minio
-        roleArn: arn:aws:s3:::*
-        policy: ""
-        durationSeconds: 3600
-        bucket: fstest
-        bucketUrl: http://192.168.0.17:32650/fstest,
-    msg:
-      basePath: http://127.0.0.1:10070
-cache:
-  memory:
-    driverName: local
-    size: 10000
-    samples: 10000
-`
-)
 
 type apiSuite struct {
 	suite.Suite
@@ -231,7 +182,7 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 func (t *apiSuite) SetupSuite() {
 	srv := httptest.NewServer(t.mockHttpServer())
 	t.mockServerUrl = srv.URL
-	cnf := conf.NewFromBytes([]byte(cnfStr))
+	cnf := conf.New(conf.WithLocalPath(filepath.Join("testdata", "kocfg.yaml"))).Load().Sub("all")
 	cnf.Parser().Set("kosdk.client.oauth2.endpoint.tokenURL", t.mockServerUrl+"/token")
 	cnf.Parser().Set("kosdk.plugin.fs.basePath", srv.URL)
 	// fs
@@ -252,6 +203,18 @@ func (t *apiSuite) SetupSuite() {
 		"basePath": srv.URL,
 	}))
 	t.sdk = sdk
+}
+
+func (t *apiSuite) TestGetToken() {
+	tk, err := t.sdk.GetToken()
+	t.Require().NoError(err)
+	t.Equal("90d64460d14870c08c81352a05dedd3465940a7c", tk.AccessToken)
+}
+func (t *apiSuite) TestDefaultSDK() {
+	cnf := conf.New(conf.WithLocalPath(filepath.Join("testdata", "kocfg.yaml"))).Load().Sub("default.kosdk")
+	sdk, err := DefaultSDK(cnf)
+	t.Require().NoError(err)
+	t.NotNil(sdk.signer)
 }
 
 func (t *apiSuite) TestGetPlugin() {
