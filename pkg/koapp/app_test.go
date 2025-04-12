@@ -7,6 +7,7 @@ import (
 	"github.com/tsingsun/woocoo"
 	"github.com/tsingsun/woocoo/pkg/cache"
 	"github.com/tsingsun/woocoo/pkg/conf"
+	"github.com/woocoos/entcache"
 	"github.com/woocoos/knockout-go/test"
 	"testing"
 
@@ -52,6 +53,32 @@ func TestBuildEntComponents(t *testing.T) {
 			check: func(driver map[string]dialect.Driver) {
 				require.Len(t, driver, 1)
 				assert.NotNil(t, driver["mysql"])
+			},
+		},
+		{
+			name: "entcache-isolate",
+			args: args{
+				cnf: &conf.AppConfiguration{
+					Configuration: conf.NewFromStringMap(map[string]any{
+						"store": map[string]any{
+							"isolate": map[string]any{
+								"driverName": "mysql",
+								"dsn":        "root:@tcp(localhost:3306)/portal?parseTime=true&loc=Local",
+							},
+						},
+						"entcache": map[string]any{
+							"isolate":      true,
+							"hashQueryTTL": "10m",
+						},
+					}),
+				},
+			},
+			check: func(driver map[string]dialect.Driver) {
+				require.Len(t, driver, 1)
+				require.NotNil(t, driver["isolate"])
+				d := driver["isolate"]
+				ed := d.(*entcache.Driver)
+				assert.Equal(t, "isolate", ed.Config.Name)
 			},
 		},
 	}

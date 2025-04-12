@@ -22,6 +22,11 @@ func BuildEntCacheDriver(cnf *conf.Configuration, preDriver dialect.Driver) (dia
 	if ChangeSet != nil {
 		cacheOpts = append(cacheOpts, entcache.WithChangeSet(ChangeSet))
 	}
+	if dn := cnf.String("name"); dn != "" {
+		cacheOpts = append(cacheOpts, func(ec *entcache.Config) {
+			ec.Name = dn
+		})
+	}
 	drv := entcache.NewDriver(preDriver, cacheOpts...)
 	return drv, ChangeSet
 }

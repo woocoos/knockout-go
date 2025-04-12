@@ -116,7 +116,11 @@ func BuildEntComponents(cnf *conf.AppConfiguration) map[string]dialect.Driver {
 			return
 		}
 		if cnf.IsSet("entcache") {
-			drv, _ = clientx.BuildEntCacheDriver(cnf.Sub("entcache"), drv)
+			ccnf := cnf.Sub("entcache")
+			if cnf.Bool("entcache.isolate") {
+				ccnf.Parser().Set("name", root)
+			}
+			drv, _ = clientx.BuildEntCacheDriver(ccnf, drv)
 		}
 		vals[root] = drv
 	})
