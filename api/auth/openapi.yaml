@@ -1,0 +1,96 @@
+openapi: 3.0.0
+info:
+  title: Auth API
+  version: 0.0.1
+  description: |
+    This API is used to authenticate users and get a JWT token.
+    The token is used to access other APIs.
+
+servers:
+  - url: http://localhost:10070
+    description: Local server
+tags:
+  - name: auth
+    description: Authentication API
+paths:
+  /org/domain:
+    get:
+      summary: Use this API to get domain
+      description: Use this API to get domain
+      tags:
+        - auth
+      operationId: getDomain
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orgID:
+                  type: integer
+              required:
+                - orgID
+      responses:
+        '200':
+          description: get domain successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Domain:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        local_currency:
+          type: string
+        parent_id:
+          description: the top-level parent domain id
+          type: integer
+        parent_name:
+          description: the top-level parent domain name
+          type: string
+        parent_currency:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        details:
+          type: string

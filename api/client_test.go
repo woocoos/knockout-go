@@ -11,6 +11,7 @@ import (
 	"github.com/tsingsun/woocoo/pkg/gds"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
+	"github.com/woocoos/knockout-go/api/auth"
 	"github.com/woocoos/knockout-go/api/fs"
 	"github.com/woocoos/knockout-go/api/msg"
 	"io"
@@ -176,6 +177,25 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 		}
 		w.Write(ret)
 	})
+	mux.HandleFunc("/org/domain", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			ah := r.Header.Values("Authorization")
+			t.Require().Len(ah, 2)
+			w.Header().Set("Content-Type", "application/json")
+			resp := auth.Domain{
+				ID:             2,
+				Name:           "test",
+				LocalCurrency:  "HKD",
+				ParentCurrency: "HKD",
+				ParentID:       1,
+				ParentName:     "test",
+			}
+			ret, err := json.Marshal(resp)
+			t.Require().NoError(err)
+			w.Write(ret)
+		}
+	})
 	return mux
 }
 
@@ -202,6 +222,9 @@ func (t *apiSuite) SetupSuite() {
 	err = sdk.RegisterPlugin(PluginMsg, conf.NewFromStringMap(map[string]any{
 		"basePath": srv.URL,
 	}))
+	err = sdk.RegisterPlugin(PluginAuth, conf.NewFromStringMap(map[string]any{
+		"basePath": srv.URL,
+	}))
 	t.sdk = sdk
 }
 
@@ -221,6 +244,8 @@ func (t *apiSuite) TestGetPlugin() {
 	_, ok := t.sdk.GetPlugin(PluginFS)
 	t.Require().True(ok)
 	_, ok = t.sdk.GetPlugin(PluginMsg)
+	t.Require().True(ok)
+	_, ok = t.sdk.GetPlugin(PluginAuth)
 	t.Require().True(ok)
 	_, ok = t.sdk.GetPlugin("not-exist")
 	t.Require().False(ok)
@@ -306,5 +331,15 @@ func (t *apiSuite) TestFs() {
 		t.Require().NoError(err)
 		t.NotNil(stsResp)
 		t.NotEmpty(stsResp.AccessKeyID)
+	})
+}
+func (t *apiSuite) TestAuth() {
+	t.Run("domain", func() {
+		ret, resp, err := t.sdk.Auth().AuthAPI.GetDomain(context.Background(), &auth.GetDomainRequest{
+			OrgID: 1,
+		})
+		t.Require().NoError(err)
+		t.NotNil(ret)
+		t.Equal(200, resp.StatusCode)
 	})
 }

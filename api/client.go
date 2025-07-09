@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	PluginFS  = "fs"
-	PluginMsg = "msg"
+	PluginFS   = "fs"
+	PluginMsg  = "msg"
+	PluginAuth = "auth"
 )
 
 // Plugin is the knockout service client plugin interface.
@@ -129,6 +130,12 @@ func (sdk *SDK) RegisterPlugin(name string, cnf *conf.Configuration) error {
 			return err
 		}
 		sdk.plugins[name] = p
+	case PluginAuth:
+		p := NewAuth()
+		if err := p.Apply(sdk, cnf); err != nil {
+			return err
+		}
+		sdk.plugins[name] = p
 	default:
 		return fmt.Errorf("plugin %s is not supported", name)
 	}
@@ -149,6 +156,10 @@ func (sdk *SDK) Fs() *Fs {
 // Msg returns the msg plugin.
 func (sdk *SDK) Msg() *Msg {
 	return sdk.plugins[PluginMsg].(*Msg)
+}
+
+func (sdk *SDK) Auth() *Auth {
+	return sdk.plugins[PluginAuth].(*Auth)
 }
 
 // TenantIDInterceptor is a client intercept that try to inject tenant id into request header.

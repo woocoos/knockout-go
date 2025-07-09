@@ -38,6 +38,8 @@ all:
             bucket: fstest
             bucketUrl: http://192.168.0.17:32650/fstest,
       msg:
+        basePath: http://127.0.0.1:10072/api/v2
+      auth:
         basePath: http://127.0.0.1:10070
   cache:
     memory:
