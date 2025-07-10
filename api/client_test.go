@@ -183,12 +183,8 @@ func (t *apiSuite) mockHttpServer() *http.ServeMux {
 			ah := r.Header.Values("Authorization")
 			t.Require().Len(ah, 2)
 			w.Header().Set("Content-Type", "application/json")
-			as, err := io.ReadAll(r.Body)
-			t.Require().NoError(err)
-			var req auth.GetDomainRequest
-			t.Require().NoError(json.Unmarshal(as, &req))
 			resp := auth.Domain{
-				ID:             req.OrgID,
+				ID:             1,
 				Name:           "test",
 				LocalCurrency:  "HKD",
 				ParentCurrency: "HKD",
