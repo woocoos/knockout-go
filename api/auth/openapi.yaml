@@ -20,16 +20,12 @@ paths:
       tags:
         - auth
       operationId: getDomain
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                orgID:
-                  type: integer
-              required:
-                - orgID
+      parameters:
+        - name: orgID
+          in: query
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: get domain successful

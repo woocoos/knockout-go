@@ -7,6 +7,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 type AuthAPI api
@@ -18,13 +20,14 @@ func (a *AuthAPI) GetDomain(ctx context.Context, req *GetDomainRequest) (ret *Do
 		body        any
 	)
 	path := "/org/domain"
-	contentType = selectHeaderContentType([]string{"application/json"})
-	body = req
+	queryParams := url.Values{}
+	queryParams.Add("orgID", strconv.FormatInt(int64(req.OrgID), 10))
 
 	request, err := a.client.prepareRequest("GET", a.client.cfg.BasePath+path, contentType, body)
 	if err != nil {
 		return
 	}
+	request.URL.RawQuery = queryParams.Encode()
 	accept := selectHeaderAccept([]string{"application/json"})
 	request.Header.Set("Accept", accept)
 	resp, err = a.client.Do(ctx, request)
