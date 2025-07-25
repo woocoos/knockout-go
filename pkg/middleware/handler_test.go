@@ -125,6 +125,9 @@ engine:
 		w := httptest.NewRecorder()
 		router.Router().ServeHTTP(w, req)
 	})
+}
+
+func TestCacheControlMiddleware(t *testing.T) {
 	t.Run("web-cache-control", func(t *testing.T) {
 		router := web.New(
 			web.WithConfiguration(conf.NewFromBytes([]byte(`
