@@ -125,4 +125,23 @@ engine:
 		w := httptest.NewRecorder()
 		router.Router().ServeHTTP(w, req)
 	})
+	t.Run("web-cache-control", func(t *testing.T) {
+		router := web.New(
+			web.WithConfiguration(conf.NewFromBytes([]byte(`
+engine:
+  routerGroups:
+  - default:
+      middlewares:
+      - cachectl:
+`))),
+			RegisterCacheControl(),
+		)
+		router.Router().GET("/test", func(c *gin.Context) {
+			c.String(200, "test")
+		})
+		req := httptest.NewRequest("GET", "/test", nil)
+		req.Header.Set("Cache-Control", "no-cache")
+		w := httptest.NewRecorder()
+		router.Router().ServeHTTP(w, req)
+	})
 }
