@@ -132,7 +132,7 @@ engine:
   routerGroups:
   - default:
       middlewares:
-      - cachectl:
+      - cacheControl:
 `))),
 			RegisterCacheControl(),
 		)
