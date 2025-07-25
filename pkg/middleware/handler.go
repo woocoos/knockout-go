@@ -7,6 +7,7 @@ import (
 	"github.com/tsingsun/woocoo/web"
 	"github.com/tsingsun/woocoo/web/handler"
 	"github.com/tsingsun/woocoo/web/handler/signer"
+	"github.com/woocoos/entcache"
 	"github.com/woocoos/knockout-go/pkg/identity"
 	"net/http"
 	"strconv"
@@ -102,5 +103,35 @@ func TenantIDMiddleware(cfg *conf.Configuration) gin.HandlerFunc {
 			return
 		}
 		handler.DerivativeContextWithValue(c, identity.TenantContextKey, v)
+	}
+}
+
+// RegisterCacheControl register middleware to set skip cache from request header
+func RegisterCacheControl() web.Option {
+	return web.WithMiddlewareApplyFunc("cacheControl", CacheControlMiddleware)
+}
+
+type CacheControlConfig struct {
+	Exclude []string
+	Skipper handler.Skipper
+}
+
+// CacheControlMiddleware returns middleware to set skip cache from request header
+func CacheControlMiddleware(cfg *conf.Configuration) gin.HandlerFunc {
+	opts := CacheControlConfig{}
+	if err := cfg.Unmarshal(&opts); err != nil {
+		panic(err)
+	}
+	if opts.Skipper == nil {
+		opts.Skipper = handler.PathSkipper(opts.Exclude)
+	}
+	return func(c *gin.Context) {
+		if opts.Skipper(c) {
+			return
+		}
+		cacheControl := c.GetHeader("Cache-Control")
+		if cacheControl == "no-cache" {
+			c.Request = c.Request.WithContext(entcache.Skip(c.Request.Context()))
+		}
 	}
 }
