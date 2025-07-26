@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/rpc/grpcx"
 	"github.com/tsingsun/woocoo/web/handler"
@@ -14,6 +15,12 @@ import (
 
 func init() {
 	grpcx.RegisterGrpcUnaryInterceptor("errorHandler", UnaryServerInterceptor)
+	grpcx.RegisterUnaryClientInterceptor("errorHandler", UnaryClientInterceptorInGin)
+}
+
+type statusError struct {
+	Error string `json:"error"`
+	Meta  any    `json:"meta"`
 }
 
 // WrapperGrpcStatus wrap grpc error to pass to client.
@@ -56,4 +63,45 @@ func UnaryServerInterceptor(cfg *conf.Configuration) grpc.UnaryServerInterceptor
 		}
 		return resp, err
 	}
+}
+
+// UnaryClientInterceptorInGin error handler for grpc client side in Gin.
+// It will try to convert grpc status to gin.Error.
+func UnaryClientInterceptorInGin(_ *conf.Configuration) grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		err := invoker(ctx, method, req, reply, cc, opts...)
+		if err != nil {
+			se, ok := status.FromError(err)
+			msg := se.Message()
+			if ok && messageIsJSONLoose(msg) {
+				var ge statusError
+				if je := json.Unmarshal([]byte(msg), &ge); je != nil {
+					return err
+				}
+				return &gin.Error{
+					Type: gin.ErrorType(se.Code()),
+					Err:  errors.New(ge.Error),
+					Meta: ge.Meta,
+				}
+			}
+		}
+		return err
+	}
+}
+
+// 判断是否json字符串,使用宽松的方式进行判断
+func messageIsJSONLoose(str string) bool {
+	// 检查是否为空
+	if str == "" {
+		return false
+	}
+
+	// 检查首尾字符是否为有效的JSON开始和结束符
+	firstChar := str[0]
+	lastChar := str[len(str)-1]
+
+	if !(firstChar == '{' && lastChar == '}') {
+		return false
+	}
+	return true
 }

@@ -10,6 +10,8 @@ import (
 	"reflect"
 )
 
+var UnknownError = errors.New("unknown error")
+
 // codeMap internal error code map
 var codeMap = make(map[uint64]string)
 
@@ -48,10 +50,6 @@ func (e *Error) JSON() any {
 		switch value.Kind() {
 		case reflect.Struct:
 			return e.Meta
-		case reflect.Map:
-			for _, key := range value.MapKeys() {
-				jsonData[key.String()] = value.MapIndex(key).Interface()
-			}
 		default:
 			jsonData["meta"] = e.Meta
 		}
@@ -81,6 +79,7 @@ func Newf(code uint64, format string, a ...any) *Error {
 // Code create a new error by code only
 func Code(code uint64) *Error {
 	return &Error{
+		Err:  UnknownError,
 		Type: gin.ErrorType(code),
 	}
 }
@@ -89,9 +88,7 @@ func Code(code uint64) *Error {
 // args is a list of key value pairs, key is string, value is any.
 // length of kvs equals 1 is meaning the error message.
 func Codef(code uint64, kvs ...any) *Error {
-	e := &Error{
-		Type: gin.ErrorType(code),
-	}
+	e := Code(code)
 	if l := len(kvs); l > 0 {
 		if l == 1 {
 			e.Err = errors.New(kvs[0].(string))
@@ -114,9 +111,7 @@ func Codef(code uint64, kvs ...any) *Error {
 
 // Codel create a new error by code and args. args set to Meta will use int key.
 func Codel(code uint64, a ...any) *Error {
-	e := &Error{
-		Type: gin.ErrorType(code),
-	}
+	e := Code(code)
 	e.Meta = a
 	return e
 }
