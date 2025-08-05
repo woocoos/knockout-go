@@ -86,7 +86,7 @@ func UnaryClientInterceptorInGin(_ *conf.Configuration) grpc.UnaryClientIntercep
 			} else if ok {
 				return &gin.Error{
 					Type: gin.ErrorType(se.Code()),
-					Err:  errors.New(se.Message()),
+					Err:  errors.New(msg),
 				}
 			}
 		}
