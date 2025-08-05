@@ -90,31 +90,25 @@ func BuildEntComponents(cnf *conf.AppConfiguration) map[string]dialect.Driver {
 			err error
 			drv dialect.Driver
 		)
-		switch driverName := sub.String("driverName"); driverName {
-		case dialect.MySQL:
-			// Try to register otel, if there is otel configuration in the configuration, then register.
-			if cnf.IsSet(otelPathName) {
-				// Register the otelsql wrapper for the provided postgres driver.
-				driverName, err = otelsql.Register("mysql",
-					otelsql.WithAttributes(semconv.DBSystemMySQL),
-					otelsql.WithAttributes(semconv.DBNameKey.String(root)),
-					otelsql.WithSpanOptions(otelsql.SpanOptions{
-						DisableErrSkip:  true,
-						OmitRows:        true,
-						OmitConnPrepare: true,
-					}),
-				)
-				if err != nil {
-					panic(err)
-				}
-				sub.Parser().Set("driverName", driverName)
+		driverName := sub.String("driverName")
+		// Try to register otel, if there is otel configuration in the configuration, then register.
+		if cnf.IsSet(otelPathName) {
+			// Register the otelsql wrapper for the provided postgres driver.
+			driverName, err = otelsql.Register(driverName,
+				otelsql.WithAttributes(semconv.DBSystemKey.String(driverName)),
+				otelsql.WithAttributes(semconv.DBNameKey.String(root)),
+				otelsql.WithSpanOptions(otelsql.SpanOptions{
+					DisableErrSkip:  true,
+					OmitRows:        true,
+					OmitConnPrepare: true,
+				}),
+			)
+			if err != nil {
+				panic(err)
 			}
-			drv = sql.OpenDB(driverName, sqlx.NewSqlDB(sub))
-		case dialect.Postgres, dialect.SQLite, dialect.Gremlin:
-			drv = sql.OpenDB(driverName, sqlx.NewSqlDB(sub))
-		default:
-			return
+			sub.Parser().Set("driverName", driverName)
 		}
+		drv = sql.OpenDB(driverName, sqlx.NewSqlDB(sub))
 		if cnf.IsSet("entcache") {
 			ccnf := cnf.Sub("entcache")
 			if cnf.Bool("entcache.isolate") {
