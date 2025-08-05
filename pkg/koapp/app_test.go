@@ -24,6 +24,15 @@ func TestNew(t *testing.T) {
 		_, err = cache.GetCache("local")
 		assert.Error(t, err, "local has not register as global cache")
 	})
+	t.Run("caceh-otel", func(t *testing.T) {
+		ccfg := cnfAll.Sub("withCache")
+		ccfg.Parser().Set(otelPathName, map[string]any{
+			"traceExporter": "stdout",
+		})
+		New(woocoo.WithAppConfiguration(ccfg))
+		_, err := cache.GetCache("redis")
+		assert.NoError(t, err)
+	})
 }
 
 func TestBuildEntComponents(t *testing.T) {

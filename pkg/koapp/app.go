@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"fmt"
 	"github.com/XSAM/otelsql"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/tsingsun/woocoo"
 	"github.com/tsingsun/woocoo/contrib/telemetry"
 	"github.com/tsingsun/woocoo/pkg/cache"
@@ -13,6 +14,7 @@ import (
 	"github.com/tsingsun/woocoo/pkg/cache/redisc"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/log"
+	"github.com/tsingsun/woocoo/pkg/store/redisx"
 	"github.com/tsingsun/woocoo/pkg/store/sqlx"
 	"github.com/woocoos/knockout-go/ent/clientx"
 	"github.com/woocoos/knockout-go/pkg/snowflake"
@@ -72,12 +74,31 @@ func BuildCacheComponents(cnf *conf.AppConfiguration) {
 		}
 		switch root {
 		case "redis":
-			_, err = redisc.New(sub)
+			if cnf.IsSet(otelPathName) {
+				remote, err := redisx.NewClient(sub)
+				if err != nil {
+					panic(err)
+				}
+				// Enable tracing instrumentation.
+				if err = redisotel.InstrumentTracing(remote.UniversalClient); err != nil {
+					panic(err)
+				}
+				// Enable metrics instrumentation.
+				if err = redisotel.InstrumentMetrics(remote.UniversalClient); err != nil {
+					panic(err)
+				}
+				if _, err = redisc.New(sub, redisc.WithRedisClient(remote)); err != nil {
+					panic(err)
+				}
+			} else {
+				if _, err = redisc.New(sub); err != nil {
+					panic(err)
+				}
+			}
 		case "local":
-			_, err = lfu.NewTinyLFU(sub)
-		}
-		if err != nil {
-			panic(err)
+			if _, err = lfu.NewTinyLFU(sub); err != nil {
+				panic(err)
+			}
 		}
 	})
 }

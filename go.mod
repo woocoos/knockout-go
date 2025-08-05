@@ -28,6 +28,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tsingsun/woocoo v0.6.2-0.20250725145229-6bf119de76fa
@@ -121,6 +122,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.0.5 // indirect
 	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect
