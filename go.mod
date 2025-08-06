@@ -33,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tsingsun/woocoo v0.6.2-0.20250725145229-6bf119de76fa
 	github.com/tsingsun/woocoo/contrib/gql v0.1.3-0.20250725154610-5c1fc348ee8c
-	github.com/tsingsun/woocoo/contrib/telemetry v0.58.1-0.20250806011139-a5e1ca55031c
+	github.com/tsingsun/woocoo/contrib/telemetry v0.58.1-0.20250806094521-3fb39ec2e089
 	github.com/vektah/gqlparser/v2 v2.5.19
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2
 	github.com/woocoos/entcache v0.3.0
