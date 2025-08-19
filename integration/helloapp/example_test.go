@@ -2,6 +2,12 @@ package helloapp
 
 import (
 	"context"
+	"log"
+	"math/rand"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +24,6 @@ import (
 	"github.com/woocoos/knockout-go/pkg/authz"
 	"github.com/woocoos/knockout-go/pkg/authz/casbin"
 	"github.com/woocoos/knockout-go/pkg/identity"
-	"log"
-	"math/rand"
-	"strconv"
-	"testing"
-	"time"
 )
 
 func open(ctx context.Context) *ent.Client {
@@ -120,7 +121,7 @@ func Test_WorldWithTenant(t *testing.T) {
 	// set action policy
 	_, err = authorizer.Enforcer.AddPolicy("1", "resource:*", "read", "allow")
 	require.NoError(t, err)
-	// tenant privacy
+	// tenant privacy but format wrong(extra ":")
 	_, err = authorizer.Enforcer.AddPolicy("1", strconv.Itoa(tid), worldArnp+":name/cba:power_by/0", authz.ActionTypeSchema, "allow")
 
 	require.NoError(t, err)
@@ -181,6 +182,23 @@ func Test_WorldWithTenant(t *testing.T) {
 		c, err = client.Hello.Query().Where(hello.TenantID(tid)).Count(schemax.SkipTenantPrivacy(tctx))
 		assert.NoError(t, err)
 		assert.Equal(t, 1, c)
+	})
+	t.Run("multi tenant", func(t *testing.T) {
+		worldArnp := authz.FormatArnPrefix("", "111", "World")
+		_, err := authorizer.Enforcer.AddRoleForUserInDomain("111", "111", "111")
+		require.NoError(t, err)
+		_, err = authorizer.Enforcer.AddPolicy("111", strconv.Itoa(111), worldArnp+"tenant_id/[123,345]", authz.ActionTypeSchema, "allow")
+		require.NoError(t, err)
+
+		ctx := identity.WithTenantID(ctx, 111)
+		ctx = security.WithContext(ctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": "111"}))
+		err = client.World.Create().SetName("abc").SetTenantID(123).Exec(schemax.SkipTenantPrivacy(ctx))
+		require.NoError(t, err)
+		err = client.World.Create().SetName("bcd").SetTenantID(345).Exec(schemax.SkipTenantPrivacy(ctx))
+		require.NoError(t, err)
+		c, err := client.World.Query().Count(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, c)
 	})
 }
 

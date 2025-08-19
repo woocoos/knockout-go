@@ -2,15 +2,17 @@ package schemax
 
 import (
 	"context"
+	"fmt"
+	"slices"
+	"strconv"
+	"strings"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/mixin"
-	"fmt"
 	"github.com/tsingsun/woocoo/pkg/security"
 	"github.com/woocoos/knockout-go/pkg/authz"
 	"github.com/woocoos/knockout-go/pkg/identity"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -177,12 +179,14 @@ func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 }
 
 // getTenantRules returns the tenant resource conditions for the current user.
+// resource expression: ("*" | <resource_string> | [<resource_string>, <resource_string>, ...]).
+// tenant id is always added as a condition.the fragments are separated by ":".
 // if field rule is not having value after "/", it will be ignored, and like * effect.
 func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector *sql.Selector) []*sql.Predicate {
 	v := make([]*sql.Predicate, 0, len(filers))
 	for _, flt := range filers {
+		tids := []any{tid}
 		if flt == "" {
-			v = append(v, sql.EQ(selector.C(d.storageKey), tid))
 			continue
 		}
 		fs := strings.Split(flt, ":")
@@ -192,13 +196,47 @@ func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector 
 			if len(kvs) != 2 {
 				continue
 			}
-			fv = append(fv, sql.EQ(selector.C(kvs[0]), kvs[1]))
+			k := kvs[0]
+			vs := kvs[1]
+			switch vs[0] {
+			case '[':
+				vt := strings.Split(vs[1:len(vs)-1], ",")
+				avt := make([]any, len(vt))
+				for i, sv := range vt {
+					avt[i] = sv
+				}
+				if k == d.storageKey {
+					tids = append(tids, avt...)
+					continue
+				} else {
+					fv = append(fv, sql.In(selector.C(k), avt...))
+				}
+			default:
+				if k == d.storageKey {
+					if vs != "*" {
+						tids = append(tids, vs)
+					}
+					// TODO supports subs tenant
+					continue
+				} else if vs != "*" {
+					fv = append(fv, sql.EQ(selector.C(k), vs))
+				}
+			}
 		}
-		if len(fv) == 1 {
-			v = append(v, fv...)
+		if len(tids) == 1 {
+			fv = slices.Insert(fv, 0, sql.EQ(selector.C(d.storageKey), tid))
 		} else {
-			v = append(v, sql.And(fv...))
+			// if there are multiple tenant ids, use IN condition.
+			fv = slices.Insert(fv, 0, sql.In(selector.C(d.storageKey), tids...))
 		}
+		if l := len(fv); l > 1 {
+			v = append(v, sql.And(fv...))
+		} else if l == 1 {
+			v = append(v, fv[0])
+		}
+	}
+	if len(v) == 0 {
+		v = append(v, sql.EQ(selector.C(d.storageKey), tid))
 	}
 	return v
 }
