@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/domain"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
 
@@ -14,8 +15,24 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
 	graph.Nodes[0] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   domain.Table,
+			Columns: domain.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: domain.FieldID,
+			},
+		},
+		Type: "Domain",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			domain.FieldName:     {Type: field.TypeString, Column: domain.FieldName},
+			domain.FieldTenantID: {Type: field.TypeInt, Column: domain.FieldTenantID},
+			domain.FieldDomainID: {Type: field.TypeInt, Column: domain.FieldDomainID},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   hello.Table,
 			Columns: hello.Columns,
@@ -30,7 +47,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			hello.FieldTenantID: {Type: field.TypeInt, Column: hello.FieldTenantID},
 		},
 	}
-	graph.Nodes[1] = &sqlgraph.Node{
+	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   world.Table,
 			Columns: world.Columns,
@@ -58,6 +75,61 @@ var schemaGraph = func() *sqlgraph.Schema {
 // All update, update-one and query builders implement this interface.
 type predicateAdder interface {
 	addPredicate(func(s *sql.Selector))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (dq *DomainQuery) addPredicate(pred func(s *sql.Selector)) {
+	dq.predicates = append(dq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DomainQuery builder.
+func (dq *DomainQuery) Filter() *DomainFilter {
+	return &DomainFilter{config: dq.config, predicateAdder: dq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DomainMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DomainMutation builder.
+func (m *DomainMutation) Filter() *DomainFilter {
+	return &DomainFilter{config: m.config, predicateAdder: m}
+}
+
+// DomainFilter provides a generic filtering capability at runtime for DomainQuery.
+type DomainFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DomainFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *DomainFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(domain.FieldID))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *DomainFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(domain.FieldName))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *DomainFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(domain.FieldTenantID))
+}
+
+// WhereDomainID applies the entql int predicate on the domain_id field.
+func (f *DomainFilter) WhereDomainID(p entql.IntP) {
+	f.Where(p.Field(domain.FieldDomainID))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -89,7 +161,7 @@ type HelloFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *HelloFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -139,7 +211,7 @@ type WorldFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorldFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

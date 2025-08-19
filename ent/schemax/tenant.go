@@ -54,8 +54,12 @@ type TenantMixin[T Query, Q Mutator] struct {
 	app string
 	// the NewQuery returns the generic Query interface for the given typed query.
 	newQueryFunc func(ent.Query) (T, error)
-	// storageKey is the key used to ent StorageKey.
-	storageKey string
+	// tenantStorageKey is the key used to ent StorageKey.
+	tenantStorageKey string
+	// domainStorageKey is the key used to ent StorageKey for domain, default is empty.
+	// domain it the root tenant, which is the top-level tenant in the hierarchy.
+	// It is used to distinguish between the root tenant and sub-tenants.
+	domainStorageKey string
 }
 
 type TenantMixinOption[T Query, Q Mutator] func(*TenantMixin[T, Q])
@@ -63,7 +67,14 @@ type TenantMixinOption[T Query, Q Mutator] func(*TenantMixin[T, Q])
 // WithTenantMixinStorageKey sets the tenant field for ent StorageKey if you custom the field name which is not `tenant_id`.
 func WithTenantMixinStorageKey[T Query, Q Mutator](storageKey string) TenantMixinOption[T, Q] {
 	return func(m *TenantMixin[T, Q]) {
-		m.storageKey = storageKey
+		m.tenantStorageKey = storageKey
+	}
+}
+
+// WithTenantMixinDomainStorageKey sets the domain field for ent StorageKey if you custom the field name which is not `domain_id`.
+func WithTenantMixinDomainStorageKey[T Query, Q Mutator](storageKey string) TenantMixinOption[T, Q] {
+	return func(m *TenantMixin[T, Q]) {
+		m.domainStorageKey = storageKey
 	}
 }
 
@@ -73,9 +84,9 @@ func WithTenantMixinStorageKey[T Query, Q Mutator](storageKey string) TenantMixi
 // Knockout Tenant field uses go Int type as the field type, it is a snowflake id by default.
 func NewTenantMixin[T Query, Q Mutator](app string, newQuery func(ent.Query) (T, error), opts ...TenantMixinOption[T, Q]) TenantMixin[T, Q] {
 	val := TenantMixin[T, Q]{
-		app:          app,
-		newQueryFunc: newQuery,
-		storageKey:   FieldTenantID,
+		app:              app,
+		newQueryFunc:     newQuery,
+		tenantStorageKey: FieldTenantID,
 	}
 	for _, opt := range opts {
 		opt(&val)
@@ -106,6 +117,10 @@ type tenant[Q Mutator] interface {
 	SetTenantID(int)
 }
 
+type domain[Q Mutator] interface {
+	SetDomainID(int)
+}
+
 // Hooks of the SoftDeleteMixin.
 func (d TenantMixin[T, Q]) Hooks() []ent.Hook {
 	return []ent.Hook{
@@ -127,8 +142,29 @@ func (d TenantMixin[T, Q]) Hooks() []ent.Hook {
 				switch m.Op() {
 				case ent.OpCreate:
 					mx.SetTenantID(tid)
+					if d.domainStorageKey != "" {
+						// If domainStorageKey is set, we also set the domain id.
+						dm, ok := m.(domain[Q])
+						if !ok {
+							return nil, fmt.Errorf("unexpected mutation type %T", m)
+						}
+						did, ok := identity.DomainIDLoadFromContext(ctx)
+						if !ok {
+							return nil, identity.ErrMissDomainTenantID
+						}
+						dm.SetDomainID(did)
+					}
 				default:
-					d.P(mx, tid)
+					var did int
+					if d.domainStorageKey != "" {
+						did, ok = identity.DomainIDLoadFromContext(ctx)
+						if !ok {
+							return nil, identity.ErrMissDomainTenantID
+						}
+					}
+					// for update and delete operation, only add tenant_id predicate.
+					// it means the domain user can mutate the tenant data in the domain.
+					d.P(mx, tid, did)
 				}
 				return next.Mutate(ctx, m)
 			})
@@ -137,9 +173,16 @@ func (d TenantMixin[T, Q]) Hooks() []ent.Hook {
 }
 
 // P adds a storage-level predicate to the queries and mutations.
-func (d TenantMixin[T, Q]) P(w Query, tid int) {
+func (d TenantMixin[T, Q]) P(w Query, tenantId, domainId int) {
+	if tenantId == domainId {
+		// if tenantId equals domainId, it is the root tenant, only filter by domainId.
+		w.WhereP(
+			sql.FieldEQ(d.domainStorageKey, domainId),
+		)
+		return
+	}
 	w.WhereP(
-		sql.FieldEQ(d.storageKey, tid),
+		sql.FieldEQ(d.tenantStorageKey, tenantId),
 	)
 }
 
@@ -164,13 +207,20 @@ func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 	if err != nil {
 		return err
 	}
+	var did int
+	if d.domainStorageKey != "" {
+		did, ok = identity.DomainIDLoadFromContext(ctx)
+		if !ok {
+			return identity.ErrMissDomainTenantID
+		}
+	}
 	if len(flts) == 0 {
-		d.P(w, tid)
+		d.P(w, tid, did)
 		return nil
 	}
 
 	w.WhereP(func(selector *sql.Selector) {
-		rules := d.getTenantRules(flts, tidstr, selector)
+		rules := d.getTenantRules(flts, tid, did, selector)
 		if len(rules) > 0 {
 			selector.Where(sql.Or(rules...))
 		}
@@ -182,10 +232,11 @@ func (d TenantMixin[T, Q]) QueryRulesP(ctx context.Context, w Query) error {
 // resource expression: ("*" | <resource_string> | [<resource_string>, <resource_string>, ...]).
 // tenant id is always added as a condition.the fragments are separated by ":".
 // if field rule is not having value after "/", it will be ignored, and like * effect.
-func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector *sql.Selector) []*sql.Predicate {
+func (d TenantMixin[T, Q]) getTenantRules(filers []string, tenantId, domainId int, selector *sql.Selector) []*sql.Predicate {
 	v := make([]*sql.Predicate, 0, len(filers))
+	useDomain := d.domainStorageKey != "" && tenantId == domainId
 	for _, flt := range filers {
-		tids := []any{tid}
+		tids := []any{tenantId}
 		if flt == "" {
 			continue
 		}
@@ -205,14 +256,14 @@ func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector 
 				for i, sv := range vt {
 					avt[i] = sv
 				}
-				if k == d.storageKey {
+				if k == d.tenantStorageKey {
 					tids = append(tids, avt...)
 					continue
 				} else {
 					fv = append(fv, sql.In(selector.C(k), avt...))
 				}
 			default:
-				if k == d.storageKey {
+				if k == d.tenantStorageKey {
 					if vs != "*" {
 						tids = append(tids, vs)
 					}
@@ -224,10 +275,14 @@ func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector 
 			}
 		}
 		if len(tids) == 1 {
-			fv = slices.Insert(fv, 0, sql.EQ(selector.C(d.storageKey), tid))
+			if useDomain {
+				fv = slices.Insert(fv, 0, sql.EQ(selector.C(d.domainStorageKey), tenantId))
+			} else {
+				fv = slices.Insert(fv, 0, sql.EQ(selector.C(d.tenantStorageKey), tenantId))
+			}
 		} else {
 			// if there are multiple tenant ids, use IN condition.
-			fv = slices.Insert(fv, 0, sql.In(selector.C(d.storageKey), tids...))
+			fv = slices.Insert(fv, 0, sql.In(selector.C(d.tenantStorageKey), tids...))
 		}
 		if l := len(fv); l > 1 {
 			v = append(v, sql.And(fv...))
@@ -236,7 +291,11 @@ func (d TenantMixin[T, Q]) getTenantRules(filers []string, tid string, selector 
 		}
 	}
 	if len(v) == 0 {
-		v = append(v, sql.EQ(selector.C(d.storageKey), tid))
+		if useDomain {
+			v = append(v, sql.EQ(selector.C(d.domainStorageKey), domainId))
+		} else {
+			v = append(v, sql.EQ(selector.C(d.tenantStorageKey), tenantId))
+		}
 	}
 	return v
 }

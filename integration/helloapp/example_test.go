@@ -18,6 +18,7 @@ import (
 	casbinent "github.com/woocoos/casbin-ent-adapter/ent"
 	"github.com/woocoos/knockout-go/ent/schemax"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent"
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/domain"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	_ "github.com/woocoos/knockout-go/integration/helloapp/ent/runtime"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
@@ -86,7 +87,7 @@ func Test_CreateWorld(t *testing.T) {
 	assert.EqualValues(t, tn.Unix(), row[0].CreatedAt.Unix())
 }
 
-func Test_WorldWithTenant(t *testing.T) {
+func Test_EntWithTenant(t *testing.T) {
 	ctx := context.Background()
 	client := open(ctx)
 	defer client.Close()
@@ -199,6 +200,52 @@ func Test_WorldWithTenant(t *testing.T) {
 		c, err := client.World.Query().Count(ctx)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, c)
+	})
+	t.Run("tenant with domain", func(t *testing.T) {
+		uid := "222"
+		arn := authz.FormatArnPrefix("", "900", "Domain")
+		_, err := authorizer.Enforcer.AddRoleForUserInDomain(uid, uid, "900")
+		require.NoError(t, err)
+		// set tenant_id to 1 should be not working
+		ctx := identity.WithTenantID(ctx, 900)
+		ctx = identity.WithDomainID(ctx, 900)
+		ctx = security.WithContext(ctx, security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": uid}))
+		require.NoError(t, client.Domain.Create().SetID(9001).SetName("root").SetDomainID(900).SetTenantID(900).Exec(schemax.SkipTenantPrivacy(ctx)))
+		require.NoError(t, client.Domain.Create().SetID(9002).SetName("root").SetDomainID(901).SetTenantID(901).Exec(schemax.SkipTenantPrivacy(ctx)))
+		require.NoError(t, client.Domain.Create().SetID(9003).SetName("root").SetDomainID(902).SetTenantID(900).Exec(schemax.SkipTenantPrivacy(ctx)))
+		assert.True(t, client.Domain.Query().Where(domain.ID(9001)).ExistX(ctx))
+		// SELECT COUNT(`domains`.`id`) FROM `domains` WHERE `domains`.`name` = ? AND `domains`.`domain_id` = ? args=[root 900]
+		assert.Equal(t, 1, client.Domain.Query().Where(domain.Name("root")).CountX(ctx))
+
+		arn = authz.FormatArnPrefix("", "901", "Domain")
+		uid = "333"
+		_, err = authorizer.Enforcer.AddRoleForUserInDomain(uid, uid, "901")
+		require.NoError(t, err)
+		t.Run("diff domain and tenant", func(t *testing.T) {
+			ctx = security.WithContext(identity.WithDomainID(identity.WithTenantID(ctx, 901), 900), security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": uid}))
+			// SELECT COUNT(`domains`.`id`) FROM `domains` WHERE `domains`.`name` = ? AND `domains`.`org_id` = ? args=[root 901]
+			assert.Equal(t, 1, client.Domain.Query().Where(domain.Name("root")).CountX(ctx))
+
+			_, err = authorizer.Enforcer.AddPolicy(uid, "901", arn+"name/1", authz.ActionTypeSchema, "allow")
+			require.NoError(t, err)
+			// SELECT COUNT(`domains`.`id`) FROM `domains` WHERE `domains`.`name` = ? AND `domains`.`org_id` = ? AND `domains`.`name` = ? args=[root 901 1]
+			assert.Equal(t, 0, client.Domain.Query().Where(domain.Name("root")).CountX(ctx))
+
+			client.Domain.Create().SetName("1").ExecX(ctx)
+			assert.Equal(t, 1, client.Domain.Query().CountX(ctx))
+		})
+
+		t.Run("some domain and tenant", func(t *testing.T) {
+			ctx = security.WithContext(identity.WithDomainID(identity.WithTenantID(ctx, 901), 901), security.NewGenericPrincipalByClaims(jwt.MapClaims{"sub": uid}))
+			// SELECT COUNT(`domains`.`id`) FROM `domains` WHERE `domains`.`name` = ? AND `domains`.`domain_id` = ? AND `domains`.`name` = ? args=[root 901 1]
+			assert.Equal(t, 0, client.Domain.Query().Where(domain.Name("root")).CountX(ctx))
+
+			_, err = authorizer.Enforcer.RemovePolicy(uid, "901", arn+"name/1", authz.ActionTypeSchema, "allow")
+			require.NoError(t, err)
+			client.Domain.Create().SetName("a").ExecX(ctx)
+			assert.Equal(t, 1, client.Domain.Query().Where(domain.Name("a")).CountX(ctx))
+		})
+
 	})
 }
 

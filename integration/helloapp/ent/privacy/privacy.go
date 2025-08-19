@@ -111,6 +111,30 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The DomainQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DomainQueryRuleFunc func(context.Context, *ent.DomainQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DomainQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DomainQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DomainQuery", q)
+}
+
+// The DomainMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DomainMutationRuleFunc func(context.Context, *ent.DomainMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DomainMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DomainMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DomainMutation", m)
+}
+
 // The HelloQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type HelloQueryRuleFunc func(context.Context, *ent.HelloQuery) error
@@ -194,6 +218,8 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.DomainQuery:
+		return q.Filter(), nil
 	case *ent.HelloQuery:
 		return q.Filter(), nil
 	case *ent.WorldQuery:
@@ -205,6 +231,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.DomainMutation:
+		return m.Filter(), nil
 	case *ent.HelloMutation:
 		return m.Filter(), nil
 	case *ent.WorldMutation:
