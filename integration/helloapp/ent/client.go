@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/domain"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
 )
@@ -23,6 +24,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Domain is the client for interacting with the Domain builders.
+	Domain *DomainClient
 	// Hello is the client for interacting with the Hello builders.
 	Hello *HelloClient
 	// World is the client for interacting with the World builders.
@@ -38,6 +41,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Domain = NewDomainClient(c.config)
 	c.Hello = NewHelloClient(c.config)
 	c.World = NewWorldClient(c.config)
 }
@@ -132,6 +136,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
+		Domain: NewDomainClient(cfg),
 		Hello:  NewHelloClient(cfg),
 		World:  NewWorldClient(cfg),
 	}, nil
@@ -153,6 +158,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
+		Domain: NewDomainClient(cfg),
 		Hello:  NewHelloClient(cfg),
 		World:  NewWorldClient(cfg),
 	}, nil
@@ -161,7 +167,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Hello.
+//		Domain.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -183,6 +189,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Domain.Use(hooks...)
 	c.Hello.Use(hooks...)
 	c.World.Use(hooks...)
 }
@@ -190,6 +197,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Domain.Intercept(interceptors...)
 	c.Hello.Intercept(interceptors...)
 	c.World.Intercept(interceptors...)
 }
@@ -197,12 +205,149 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *DomainMutation:
+		return c.Domain.mutate(ctx, m)
 	case *HelloMutation:
 		return c.Hello.mutate(ctx, m)
 	case *WorldMutation:
 		return c.World.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// DomainClient is a client for the Domain schema.
+type DomainClient struct {
+	config
+}
+
+// NewDomainClient returns a client for the Domain from the given config.
+func NewDomainClient(c config) *DomainClient {
+	return &DomainClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `domain.Hooks(f(g(h())))`.
+func (c *DomainClient) Use(hooks ...Hook) {
+	c.hooks.Domain = append(c.hooks.Domain, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `domain.Intercept(f(g(h())))`.
+func (c *DomainClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Domain = append(c.inters.Domain, interceptors...)
+}
+
+// Create returns a builder for creating a Domain entity.
+func (c *DomainClient) Create() *DomainCreate {
+	mutation := newDomainMutation(c.config, OpCreate)
+	return &DomainCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Domain entities.
+func (c *DomainClient) CreateBulk(builders ...*DomainCreate) *DomainCreateBulk {
+	return &DomainCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DomainClient) MapCreateBulk(slice any, setFunc func(*DomainCreate, int)) *DomainCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DomainCreateBulk{err: fmt.Errorf("calling to DomainClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DomainCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DomainCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Domain.
+func (c *DomainClient) Update() *DomainUpdate {
+	mutation := newDomainMutation(c.config, OpUpdate)
+	return &DomainUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DomainClient) UpdateOne(d *Domain) *DomainUpdateOne {
+	mutation := newDomainMutation(c.config, OpUpdateOne, withDomain(d))
+	return &DomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DomainClient) UpdateOneID(id int) *DomainUpdateOne {
+	mutation := newDomainMutation(c.config, OpUpdateOne, withDomainID(id))
+	return &DomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Domain.
+func (c *DomainClient) Delete() *DomainDelete {
+	mutation := newDomainMutation(c.config, OpDelete)
+	return &DomainDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DomainClient) DeleteOne(d *Domain) *DomainDeleteOne {
+	return c.DeleteOneID(d.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DomainClient) DeleteOneID(id int) *DomainDeleteOne {
+	builder := c.Delete().Where(domain.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DomainDeleteOne{builder}
+}
+
+// Query returns a query builder for Domain.
+func (c *DomainClient) Query() *DomainQuery {
+	return &DomainQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDomain},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Domain entity by its id.
+func (c *DomainClient) Get(ctx context.Context, id int) (*Domain, error) {
+	return c.Query().Where(domain.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DomainClient) GetX(ctx context.Context, id int) *Domain {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DomainClient) Hooks() []Hook {
+	hooks := c.hooks.Domain
+	return append(hooks[:len(hooks):len(hooks)], domain.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *DomainClient) Interceptors() []Interceptor {
+	inters := c.inters.Domain
+	return append(inters[:len(inters):len(inters)], domain.Interceptors[:]...)
+}
+
+func (c *DomainClient) mutate(ctx context.Context, m *DomainMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DomainCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DomainUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DomainDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Domain mutation op: %q", m.Op())
 	}
 }
 
@@ -479,9 +624,9 @@ func (c *WorldClient) mutate(ctx context.Context, m *WorldMutation) (Value, erro
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Hello, World []ent.Hook
+		Domain, Hello, World []ent.Hook
 	}
 	inters struct {
-		Hello, World []ent.Interceptor
+		Domain, Hello, World []ent.Interceptor
 	}
 )

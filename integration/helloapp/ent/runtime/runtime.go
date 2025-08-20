@@ -5,6 +5,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/woocoos/knockout-go/integration/helloapp/ent/domain"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/schema"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/world"
@@ -14,6 +15,11 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	domainMixin := schema.Domain{}.Mixin()
+	domainMixinHooks1 := domainMixin[1].Hooks()
+	domain.Hooks[0] = domainMixinHooks1[0]
+	domainMixinInters1 := domainMixin[1].Interceptors()
+	domain.Interceptors[0] = domainMixinInters1[0]
 	helloMixin := schema.Hello{}.Mixin()
 	helloMixinHooks1 := helloMixin[1].Hooks()
 	hello.Hooks[0] = helloMixinHooks1[0]

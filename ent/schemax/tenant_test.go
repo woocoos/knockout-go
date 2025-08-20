@@ -32,73 +32,73 @@ func TestNewTenantMixin(t *testing.T) {
 
 	mixin = NewTenantMixin[MockQuery, MockMutator](app, NewMockQuery,
 		WithTenantMixinStorageKey[MockQuery, MockMutator]("org_id"))
-	assert.Equal(t, "org_id", mixin.storageKey)
+	assert.Equal(t, "org_id", mixin.tenantStorageKey)
 
 }
 
 func TestGetTenantRules(t *testing.T) {
 	selector := sql.Select("tenant_id").From(sql.Table("test_table"))
-	mixin := TenantMixin[MockQuery, MockMutator]{storageKey: "tenant_id"}
+	mixin := TenantMixin[MockQuery, MockMutator]{tenantStorageKey: "tenant_id"}
 
 	tests := []struct {
 		name    string
 		filers  []string
-		tid     string
+		tid     int
 		wantLen int
 	}{
 		{
 			name:    "empty filter",
 			filers:  []string{""},
-			tid:     "123",
+			tid:     123,
 			wantLen: 1,
 		},
 		{
 			name:    "single field filter",
 			filers:  []string{"foo/1"},
-			tid:     "123",
+			tid:     123,
 			wantLen: 1,
 		},
 		{
 			name:    "multi field filter",
 			filers:  []string{"foo/1:bar/2"},
-			tid:     "123",
+			tid:     123,
 			wantLen: 1,
 		},
 		{
 			name:    "invalid filter",
 			filers:  []string{"foo"},
-			tid:     "123",
+			tid:     123,
 			wantLen: 1,
 		},
 		{
 			name:    "all empty filters and tenant ID",
 			filers:  []string{},
-			tid:     "",
+			tid:     0,
 			wantLen: 1,
 		},
 		{
 			name:    `empty tenant ID should tenant_id == ""`,
 			filers:  []string{"foo/1"},
-			tid:     "",
+			tid:     0,
 			wantLen: 1,
 		},
 		{
 			name:    "attach tenant",
 			filers:  []string{"", "tenant_id/123"},
-			tid:     "123",
+			tid:     0,
 			wantLen: 1,
 		},
 		{
 			name:    "attach tenant",
 			filers:  []string{"", "tenant_id/[345,678]"},
-			tid:     "123",
+			tid:     123,
 			wantLen: 1,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := mixin.getTenantRules(tt.filers, tt.tid, selector)
+			got := mixin.getTenantRules(tt.filers, tt.tid, 0, selector)
 			assert.Len(t, got, tt.wantLen)
 		})
 	}

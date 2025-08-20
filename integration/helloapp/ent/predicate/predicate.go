@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Domain is the predicate function for domain builders.
+type Domain func(*sql.Selector)
+
 // Hello is the predicate function for hello builders.
 type Hello func(*sql.Selector)
 

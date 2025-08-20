@@ -8,6 +8,19 @@ import (
 )
 
 var (
+	// DomainsColumns holds the columns for the "domains" table.
+	DomainsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "org_id", Type: field.TypeInt},
+		{Name: "domain_id", Type: field.TypeInt},
+	}
+	// DomainsTable holds the schema information for the "domains" table.
+	DomainsTable = &schema.Table{
+		Name:       "domains",
+		Columns:    DomainsColumns,
+		PrimaryKey: []*schema.Column{DomainsColumns[0]},
+	}
 	// HellosColumns holds the columns for the "hellos" table.
 	HellosColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -40,6 +53,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		DomainsTable,
 		HellosTable,
 		WorldsTable,
 	}

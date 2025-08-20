@@ -9,6 +9,18 @@ import (
 	"github.com/woocoos/knockout-go/integration/helloapp/ent"
 )
 
+// The DomainFunc type is an adapter to allow the use of ordinary
+// function as Domain mutator.
+type DomainFunc func(context.Context, *ent.DomainMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DomainFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DomainMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DomainMutation", m)
+}
+
 // The HelloFunc type is an adapter to allow the use of ordinary
 // function as Hello mutator.
 type HelloFunc func(context.Context, *ent.HelloMutation) (ent.Value, error)
