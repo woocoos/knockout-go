@@ -1,16 +1,22 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/tsingsun/woocoo/pkg/cache"
+	"github.com/tsingsun/woocoo/pkg/cache/lfu"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/web"
 	"github.com/tsingsun/woocoo/web/handler"
 	"github.com/tsingsun/woocoo/web/handler/signer"
 	"github.com/woocoos/entcache"
+	"github.com/woocoos/knockout-go/api/auth"
 	"github.com/woocoos/knockout-go/pkg/identity"
-	"net/http"
-	"strconv"
 )
 
 // RegisterTokenSigner register middleware to sign request
@@ -133,5 +139,91 @@ func CacheControlMiddleware(cfg *conf.Configuration) gin.HandlerFunc {
 		if cacheControl == "no-cache" {
 			c.Request = c.Request.WithContext(entcache.Skip(c.Request.Context()))
 		}
+	}
+}
+
+type DomainRequest interface {
+	GetDomain(ctx context.Context, req *auth.GetDomainRequest) (ret *auth.Domain, resp *http.Response, err error)
+}
+
+// DomainConfig is the configuration for DomainIDMiddleware
+type DomainConfig struct {
+	// Domains is a map of domain name to domain id
+	// e.g. {"example.com": 1, "test.com": 2}
+	// If the domain is not in the map, it will try to get the domain id
+	// from the auth service using the tenant id from the request context.
+	Domains map[string]int
+	Skipper handler.Skipper
+	// StoreKey is the key to get the cache from the cache manager
+	// If it is empty, a default cache will be created with size 100000 and
+	// ttl 5 minutes.
+	// The cache will be used to store the domain id for the tenant id.
+	StoreKey string `json:"storeKey" yaml:"storeKey"`
+	request  DomainRequest
+	cache    cache.Cache
+}
+
+// DomainIDMiddleware returns middleware to get domain id from http request
+func DomainIDMiddleware(cfg *conf.Configuration, req DomainRequest) gin.HandlerFunc {
+	var err error
+	opts := DomainConfig{
+		Domains: make(map[string]int),
+		request: req,
+	}
+	if err := cfg.Unmarshal(&opts); err != nil {
+		panic(err)
+	}
+	if opts.Skipper == nil {
+		opts.Skipper = handler.PathSkipper(nil)
+	}
+	if opts.StoreKey != "" {
+		if opts.cache, err = cache.GetCache(opts.StoreKey); err != nil {
+			panic(err)
+		}
+	} else {
+		size := 1000
+		ttl := time.Minute * 5
+		if cfg.IsSet("cache") {
+			size = cfg.Int("cache.size")
+			ttl = cfg.Duration("cache.ttl")
+		}
+		opts.cache, err = lfu.NewTinyLFU(conf.NewFromStringMap(map[string]any{
+			"size": size,
+			"ttl":  ttl,
+		}))
+		if err != nil {
+			panic(err)
+		}
+	}
+	return func(c *gin.Context) {
+		if opts.Skipper(c) {
+			return
+		}
+		host := c.Request.Host
+		domainID, ok := opts.Domains[host]
+		ctx := c.Request.Context()
+		if !ok {
+			tid, ok := identity.TenantIDLoadFromContext(ctx)
+			if !ok {
+				c.AbortWithError(http.StatusBadRequest, identity.ErrMisTenantID)
+				return
+			}
+			// try to get domain id from cache
+			key := "domain:" + strconv.Itoa(tid)
+			err = opts.cache.Get(ctx, key, &domainID, cache.WithGetter(func(ctx context.Context, key string) (any, error) {
+				ret, _, err := opts.request.GetDomain(c.Request.Context(), &auth.GetDomainRequest{
+					OrgID: tid,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("get domain id from auth service error: %v", err)
+				}
+				return ret.ParentID, nil
+			}))
+			if err != nil {
+				c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+		}
+		handler.DerivativeContextWithValue(c, identity.DomainContextKey, domainID)
 	}
 }
