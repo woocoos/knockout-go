@@ -14,6 +14,7 @@ const (
 	DomainContextKey = "_woocoos/knockout/domain_id"
 	TenantHeaderKey  = "X-Tenant-ID"
 	UserHeaderKey    = "X-User-ID"
+	DomainHeaderKey  = "X-Domain-ID"
 )
 
 var (

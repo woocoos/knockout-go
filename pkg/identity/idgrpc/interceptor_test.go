@@ -2,9 +2,10 @@ package idgrpc
 
 import (
 	"context"
+	"testing"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/tsingsun/woocoo/pkg/security"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tsingsun/woocoo/pkg/conf"
@@ -12,6 +13,15 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
+
+type mockServerStream struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (m *mockServerStream) Context() context.Context {
+	return m.ctx
+}
 
 func TestExtractTenantID(t *testing.T) {
 	handler := &TenantHandler{}
@@ -178,11 +188,59 @@ func TestIdentityStreamServerInterceptor(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-type mockServerStream struct {
-	grpc.ServerStream
-	ctx context.Context
-}
+func TestDomainHandler(t *testing.T) {
+	headerKey := "testHeader"
+	handler := &DomainHandler{}
+	cfg := conf.NewFromStringMap(map[string]any{
+		headerKeyPath: headerKey,
+	})
 
-func (m *mockServerStream) Context() context.Context {
-	return m.ctx
+	t.Run("unary", func(t *testing.T) {
+		interceptor := handler.UnaryServerInterceptor(cfg)
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(headerKey, "1"))
+		_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+			domainID, ok := identity.DomainIDLoadFromContext(ctx)
+			assert.True(t, ok)
+			assert.Equal(t, 1, domainID)
+			return nil, nil
+		})
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("stream", func(t *testing.T) {
+		interceptor := handler.StreamServerInterceptor(cfg)
+		stream := &mockServerStream{ctx: metadata.NewIncomingContext(context.Background(), metadata.Pairs(headerKey, "2"))}
+		err := interceptor(nil, stream, nil, func(srv any, stream grpc.ServerStream) error {
+			domainID, ok := identity.DomainIDLoadFromContext(stream.Context())
+			assert.True(t, ok)
+			assert.Equal(t, 2, domainID)
+			return nil
+		})
+
+		assert.NoError(t, err)
+	})
+	t.Run("unaryServer", func(t *testing.T) {
+		interceptor := handler.UnaryServerInterceptor(cfg)
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(headerKey, "1"))
+		_, err := interceptor(ctx, nil, nil, func(ctx context.Context, req any) (any, error) {
+			domainID, ok := identity.DomainIDLoadFromContext(ctx)
+			assert.True(t, ok)
+			assert.Equal(t, 1, domainID)
+			return nil, nil
+		})
+		assert.NoError(t, err)
+	})
+	t.Run("streamServer", func(t *testing.T) {
+		interceptor := handler.StreamServerInterceptor(cfg)
+		stream := &mockServerStream{ctx: metadata.NewIncomingContext(context.Background(), metadata.Pairs(headerKey, "2"))}
+		err := interceptor(nil, stream, nil, func(srv any, stream grpc.ServerStream) error {
+			domainID, ok := identity.DomainIDLoadFromContext(stream.Context())
+			assert.True(t, ok)
+			assert.Equal(t, 2, domainID)
+			return nil
+		})
+
+		assert.NoError(t, err)
+	})
 }
