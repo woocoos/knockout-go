@@ -2,9 +2,12 @@ package koapp
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"fmt"
 	"github.com/XSAM/otelsql"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/tsingsun/woocoo"
@@ -20,8 +23,6 @@ import (
 	"github.com/woocoos/knockout-go/pkg/snowflake"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -112,6 +113,9 @@ func BuildEntComponents(cnf *conf.AppConfiguration) map[string]dialect.Driver {
 			drv dialect.Driver
 		)
 		driverName := sub.String("driverName")
+		if driverName == "" {
+			return
+		}
 		// Try to register otel, if there is otel configuration in the configuration, then register.
 		if cnf.IsSet(otelPathName) {
 			// Register the otelsql wrapper for the provided postgres driver.

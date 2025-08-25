@@ -1,6 +1,8 @@
 package koapp
 
 import (
+	"testing"
+
 	"entgo.io/ent/dialect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -9,7 +11,6 @@ import (
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/woocoos/entcache"
 	"github.com/woocoos/knockout-go/test"
-	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -88,6 +89,23 @@ func TestBuildEntComponents(t *testing.T) {
 				d := driver["isolate"]
 				ed := d.(*entcache.Driver)
 				assert.Equal(t, "isolate", ed.Config.Name)
+			},
+		},
+		{
+			name: "empty driver",
+			args: args{
+				cnf: &conf.AppConfiguration{
+					Configuration: conf.NewFromStringMap(map[string]any{
+						"store": map[string]any{
+							"redis": map[string]any{
+								"addrs": []string{"localhost:6379"},
+							},
+						},
+					}),
+				},
+			},
+			check: func(driver map[string]dialect.Driver) {
+				assert.Len(t, driver, 0)
 			},
 		},
 	}
