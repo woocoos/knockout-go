@@ -5,6 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/alicebob/miniredis/v2"
 	stringadapter "github.com/casbin/casbin/v2/persist/string-adapter"
@@ -25,15 +31,10 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/woocoos/knockout-go/pkg/identity"
 	"github.com/woocoos/knockout-go/test"
-	"net/http"
-	"net/http/httptest"
-	"os"
-	"testing"
-	"time"
 )
 
 func casbinFilePrepare(node string) {
-	p, err := conf.NewParserFromFile(test.Path("testdata/authz/casbin.yaml"))
+	p, err := conf.NewParserFromFile("testdata/casbin.yaml")
 	if err != nil {
 		panic(err)
 	}
@@ -172,7 +173,7 @@ authz:
     e = some(where (p.eft == allow))
     [matchers]
     %s
-
+  policy: "p, 1, test:/, read"
 handler:
   appCode: "test"
   ConfigPath: "authz"
@@ -180,7 +181,6 @@ handler:
 
 	gin.SetMode(gin.ReleaseMode)
 	tcnf := fmt.Sprintf(cnf, "m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act")
-	SetAdapter(stringadapter.NewAdapter(`p, 1, test:/, read`))
 	tests := []struct {
 		name  string
 		cfg   *conf.Configuration
@@ -323,19 +323,6 @@ func TestRedisCallback(t *testing.T) {
 	authorizer.Watcher.Close()
 }
 
-func TestGetAllowedRecordsForUser(t *testing.T) {
-	casbinFilePrepare("conditions")
-	authorizer, err := NewAuthorizer(conf.NewFromStringMap(map[string]any{
-		"expireTime": 10 * time.Second,
-		"model":      test.Tmp(`conditions_model.conf`),
-		"policy":     test.Tmp(`conditions_policy.csv`),
-	}))
-	require.NoError(t, err)
-	condions, err := authorizer.BaseEnforcer().GetAllowedObjectConditions("alice", "read", "r.obj.")
-	require.NoError(t, err)
-	assert.Equal(t, []string{"price < 25", "category_id = 2"}, condions)
-}
-
 func TestGraphqlCheckPermissions(t *testing.T) {
 	log.InitGlobalLogger()
 	var cfgStr = `
@@ -362,9 +349,8 @@ web:
             - graphql:
                 withAuthorization: true
 `
-	SetAdapter(stringadapter.NewAdapter(`p, 1, :hello, read`))
 	cfg := conf.NewFromBytes([]byte(cfgStr)).AsGlobal()
-	auth, err := NewAuthorizer(cfg.Sub("authz"))
+	auth, err := NewAuthorizer(cfg.Sub("authz"), WithAdapter(stringadapter.NewAdapter(`p, 1, :hello, read`)))
 	require.NoError(t, err)
 	security.SetDefaultAuthorizer(auth)
 	srv := web.New(web.WithConfiguration(cfg.Sub("web")),

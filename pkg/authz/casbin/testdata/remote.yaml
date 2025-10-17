@@ -1,0 +1,14 @@
+casbinServer:
+  grpc:
+    server:
+      addr: localhost:10011
+      version: "1.0.0"
+    engine:
+      - keepaliveEnforcementPolicy:
+          minTime: 5s
+          permitWithoutStream: true
+      - unaryInterceptors:
+          - accessLog:
+          - recovery:
+    client:
+      dialOption:

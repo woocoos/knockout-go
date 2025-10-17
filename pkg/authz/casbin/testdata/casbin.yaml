@@ -94,3 +94,22 @@ resources:
     p, admin, 10000, resource:userPermissions, read, allow
     p, alice, 10000, resource:node, read, allow
     g, alice, admin, 10000
+remote:
+  model: |
+    [request_definition]
+    r = sub, dom, obj, act
+    [policy_definition]
+    p = sub, dom, obj, act, eft
+    [role_definition]
+    g = _, _, _
+    [policy_effect]
+    e = some(where (p.eft == allow))
+    [matchers]
+    m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && keyMatch(r.obj, p.obj) && r.act == p.act
+  policy: |
+    p, alice, 1000,data1, read,allow
+    p, bob, 1000, data2, write,allow
+    p, data2_admin, 1000, data2, read,allow
+    p, data2_admin, 1000, data2, write,allow
+    g, alice, data2_admin,1000    
+    p, alice, 1000, :1000:World:name/cba:power_by/0, schema, allow

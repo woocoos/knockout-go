@@ -4,42 +4,60 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
+	stringadapter "github.com/casbin/casbin/v2/persist/string-adapter"
 	rediswatcher "github.com/casbin/redis-watcher/v2"
 	"github.com/tsingsun/woocoo/pkg/cache"
 	"github.com/tsingsun/woocoo/pkg/cache/lfu"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/security"
-	entadapter "github.com/woocoos/casbin-ent-adapter"
-	"github.com/woocoos/casbin-ent-adapter/ent"
 	"github.com/woocoos/knockout-go/pkg/authz"
 	"github.com/woocoos/knockout-go/pkg/identity"
-	"strconv"
-	"strings"
 )
 
 var (
-	_              security.Authorizer = (*Authorizer)(nil)
-	defaultAdapter persist.Adapter
+	_ security.Authorizer = (*Authorizer)(nil)
 )
 
 type (
 	Option func(*Authorizer)
 	// Authorizer is an Authorizer feature base on casbin.
 	Authorizer struct {
-		Enforcer     casbin.IEnforcer
-		baseEnforcer *casbin.Enforcer
-		Watcher      persist.Watcher
-		autoSave     bool
+		Enforcer casbin.IEnforcer
+		Watcher  persist.Watcher
+		Adapter  persist.Adapter
+		dsl      any
 		// local cache
 		cache cache.Cache
 	}
 )
 
-// NewAuthorizer returns a new authenticator with CachedEnforcer and redis watcher by application configuration.
+func WithEnforcer(e casbin.IEnforcer) Option {
+	return func(a *Authorizer) {
+		a.Enforcer = e
+	}
+}
+
+func WithWatcher(w persist.Watcher) Option {
+	return func(a *Authorizer) {
+		a.Watcher = w
+	}
+}
+
+func WithAdapter(pa persist.Adapter) Option {
+	return func(a *Authorizer) {
+		a.Adapter = pa
+	}
+}
+
+// NewAuthorizer 根据配置创建验证器.
 // Configuration example:
 //
 // authz:
@@ -66,56 +84,43 @@ func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err
 	for _, opt := range opts {
 		opt(au)
 	}
-	if err = au.setCasbin(cnf); err != nil {
-		return
+	if au.Enforcer == nil {
+		if au.Adapter == nil {
+			pv := cnf.String("policy")
+			_, err = os.Stat(pv)
+			if err != nil {
+				au.Adapter = stringadapter.NewAdapter(pv)
+			} else {
+				au.Adapter = fileadapter.NewAdapter(pv)
+			}
+		}
+
+		m := cnf.String("model")
+		if strings.ContainsRune(m, '\n') {
+			au.dsl, err = model.NewModelFromString(m)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			au.dsl = cnf.Abs(cnf.String("model"))
+		}
+		au.Enforcer, err = casbin.NewEnforcer(au.dsl, au.Adapter)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if au.Watcher == nil && cnf.IsSet("watcherOptions") {
+		if err = au.buildRedisWatcher(cnf); err != nil {
+			return nil, err
+		}
 	}
 	if cnf.IsSet("cache") {
 		if au.cache, err = lfu.NewTinyLFU(cnf.Sub("cache")); err != nil {
-			return
+			return nil, err
 		}
 	}
 
-	return
-}
-
-func (au *Authorizer) setCasbin(cnf *conf.Configuration) (err error) {
-	// model
-	var dsl, policy any
-	m := cnf.String("model")
-	if strings.ContainsRune(m, '\n') {
-		dsl, err = model.NewModelFromString(m)
-		if err != nil {
-			return
-		}
-	} else {
-		dsl = cnf.Abs(cnf.String("model"))
-	}
-	// policy
-	if pv := cnf.String("policy"); pv != "" {
-		SetAdapter(fileadapter.NewAdapter(pv))
-	}
-	policy = defaultAdapter
-	enforcer, err := casbin.NewCachedEnforcer(dsl, policy)
-	if err != nil {
-		return
-	}
-
-	if cnf.IsSet("expireTime") {
-		enforcer.SetExpireTime(cnf.Duration("expireTime"))
-	}
-	// autosave default to false, because we use redis watcher
-	if cnf.IsSet("autoSave") {
-		au.autoSave = cnf.Bool("autoSave")
-	}
-	enforcer.EnableAutoSave(au.autoSave)
-
-	au.Enforcer = enforcer
-	au.baseEnforcer = enforcer.Enforcer
-	err = au.buildWatcher(cnf)
-	if err != nil {
-		return
-	}
-	return nil
+	return au, nil
 }
 
 func (au *Authorizer) Prepare(ctx context.Context, kind security.ArnKind, arnParts ...string) (*security.EvalArgs, error) {
@@ -159,10 +164,11 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 		return nil, identity.ErrMisTenantID
 	}
 	uid := args.User.Identity().Name()
+	tid := strconv.Itoa(tenant)
 	prefix := string(args.Resource)
 	var cachekey string
 	if au.cache != nil {
-		cachekey = strconv.Itoa(tenant) + "_" + uid + "_" + prefix
+		cachekey = tid + "_" + uid + "_" + prefix
 		if err = au.cache.Get(ctx, cachekey, &conditions); err != nil {
 			if !errors.Is(err, cache.ErrCacheMiss) {
 				return nil, err
@@ -171,7 +177,10 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 			return conditions, nil
 		}
 	}
-	permissions := au.baseEnforcer.GetPermissionsForUserInDomain(args.User.Identity().Name(), strconv.Itoa(tenant))
+	permissions, err := au.Enforcer.GetImplicitPermissionsForUser(args.User.Identity().Name(), tid)
+	if err != nil {
+		return nil, err
+	}
 	if len(permissions) > 0 {
 		for _, policy := range permissions {
 			// policy {sub, domain, obj, act}
@@ -191,50 +200,38 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 	return conditions, nil
 }
 
-func (au *Authorizer) buildWatcher(cnf *conf.Configuration) (err error) {
-	if !cnf.IsSet("watcherOptions") {
-		return
-	}
-	watcherOptions := rediswatcher.WatcherOptions{
-		OptionalUpdateCallback: rediswatcher.DefaultUpdateCallback(au.Enforcer),
-	}
-	err = cnf.Sub("watcherOptions").Unmarshal(&watcherOptions)
-	if err != nil {
-		return
-	}
-
-	if watcherOptions.Options.Addr != "" {
-		au.Watcher, err = rediswatcher.NewWatcher(watcherOptions.Options.Addr, watcherOptions)
-	} else if watcherOptions.ClusterOptions.Addrs != nil {
-		au.Watcher, err = rediswatcher.NewWatcherWithCluster(watcherOptions.Options.Addr, watcherOptions)
-	}
-	if err != nil {
-		return
-	}
-	return au.Enforcer.SetWatcher(au.Watcher)
-}
-
 // BaseEnforcer returns the base enforcer. casbin api is not broadcasting to enforcer interface. so need to use base enforcer.
-func (au *Authorizer) BaseEnforcer() *casbin.Enforcer {
-	return au.baseEnforcer
-}
-
-// SetAdapter sets the default adapter for the enforcer.
-func SetAdapter(adapter persist.Adapter) {
-	defaultAdapter = adapter
+func (au *Authorizer) BaseEnforcer() casbin.IEnforcer {
+	return au.Enforcer
 }
 
 // SetAuthorizer set the default authorizer for security package.
-func SetAuthorizer(cnf *conf.Configuration, client *ent.Client, opts ...entadapter.Option) error {
-	adp, err := entadapter.NewAdapterWithClient(client, opts...)
-	if err != nil {
-		return err
-	}
-	SetAdapter(adp)
-	authorizer, err := NewAuthorizer(cnf)
+func SetAuthorizer(cnf *conf.Configuration, opts ...Option) error {
+	authorizer, err := NewAuthorizer(cnf, opts...)
 	if err != nil {
 		return err
 	}
 	security.SetDefaultAuthorizer(authorizer)
 	return nil
+}
+
+func (au *Authorizer) buildRedisWatcher(cnf *conf.Configuration) error {
+	watcherOptions := rediswatcher.WatcherOptions{
+		OptionalUpdateCallback: rediswatcher.DefaultUpdateCallback(au.Enforcer),
+	}
+	err := cnf.Sub("watcherOptions").Unmarshal(&watcherOptions)
+	if err != nil {
+		return err
+	}
+	var watcher persist.Watcher
+	if watcherOptions.Options.Addr != "" {
+		watcher, err = rediswatcher.NewWatcher(watcherOptions.Options.Addr, watcherOptions)
+	} else if watcherOptions.ClusterOptions.Addrs != nil {
+		watcher, err = rediswatcher.NewWatcherWithCluster(watcherOptions.Options.Addr, watcherOptions)
+	}
+	if err != nil {
+		return err
+	}
+	au.Watcher = watcher
+	return au.Enforcer.SetWatcher(watcher)
 }
