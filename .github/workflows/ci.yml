@@ -37,7 +37,7 @@ jobs:
           - "8888:8888"
           - "8889:8889"
       minio:
-        image: bitnami/minio:latest
+        image: minio/minio:RELEASE.2024-06-13T22-53-53Z
         ports:
           - "9000:9000"
         env:

@@ -34,6 +34,8 @@ type (
 		Watcher  persist.Watcher
 		Adapter  persist.Adapter
 		dsl      any
+		// AutoSave 一般管理端需要设置为true.
+		AutoSave bool `json:"autoSave"`
 		// local cache
 		cache cache.Cache
 	}
@@ -108,6 +110,9 @@ func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err
 		if err != nil {
 			return nil, err
 		}
+	}
+	if au.AutoSave {
+		au.Enforcer.EnableAutoSave(au.AutoSave)
 	}
 	if au.Watcher == nil && cnf.IsSet("watcherOptions") {
 		if err = au.buildRedisWatcher(cnf); err != nil {
