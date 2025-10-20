@@ -34,8 +34,8 @@ type (
 		Watcher  persist.Watcher
 		Adapter  persist.Adapter
 		dsl      any
-		// AutoSave 一般管理端需要设置为true.
-		AutoSave bool `json:"autoSave"`
+		// AutoSave map to the casbin AutoSave. Management Site should be true.
+		autoSave bool
 		// local cache
 		cache cache.Cache
 	}
@@ -82,7 +82,9 @@ func WithAdapter(pa persist.Adapter) Option {
 //
 // cache.ttl default 1 minute.
 func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err error) {
-	au = &Authorizer{}
+	au = &Authorizer{
+		autoSave: true,
+	}
 	for _, opt := range opts {
 		opt(au)
 	}
@@ -111,9 +113,10 @@ func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err
 			return nil, err
 		}
 	}
-	if au.AutoSave {
-		au.Enforcer.EnableAutoSave(au.AutoSave)
+	if cnf.IsSet("autoSave") {
+		au.autoSave = cnf.Bool("autoSave")
 	}
+	au.Enforcer.EnableAutoSave(au.autoSave)
 	if au.Watcher == nil && cnf.IsSet("watcherOptions") {
 		if err = au.buildRedisWatcher(cnf); err != nil {
 			return nil, err

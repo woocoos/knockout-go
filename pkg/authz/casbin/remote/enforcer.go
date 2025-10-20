@@ -47,6 +47,11 @@ func (e *GrpcEnforcer) GetImplicitPermissionsForUser(user string, domain ...stri
 	return replyTo2DSlice(res), nil
 }
 
+// EnableAutoSave it local support, not need support
+func (e *GrpcEnforcer) EnableAutoSave(enable bool) {
+	return
+}
+
 // replyTo2DSlice transforms a Array2DReply to a 2d string slice.
 func replyTo2DSlice(reply *proto.Array2DReply) [][]string {
 	result := make([][]string, 0)
