@@ -103,7 +103,9 @@ func (t *remoteSuite) SetupSuite() {
 
 	t.app.RegisterServer(t.casbinServer)
 	go func() {
-		t.app.Run()
+		if err := t.app.Run(); err != nil {
+			t.FailNow("app start error")
+		}
 	}()
 	time.Sleep(time.Second)
 }

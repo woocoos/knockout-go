@@ -44,6 +44,10 @@ func initCasbin(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("failed opening connection to sqlite: %v", err)
 	}
+	adp, err := entadapter.NewAdapterWithClient(client, entadapter.WithMigration())
+	if err != nil {
+		panic(err)
+	}
 	err = casbin.SetAuthorizer(conf.NewFromStringMap(map[string]any{
 		"model": `
 [request_definition]
@@ -57,7 +61,7 @@ e = some(where (p.eft == allow))
 [matchers]
 m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && keyMatch(r.obj, p.obj) && r.act == p.act
 `,
-	}), client, entadapter.WithMigration())
+	}), casbin.WithAdapter(adp))
 	if err != nil {
 		log.Fatalf("failed init casbin: %v", err)
 	}
