@@ -1,12 +1,8 @@
 # knockout-go
 
-knockout application sdk for go
+knockout application sdk and toolkits for Go.
 
 see the knockout [documentation](https://woocoos.github.io/knockout-doc/) for more information.
-
-## Prepare
-
-- golang >= 1.22.5
 
 ## Install
 
