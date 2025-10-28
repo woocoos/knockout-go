@@ -1,7 +1,7 @@
 casbinServer:
   grpc:
     server:
-      addr: localhost:10011
+      addr: 127.0.0.1:50011
       version: "1.0.0"
     engine:
       - keepaliveEnforcementPolicy:

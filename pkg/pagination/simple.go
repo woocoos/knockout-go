@@ -2,8 +2,11 @@ package pagination
 
 import (
 	"context"
-	"entgo.io/ent/dialect/sql"
+	"errors"
+	"fmt"
 	"strconv"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 var (
@@ -91,4 +94,20 @@ func LimitPerRow(partitionBy string, limit, offset int, orderBy ...sql.Querier) 
 				Prefix(with)
 		}
 	}
+}
+
+var (
+	ErrFirstOrLastMissing = errors.New("first or last is required")
+	ErrGreaterThanMaxRow  = errors.New("first or last is greater than maxRow")
+)
+
+// NeedLimit returns an error if first or last is not set, if maxRow is set and first or last is greater than maxRow, it returns an error.
+func NeedLimit(first, last *int, maxRow int) error {
+	if first == nil && last == nil {
+		return ErrFirstOrLastMissing
+	}
+	if maxRow > 0 && (first != nil && *first > maxRow || last != nil && *last > maxRow) {
+		return fmt.Errorf("%w: %d", ErrGreaterThanMaxRow, maxRow)
+	}
+	return nil
 }
