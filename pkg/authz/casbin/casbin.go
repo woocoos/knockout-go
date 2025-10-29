@@ -187,7 +187,7 @@ func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (pass b
 	act := string(args.Action)
 	var rvals []any
 	if tenant > 0 {
-		rvals = []any{tid, uid, act, args.ActionVerb}
+		rvals = []any{uid, tid, act, args.ActionVerb}
 	} else {
 		rvals = []any{uid, act, args.ActionVerb}
 	}
