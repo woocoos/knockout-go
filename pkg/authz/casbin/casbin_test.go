@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tsingsun/woocoo/contrib/gql"
+	"github.com/tsingsun/woocoo/pkg/cache"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/tsingsun/woocoo/pkg/log"
 	"github.com/tsingsun/woocoo/pkg/security"
@@ -328,6 +329,9 @@ func TestGraphqlCheckPermissions(t *testing.T) {
 	var cfgStr = `
 authz:
   autoSave: false
+  cache:
+    size: 1000
+    ttl:  1m
   model: |
     [request_definition]
     r = sub, obj, act
@@ -407,6 +411,9 @@ web:
 		if !assert.Equal(t, http.StatusOK, w.Code) {
 			t.Log(w.Body.String())
 		}
+		var pass bool
+		assert.NoError(t, auth.cache.Get(context.Background(), "0_1_:hello_read", &pass, cache.WithRaw()), "no domain as 0")
+		assert.True(t, pass)
 	})
 	t.Run("reject", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -415,6 +422,11 @@ web:
 		if assert.Equal(t, http.StatusForbidden, w.Code) {
 			assert.Contains(t, w.Body.String(), "action hello is not allowed")
 		}
+		var pass bool
+		key := "0_2_:hello_read"
+		assert.True(t, auth.cache.Has(context.Background(), key))
+		assert.NoError(t, auth.cache.Get(context.Background(), key, &pass, cache.WithRaw()), "no domain as 0")
+		assert.False(t, pass)
 	})
 }
 

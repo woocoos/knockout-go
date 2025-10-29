@@ -35,7 +35,8 @@ type (
 		Adapter  persist.Adapter
 		dsl      any
 		// AutoSave map to the casbin AutoSave. Management Site should be true.
-		autoSave bool
+		autoSave    bool
+		enableCache bool
 		// local cache
 		cache cache.Cache
 	}
@@ -56,6 +57,14 @@ func WithWatcher(w persist.Watcher) Option {
 func WithAdapter(pa persist.Adapter) Option {
 	return func(a *Authorizer) {
 		a.Adapter = pa
+	}
+}
+
+// WithCache add cache to authorizer.
+func WithCache(cache cache.Cache) Option {
+	return func(a *Authorizer) {
+		a.enableCache = true
+		a.cache = cache
 	}
 }
 
@@ -80,6 +89,9 @@ func WithAdapter(pa persist.Adapter) Option {
 // autoSave in watcher callback should be false. but set false will cause casbin main nodes lost save data.
 // we will improve in the future.current use database unique index to avoid duplicate data.
 //
+// expireTime if set for casbin.CachedEnforcer, if not set will use normal casbin.Enforcer.
+//
+// cache node is for independent cache usding for cached the Authorizer itself.
 // cache.ttl default 1 minute.
 func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err error) {
 	au = &Authorizer{
@@ -87,6 +99,19 @@ func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err
 	}
 	for _, opt := range opts {
 		opt(au)
+	}
+	// if not set default is true
+	if cnf.IsSet("autoSave") {
+		au.autoSave = cnf.Bool("autoSave")
+	}
+	if au.cache == nil {
+		au.enableCache = cnf.IsSet("cache")
+		if au.enableCache {
+			au.cache, err = lfu.NewTinyLFU(cnf.Sub("cache"))
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	if au.Enforcer == nil {
 		if au.Adapter == nil {
@@ -108,26 +133,27 @@ func NewAuthorizer(cnf *conf.Configuration, opts ...Option) (au *Authorizer, err
 		} else {
 			au.dsl = cnf.Abs(cnf.String("model"))
 		}
-		au.Enforcer, err = casbin.NewEnforcer(au.dsl, au.Adapter)
-		if err != nil {
-			return nil, err
+		if cnf.IsSet("expireTime") {
+			ef, err := casbin.NewCachedEnforcer(au.dsl, au.Adapter)
+			if err != nil {
+				return nil, err
+			}
+			ef.SetExpireTime(cnf.Duration("expireTime"))
+			au.Enforcer = ef
+		} else {
+			au.Enforcer, err = casbin.NewEnforcer(au.dsl, au.Adapter)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
-	if cnf.IsSet("autoSave") {
-		au.autoSave = cnf.Bool("autoSave")
-	}
 	au.Enforcer.EnableAutoSave(au.autoSave)
+
 	if au.Watcher == nil && cnf.IsSet("watcherOptions") {
 		if err = au.buildRedisWatcher(cnf); err != nil {
 			return nil, err
 		}
 	}
-	if cnf.IsSet("cache") {
-		if au.cache, err = lfu.NewTinyLFU(cnf.Sub("cache")); err != nil {
-			return nil, err
-		}
-	}
-
 	return au, nil
 }
 
@@ -153,14 +179,27 @@ func (au *Authorizer) Prepare(ctx context.Context, kind security.ArnKind, arnPar
 }
 
 // Eval checks if the user has permission to do an operation on a resource.
-// tenant will be used as domain. tenant allows not set.
-func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (bool, error) {
-	tenant, ok := identity.TenantIDLoadFromContext(ctx)
-	if !ok {
-		return au.Enforcer.Enforce(args.User.Identity().Name(), string(args.Action), args.ActionVerb)
+// tenant will be used as domain.
+func (au *Authorizer) Eval(ctx context.Context, args *security.EvalArgs) (pass bool, err error) {
+	tenant, _ := identity.TenantIDLoadFromContext(ctx)
+	uid := args.User.Identity().Name()
+	tid := strconv.Itoa(tenant)
+	act := string(args.Action)
+	var rvals []any
+	if tenant > 0 {
+		rvals = []any{tid, uid, act, args.ActionVerb}
+	} else {
+		rvals = []any{uid, act, args.ActionVerb}
 	}
-	// read is the access name.
-	return au.Enforcer.Enforce(args.User.Identity().Name(), strconv.Itoa(tenant), string(args.Action), args.ActionVerb)
+	if au.enableCache {
+		cachekey := tid + "_" + uid + "_" + act + "_" + args.ActionVerb
+		err = au.cache.Get(ctx, cachekey, &pass, cache.WithRaw(), cache.WithGetter(func(ctx context.Context, key string) (any, error) {
+			return au.Enforcer.Enforce(rvals...)
+		}))
+	} else {
+		pass, err = au.Enforcer.Enforce(rvals...)
+	}
+	return pass, err
 }
 
 // QueryAllowedResourceConditions returns the allowed resource conditions for the user in domain.
@@ -175,9 +214,9 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 	tid := strconv.Itoa(tenant)
 	prefix := string(args.Resource)
 	var cachekey string
-	if au.cache != nil {
+	if au.enableCache {
 		cachekey = tid + "_" + uid + "_" + prefix
-		if err = au.cache.Get(ctx, cachekey, &conditions); err != nil {
+		if err = au.cache.Get(ctx, cachekey, &conditions, cache.WithRaw()); err != nil {
 			if !errors.Is(err, cache.ErrCacheMiss) {
 				return nil, err
 			}
@@ -200,8 +239,8 @@ func (au *Authorizer) QueryAllowedResourceConditions(ctx context.Context, args *
 			}
 		}
 	}
-	if au.cache != nil {
-		if err = au.cache.Set(ctx, cachekey, conditions); err != nil {
+	if au.enableCache {
+		if err = au.cache.Set(ctx, cachekey, conditions, cache.WithRaw()); err != nil {
 			return nil, err
 		}
 	}
