@@ -205,8 +205,8 @@ func (p *nocachePager) applyFilter(query *NoCacheQuery) (*NoCacheQuery, error) {
 	return query, nil
 }
 
-func (p *nocachePager) toCursor(nc *NoCache) Cursor {
-	return p.order.Field.toCursor(nc)
+func (p *nocachePager) toCursor(_m *NoCache) Cursor {
+	return p.order.Field.toCursor(_m)
 }
 
 func (p *nocachePager) applyCursors(query *NoCacheQuery, after, before *Cursor) (*NoCacheQuery, error) {
@@ -252,7 +252,7 @@ func (p *nocachePager) orderExpr(query *NoCacheQuery) sql.Querier {
 }
 
 // Paginate executes the query and returns a relay based cursor connection to NoCache.
-func (nc *NoCacheQuery) Paginate(
+func (_m *NoCacheQuery) Paginate(
 	ctx context.Context, after *Cursor, first *int,
 	before *Cursor, last *int, opts ...NoCachePaginateOption,
 ) (*NoCacheConnection, error) {
@@ -263,7 +263,7 @@ func (nc *NoCacheQuery) Paginate(
 	if err != nil {
 		return nil, err
 	}
-	if nc, err = pager.applyFilter(nc); err != nil {
+	if _m, err = pager.applyFilter(_m); err != nil {
 		return nil, err
 	}
 	conn := &NoCacheConnection{Edges: []*NoCacheEdge{}}
@@ -271,7 +271,7 @@ func (nc *NoCacheQuery) Paginate(
 	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
 		hasPagination := after != nil || first != nil || before != nil || last != nil
 		if hasPagination || ignoredEdges {
-			c := nc.Clone()
+			c := _m.Clone()
 			c.ctx.Fields = nil
 			if conn.TotalCount, err = c.Count(ctx); err != nil {
 				return nil, err
@@ -283,23 +283,23 @@ func (nc *NoCacheQuery) Paginate(
 	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
 		return conn, nil
 	}
-	if nc, err = pager.applyCursors(nc, after, before); err != nil {
+	if _m, err = pager.applyCursors(_m, after, before); err != nil {
 		return nil, err
 	}
 	limit := paginateLimit(first, last)
 	if limit != 0 {
-		nc.Limit(limit)
+		_m.Limit(limit)
 	}
 	if sp, ok := pagination.SimplePaginationFromContext(ctx); ok {
-		nc.Offset(sp.Offset(first, last))
+		_m.Offset(sp.Offset(first, last))
 	}
 	if field := collectedField(ctx, edgesField, nodeField); field != nil {
-		if err := nc.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+		if err := _m.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
 			return nil, err
 		}
 	}
-	nc = pager.applyOrder(nc)
-	nodes, err := nc.All(ctx)
+	_m = pager.applyOrder(_m)
+	nodes, err := _m.All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -326,24 +326,24 @@ type NoCacheOrder struct {
 var DefaultNoCacheOrder = &NoCacheOrder{
 	Direction: entgql.OrderDirectionAsc,
 	Field: &NoCacheOrderField{
-		Value: func(nc *NoCache) (ent.Value, error) {
-			return nc.ID, nil
+		Value: func(_m *NoCache) (ent.Value, error) {
+			return _m.ID, nil
 		},
 		column: nocache.FieldID,
 		toTerm: nocache.ByID,
-		toCursor: func(nc *NoCache) Cursor {
-			return Cursor{ID: nc.ID}
+		toCursor: func(_m *NoCache) Cursor {
+			return Cursor{ID: _m.ID}
 		},
 	},
 }
 
 // ToEdge converts NoCache into NoCacheEdge.
-func (nc *NoCache) ToEdge(order *NoCacheOrder) *NoCacheEdge {
+func (_m *NoCache) ToEdge(order *NoCacheOrder) *NoCacheEdge {
 	if order == nil {
 		order = DefaultNoCacheOrder
 	}
 	return &NoCacheEdge{
-		Node:   nc,
-		Cursor: order.Field.toCursor(nc),
+		Node:   _m,
+		Cursor: order.Field.toCursor(_m),
 	}
 }

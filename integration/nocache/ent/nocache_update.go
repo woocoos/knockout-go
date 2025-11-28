@@ -22,59 +22,59 @@ type NoCacheUpdate struct {
 }
 
 // Where appends a list predicates to the NoCacheUpdate builder.
-func (ncu *NoCacheUpdate) Where(ps ...predicate.NoCache) *NoCacheUpdate {
-	ncu.mutation.Where(ps...)
-	return ncu
+func (_u *NoCacheUpdate) Where(ps ...predicate.NoCache) *NoCacheUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (ncu *NoCacheUpdate) SetName(s string) *NoCacheUpdate {
-	ncu.mutation.SetName(s)
-	return ncu
+func (_u *NoCacheUpdate) SetName(v string) *NoCacheUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (ncu *NoCacheUpdate) SetNillableName(s *string) *NoCacheUpdate {
-	if s != nil {
-		ncu.SetName(*s)
+func (_u *NoCacheUpdate) SetNillableName(v *string) *NoCacheUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return ncu
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (ncu *NoCacheUpdate) SetUserID(i int) *NoCacheUpdate {
-	ncu.mutation.ResetUserID()
-	ncu.mutation.SetUserID(i)
-	return ncu
+func (_u *NoCacheUpdate) SetUserID(v int) *NoCacheUpdate {
+	_u.mutation.ResetUserID()
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (ncu *NoCacheUpdate) SetNillableUserID(i *int) *NoCacheUpdate {
-	if i != nil {
-		ncu.SetUserID(*i)
+func (_u *NoCacheUpdate) SetNillableUserID(v *int) *NoCacheUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return ncu
+	return _u
 }
 
-// AddUserID adds i to the "user_id" field.
-func (ncu *NoCacheUpdate) AddUserID(i int) *NoCacheUpdate {
-	ncu.mutation.AddUserID(i)
-	return ncu
+// AddUserID adds value to the "user_id" field.
+func (_u *NoCacheUpdate) AddUserID(v int) *NoCacheUpdate {
+	_u.mutation.AddUserID(v)
+	return _u
 }
 
 // Mutation returns the NoCacheMutation object of the builder.
-func (ncu *NoCacheUpdate) Mutation() *NoCacheMutation {
-	return ncu.mutation
+func (_u *NoCacheUpdate) Mutation() *NoCacheMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ncu *NoCacheUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ncu.sqlSave, ncu.mutation, ncu.hooks)
+func (_u *NoCacheUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ncu *NoCacheUpdate) SaveX(ctx context.Context) int {
-	affected, err := ncu.Save(ctx)
+func (_u *NoCacheUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -82,37 +82,37 @@ func (ncu *NoCacheUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ncu *NoCacheUpdate) Exec(ctx context.Context) error {
-	_, err := ncu.Save(ctx)
+func (_u *NoCacheUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ncu *NoCacheUpdate) ExecX(ctx context.Context) {
-	if err := ncu.Exec(ctx); err != nil {
+func (_u *NoCacheUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (ncu *NoCacheUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *NoCacheUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(nocache.Table, nocache.Columns, sqlgraph.NewFieldSpec(nocache.FieldID, field.TypeInt))
-	if ps := ncu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ncu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(nocache.FieldName, field.TypeString, value)
 	}
-	if value, ok := ncu.mutation.UserID(); ok {
+	if value, ok := _u.mutation.UserID(); ok {
 		_spec.SetField(nocache.FieldUserID, field.TypeInt, value)
 	}
-	if value, ok := ncu.mutation.AddedUserID(); ok {
+	if value, ok := _u.mutation.AddedUserID(); ok {
 		_spec.AddField(nocache.FieldUserID, field.TypeInt, value)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, ncu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{nocache.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -120,8 +120,8 @@ func (ncu *NoCacheUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	ncu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // NoCacheUpdateOne is the builder for updating a single NoCache entity.
@@ -133,37 +133,37 @@ type NoCacheUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (ncuo *NoCacheUpdateOne) SetName(s string) *NoCacheUpdateOne {
-	ncuo.mutation.SetName(s)
+func (ncuo *NoCacheUpdateOne) SetName(v string) *NoCacheUpdateOne {
+	ncuo.mutation.SetName(v)
 	return ncuo
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (ncuo *NoCacheUpdateOne) SetNillableName(s *string) *NoCacheUpdateOne {
-	if s != nil {
-		ncuo.SetName(*s)
+func (ncuo *NoCacheUpdateOne) SetNillableName(v *string) *NoCacheUpdateOne {
+	if v != nil {
+		ncuo.SetName(*v)
 	}
 	return ncuo
 }
 
 // SetUserID sets the "user_id" field.
-func (ncuo *NoCacheUpdateOne) SetUserID(i int) *NoCacheUpdateOne {
+func (ncuo *NoCacheUpdateOne) SetUserID(v int) *NoCacheUpdateOne {
 	ncuo.mutation.ResetUserID()
-	ncuo.mutation.SetUserID(i)
+	ncuo.mutation.SetUserID(v)
 	return ncuo
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (ncuo *NoCacheUpdateOne) SetNillableUserID(i *int) *NoCacheUpdateOne {
-	if i != nil {
-		ncuo.SetUserID(*i)
+func (ncuo *NoCacheUpdateOne) SetNillableUserID(v *int) *NoCacheUpdateOne {
+	if v != nil {
+		ncuo.SetUserID(*v)
 	}
 	return ncuo
 }
 
-// AddUserID adds i to the "user_id" field.
-func (ncuo *NoCacheUpdateOne) AddUserID(i int) *NoCacheUpdateOne {
-	ncuo.mutation.AddUserID(i)
+// AddUserID adds value to the "user_id" field.
+func (ncuo *NoCacheUpdateOne) AddUserID(v int) *NoCacheUpdateOne {
+	ncuo.mutation.AddUserID(v)
 	return ncuo
 }
 

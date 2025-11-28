@@ -20,56 +20,56 @@ type HelloDelete struct {
 }
 
 // Where appends a list predicates to the HelloDelete builder.
-func (hd *HelloDelete) Where(ps ...predicate.Hello) *HelloDelete {
-	hd.mutation.Where(ps...)
-	return hd
+func (_d *HelloDelete) Where(ps ...predicate.Hello) *HelloDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (hd *HelloDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, hd.sqlExec, hd.mutation, hd.hooks)
+func (_d *HelloDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (hd *HelloDelete) ExecX(ctx context.Context) int {
-	n, err := hd.Exec(ctx)
+func (_d *HelloDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (hd *HelloDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *HelloDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(hello.Table, sqlgraph.NewFieldSpec(hello.FieldID, field.TypeInt))
-	if ps := hd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, hd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	hd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // HelloDeleteOne is the builder for deleting a single Hello entity.
 type HelloDeleteOne struct {
-	hd *HelloDelete
+	_d *HelloDelete
 }
 
 // Where appends a list predicates to the HelloDelete builder.
-func (hdo *HelloDeleteOne) Where(ps ...predicate.Hello) *HelloDeleteOne {
-	hdo.hd.mutation.Where(ps...)
-	return hdo
+func (_d *HelloDeleteOne) Where(ps ...predicate.Hello) *HelloDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (hdo *HelloDeleteOne) Exec(ctx context.Context) error {
-	n, err := hdo.hd.Exec(ctx)
+func (_d *HelloDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (hdo *HelloDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (hdo *HelloDeleteOne) ExecX(ctx context.Context) {
-	if err := hdo.Exec(ctx); err != nil {
+func (_d *HelloDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

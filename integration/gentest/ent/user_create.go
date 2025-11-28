@@ -23,90 +23,90 @@ type UserCreate struct {
 }
 
 // SetName sets the "name" field.
-func (uc *UserCreate) SetName(s string) *UserCreate {
-	uc.mutation.SetName(s)
-	return uc
+func (_c *UserCreate) SetName(v string) *UserCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
-	uc.mutation.SetCreatedAt(t)
-	return uc
+func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
-	if t != nil {
-		uc.SetCreatedAt(*t)
+func (_c *UserCreate) SetNillableCreatedAt(v *time.Time) *UserCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetMoney sets the "money" field.
-func (uc *UserCreate) SetMoney(d decimal.Decimal) *UserCreate {
-	uc.mutation.SetMoney(d)
-	return uc
+func (_c *UserCreate) SetMoney(v decimal.Decimal) *UserCreate {
+	_c.mutation.SetMoney(v)
+	return _c
 }
 
 // SetNillableMoney sets the "money" field if the given value is not nil.
-func (uc *UserCreate) SetNillableMoney(d *decimal.Decimal) *UserCreate {
-	if d != nil {
-		uc.SetMoney(*d)
+func (_c *UserCreate) SetNillableMoney(v *decimal.Decimal) *UserCreate {
+	if v != nil {
+		_c.SetMoney(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetAvatar sets the "avatar" field.
-func (uc *UserCreate) SetAvatar(s string) *UserCreate {
-	uc.mutation.SetAvatar(s)
-	return uc
+func (_c *UserCreate) SetAvatar(v string) *UserCreate {
+	_c.mutation.SetAvatar(v)
+	return _c
 }
 
 // SetNillableAvatar sets the "avatar" field if the given value is not nil.
-func (uc *UserCreate) SetNillableAvatar(s *string) *UserCreate {
-	if s != nil {
-		uc.SetAvatar(*s)
+func (_c *UserCreate) SetNillableAvatar(v *string) *UserCreate {
+	if v != nil {
+		_c.SetAvatar(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (uc *UserCreate) SetID(i int) *UserCreate {
-	uc.mutation.SetID(i)
-	return uc
+func (_c *UserCreate) SetID(v int) *UserCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // AddRefIDs adds the "refs" edge to the RefSchema entity by IDs.
-func (uc *UserCreate) AddRefIDs(ids ...int) *UserCreate {
-	uc.mutation.AddRefIDs(ids...)
-	return uc
+func (_c *UserCreate) AddRefIDs(ids ...int) *UserCreate {
+	_c.mutation.AddRefIDs(ids...)
+	return _c
 }
 
 // AddRefs adds the "refs" edges to the RefSchema entity.
-func (uc *UserCreate) AddRefs(r ...*RefSchema) *UserCreate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_c *UserCreate) AddRefs(v ...*RefSchema) *UserCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddRefIDs(ids...)
+	return _c.AddRefIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
-func (uc *UserCreate) Mutation() *UserMutation {
-	return uc.mutation
+func (_c *UserCreate) Mutation() *UserMutation {
+	return _c.mutation
 }
 
 // Save creates the User in the database.
-func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
-	if err := uc.defaults(); err != nil {
+func (_c *UserCreate) Save(ctx context.Context) (*User, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (uc *UserCreate) SaveX(ctx context.Context) *User {
-	v, err := uc.Save(ctx)
+func (_c *UserCreate) SaveX(ctx context.Context) *User {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -114,56 +114,56 @@ func (uc *UserCreate) SaveX(ctx context.Context) *User {
 }
 
 // Exec executes the query.
-func (uc *UserCreate) Exec(ctx context.Context) error {
-	_, err := uc.Save(ctx)
+func (_c *UserCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uc *UserCreate) ExecX(ctx context.Context) {
-	if err := uc.Exec(ctx); err != nil {
+func (_c *UserCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() error {
-	if _, ok := uc.mutation.CreatedAt(); !ok {
+func (_c *UserCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if user.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := user.DefaultCreatedAt()
-		uc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := uc.mutation.Money(); !ok {
+	if _, ok := _c.mutation.Money(); !ok {
 		if user.DefaultMoney == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultMoney (forgotten import ent/runtime?)")
 		}
 		v := user.DefaultMoney()
-		uc.mutation.SetMoney(v)
+		_c.mutation.SetMoney(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.Name(); !ok {
+func (_c *UserCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
 	}
-	if v, ok := uc.mutation.Name(); ok {
+	if v, ok := _c.mutation.Name(); ok {
 		if err := user.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "User.name": %w`, err)}
 		}
 	}
-	if _, ok := uc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
 	}
-	if v, ok := uc.mutation.Money(); ok {
+	if v, ok := _c.mutation.Money(); ok {
 		if err := user.MoneyValidator(v); err != nil {
 			return &ValidationError{Name: "money", err: fmt.Errorf(`ent: validator failed for field "User.money": %w`, err)}
 		}
 	}
-	if v, ok := uc.mutation.Avatar(); ok {
+	if v, ok := _c.mutation.Avatar(); ok {
 		if err := user.AvatarValidator(v); err != nil {
 			return &ValidationError{Name: "avatar", err: fmt.Errorf(`ent: validator failed for field "User.avatar": %w`, err)}
 		}
@@ -171,12 +171,12 @@ func (uc *UserCreate) check() error {
 	return nil
 }
 
-func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
-	if err := uc.check(); err != nil {
+func (_c *UserCreate) sqlSave(ctx context.Context) (*User, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := uc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, uc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -186,37 +186,37 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = int(id)
 	}
-	uc.mutation.id = &_node.ID
-	uc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
+func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	var (
-		_node = &User{config: uc.config}
+		_node = &User{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
 	)
-	if id, ok := uc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := uc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := uc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := uc.mutation.Money(); ok {
+	if value, ok := _c.mutation.Money(); ok {
 		_spec.SetField(user.FieldMoney, field.TypeFloat64, value)
 		_node.Money = &value
 	}
-	if value, ok := uc.mutation.Avatar(); ok {
+	if value, ok := _c.mutation.Avatar(); ok {
 		_spec.SetField(user.FieldAvatar, field.TypeString, value)
 		_node.Avatar = value
 	}
-	if nodes := uc.mutation.RefsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RefsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,

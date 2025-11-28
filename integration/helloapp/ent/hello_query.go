@@ -28,40 +28,40 @@ type HelloQuery struct {
 }
 
 // Where adds a new predicate for the HelloQuery builder.
-func (hq *HelloQuery) Where(ps ...predicate.Hello) *HelloQuery {
-	hq.predicates = append(hq.predicates, ps...)
-	return hq
+func (_q *HelloQuery) Where(ps ...predicate.Hello) *HelloQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (hq *HelloQuery) Limit(limit int) *HelloQuery {
-	hq.ctx.Limit = &limit
-	return hq
+func (_q *HelloQuery) Limit(limit int) *HelloQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (hq *HelloQuery) Offset(offset int) *HelloQuery {
-	hq.ctx.Offset = &offset
-	return hq
+func (_q *HelloQuery) Offset(offset int) *HelloQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (hq *HelloQuery) Unique(unique bool) *HelloQuery {
-	hq.ctx.Unique = &unique
-	return hq
+func (_q *HelloQuery) Unique(unique bool) *HelloQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (hq *HelloQuery) Order(o ...hello.OrderOption) *HelloQuery {
-	hq.order = append(hq.order, o...)
-	return hq
+func (_q *HelloQuery) Order(o ...hello.OrderOption) *HelloQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first Hello entity from the query.
 // Returns a *NotFoundError when no Hello was found.
-func (hq *HelloQuery) First(ctx context.Context) (*Hello, error) {
-	nodes, err := hq.Limit(1).All(setContextOp(ctx, hq.ctx, ent.OpQueryFirst))
+func (_q *HelloQuery) First(ctx context.Context) (*Hello, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func (hq *HelloQuery) First(ctx context.Context) (*Hello, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (hq *HelloQuery) FirstX(ctx context.Context) *Hello {
-	node, err := hq.First(ctx)
+func (_q *HelloQuery) FirstX(ctx context.Context) *Hello {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -82,9 +82,9 @@ func (hq *HelloQuery) FirstX(ctx context.Context) *Hello {
 
 // FirstID returns the first Hello ID from the query.
 // Returns a *NotFoundError when no Hello ID was found.
-func (hq *HelloQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *HelloQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = hq.Limit(1).IDs(setContextOp(ctx, hq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -95,8 +95,8 @@ func (hq *HelloQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (hq *HelloQuery) FirstIDX(ctx context.Context) int {
-	id, err := hq.FirstID(ctx)
+func (_q *HelloQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -106,8 +106,8 @@ func (hq *HelloQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single Hello entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Hello entity is found.
 // Returns a *NotFoundError when no Hello entities are found.
-func (hq *HelloQuery) Only(ctx context.Context) (*Hello, error) {
-	nodes, err := hq.Limit(2).All(setContextOp(ctx, hq.ctx, ent.OpQueryOnly))
+func (_q *HelloQuery) Only(ctx context.Context) (*Hello, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +122,8 @@ func (hq *HelloQuery) Only(ctx context.Context) (*Hello, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (hq *HelloQuery) OnlyX(ctx context.Context) *Hello {
-	node, err := hq.Only(ctx)
+func (_q *HelloQuery) OnlyX(ctx context.Context) *Hello {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (hq *HelloQuery) OnlyX(ctx context.Context) *Hello {
 // OnlyID is like Only, but returns the only Hello ID in the query.
 // Returns a *NotSingularError when more than one Hello ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (hq *HelloQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *HelloQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = hq.Limit(2).IDs(setContextOp(ctx, hq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -150,8 +150,8 @@ func (hq *HelloQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (hq *HelloQuery) OnlyIDX(ctx context.Context) int {
-	id, err := hq.OnlyID(ctx)
+func (_q *HelloQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,18 +159,18 @@ func (hq *HelloQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of Hellos.
-func (hq *HelloQuery) All(ctx context.Context) ([]*Hello, error) {
-	ctx = setContextOp(ctx, hq.ctx, ent.OpQueryAll)
-	if err := hq.prepareQuery(ctx); err != nil {
+func (_q *HelloQuery) All(ctx context.Context) ([]*Hello, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Hello, *HelloQuery]()
-	return withInterceptors[[]*Hello](ctx, hq, qr, hq.inters)
+	return withInterceptors[[]*Hello](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (hq *HelloQuery) AllX(ctx context.Context) []*Hello {
-	nodes, err := hq.All(ctx)
+func (_q *HelloQuery) AllX(ctx context.Context) []*Hello {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -178,20 +178,20 @@ func (hq *HelloQuery) AllX(ctx context.Context) []*Hello {
 }
 
 // IDs executes the query and returns a list of Hello IDs.
-func (hq *HelloQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if hq.ctx.Unique == nil && hq.path != nil {
-		hq.Unique(true)
+func (_q *HelloQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, hq.ctx, ent.OpQueryIDs)
-	if err = hq.Select(hello.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(hello.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (hq *HelloQuery) IDsX(ctx context.Context) []int {
-	ids, err := hq.IDs(ctx)
+func (_q *HelloQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -199,17 +199,17 @@ func (hq *HelloQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (hq *HelloQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, hq.ctx, ent.OpQueryCount)
-	if err := hq.prepareQuery(ctx); err != nil {
+func (_q *HelloQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, hq, querierCount[*HelloQuery](), hq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*HelloQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (hq *HelloQuery) CountX(ctx context.Context) int {
-	count, err := hq.Count(ctx)
+func (_q *HelloQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -217,9 +217,9 @@ func (hq *HelloQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (hq *HelloQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, hq.ctx, ent.OpQueryExist)
-	switch _, err := hq.FirstID(ctx); {
+func (_q *HelloQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -230,8 +230,8 @@ func (hq *HelloQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (hq *HelloQuery) ExistX(ctx context.Context) bool {
-	exist, err := hq.Exist(ctx)
+func (_q *HelloQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -240,19 +240,19 @@ func (hq *HelloQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the HelloQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (hq *HelloQuery) Clone() *HelloQuery {
-	if hq == nil {
+func (_q *HelloQuery) Clone() *HelloQuery {
+	if _q == nil {
 		return nil
 	}
 	return &HelloQuery{
-		config:     hq.config,
-		ctx:        hq.ctx.Clone(),
-		order:      append([]hello.OrderOption{}, hq.order...),
-		inters:     append([]Interceptor{}, hq.inters...),
-		predicates: append([]predicate.Hello{}, hq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]hello.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.Hello{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  hq.sql.Clone(),
-		path: hq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
@@ -270,10 +270,10 @@ func (hq *HelloQuery) Clone() *HelloQuery {
 //		GroupBy(hello.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (hq *HelloQuery) GroupBy(field string, fields ...string) *HelloGroupBy {
-	hq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &HelloGroupBy{build: hq}
-	grbuild.flds = &hq.ctx.Fields
+func (_q *HelloQuery) GroupBy(field string, fields ...string) *HelloGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &HelloGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = hello.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -291,62 +291,62 @@ func (hq *HelloQuery) GroupBy(field string, fields ...string) *HelloGroupBy {
 //	client.Hello.Query().
 //		Select(hello.FieldName).
 //		Scan(ctx, &v)
-func (hq *HelloQuery) Select(fields ...string) *HelloSelect {
-	hq.ctx.Fields = append(hq.ctx.Fields, fields...)
-	sbuild := &HelloSelect{HelloQuery: hq}
+func (_q *HelloQuery) Select(fields ...string) *HelloSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &HelloSelect{HelloQuery: _q}
 	sbuild.label = hello.Label
-	sbuild.flds, sbuild.scan = &hq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a HelloSelect configured with the given aggregations.
-func (hq *HelloQuery) Aggregate(fns ...AggregateFunc) *HelloSelect {
-	return hq.Select().Aggregate(fns...)
+func (_q *HelloQuery) Aggregate(fns ...AggregateFunc) *HelloSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (hq *HelloQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range hq.inters {
+func (_q *HelloQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, hq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range hq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !hello.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if hq.path != nil {
-		prev, err := hq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		hq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (hq *HelloQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Hello, error) {
+func (_q *HelloQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Hello, error) {
 	var (
 		nodes = []*Hello{}
-		_spec = hq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Hello).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Hello{config: hq.config}
+		node := &Hello{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, hq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -355,24 +355,24 @@ func (hq *HelloQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Hello,
 	return nodes, nil
 }
 
-func (hq *HelloQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := hq.querySpec()
-	_spec.Node.Columns = hq.ctx.Fields
-	if len(hq.ctx.Fields) > 0 {
-		_spec.Unique = hq.ctx.Unique != nil && *hq.ctx.Unique
+func (_q *HelloQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, hq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (hq *HelloQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *HelloQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(hello.Table, hello.Columns, sqlgraph.NewFieldSpec(hello.FieldID, field.TypeInt))
-	_spec.From = hq.sql
-	if unique := hq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if hq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := hq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, hello.FieldID)
 		for i := range fields {
@@ -381,20 +381,20 @@ func (hq *HelloQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := hq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := hq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := hq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := hq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -404,33 +404,33 @@ func (hq *HelloQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (hq *HelloQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(hq.driver.Dialect())
+func (_q *HelloQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(hello.Table)
-	columns := hq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = hello.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if hq.sql != nil {
-		selector = hq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if hq.ctx.Unique != nil && *hq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range hq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range hq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := hq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := hq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -443,41 +443,41 @@ type HelloGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (hgb *HelloGroupBy) Aggregate(fns ...AggregateFunc) *HelloGroupBy {
-	hgb.fns = append(hgb.fns, fns...)
-	return hgb
+func (_g *HelloGroupBy) Aggregate(fns ...AggregateFunc) *HelloGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (hgb *HelloGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, hgb.build.ctx, ent.OpQueryGroupBy)
-	if err := hgb.build.prepareQuery(ctx); err != nil {
+func (_g *HelloGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*HelloQuery, *HelloGroupBy](ctx, hgb.build, hgb, hgb.build.inters, v)
+	return scanWithInterceptors[*HelloQuery, *HelloGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (hgb *HelloGroupBy) sqlScan(ctx context.Context, root *HelloQuery, v any) error {
+func (_g *HelloGroupBy) sqlScan(ctx context.Context, root *HelloQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(hgb.fns))
-	for _, fn := range hgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*hgb.flds)+len(hgb.fns))
-		for _, f := range *hgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*hgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := hgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -491,27 +491,27 @@ type HelloSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (hs *HelloSelect) Aggregate(fns ...AggregateFunc) *HelloSelect {
-	hs.fns = append(hs.fns, fns...)
-	return hs
+func (_s *HelloSelect) Aggregate(fns ...AggregateFunc) *HelloSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (hs *HelloSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, hs.ctx, ent.OpQuerySelect)
-	if err := hs.prepareQuery(ctx); err != nil {
+func (_s *HelloSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*HelloQuery, *HelloSelect](ctx, hs.HelloQuery, hs, hs.inters, v)
+	return scanWithInterceptors[*HelloQuery, *HelloSelect](ctx, _s.HelloQuery, _s, _s.inters, v)
 }
 
-func (hs *HelloSelect) sqlScan(ctx context.Context, root *HelloQuery, v any) error {
+func (_s *HelloSelect) sqlScan(ctx context.Context, root *HelloQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(hs.fns))
-	for _, fn := range hs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*hs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -519,7 +519,7 @@ func (hs *HelloSelect) sqlScan(ctx context.Context, root *HelloQuery, v any) err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := hs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()

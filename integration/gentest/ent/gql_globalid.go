@@ -15,14 +15,14 @@ import (
 )
 
 // GlobalID returns the global identifier for the given RefSchema node.
-func (rs *RefSchema) GlobalID(context.Context) (string, error) {
-	id := fmt.Sprintf("RefSchema:%d", rs.ID)
+func (_m *RefSchema) GlobalID(context.Context) (string, error) {
+	id := fmt.Sprintf("RefSchema:%d", _m.ID)
 	return base64.StdEncoding.EncodeToString([]byte(id)), nil
 }
 
 // GlobalID returns the global identifier for the given User node.
-func (u *User) GlobalID(context.Context) (string, error) {
-	id := fmt.Sprintf("User:%d", u.ID)
+func (_m *User) GlobalID(context.Context) (string, error) {
+	id := fmt.Sprintf("User:%d", _m.ID)
 	return base64.StdEncoding.EncodeToString([]byte(id)), nil
 }
 

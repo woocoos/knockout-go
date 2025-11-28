@@ -22,38 +22,38 @@ type HelloUpdate struct {
 }
 
 // Where appends a list predicates to the HelloUpdate builder.
-func (hu *HelloUpdate) Where(ps ...predicate.Hello) *HelloUpdate {
-	hu.mutation.Where(ps...)
-	return hu
+func (_u *HelloUpdate) Where(ps ...predicate.Hello) *HelloUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (hu *HelloUpdate) SetName(s string) *HelloUpdate {
-	hu.mutation.SetName(s)
-	return hu
+func (_u *HelloUpdate) SetName(v string) *HelloUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (hu *HelloUpdate) SetNillableName(s *string) *HelloUpdate {
-	if s != nil {
-		hu.SetName(*s)
+func (_u *HelloUpdate) SetNillableName(v *string) *HelloUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return hu
+	return _u
 }
 
 // Mutation returns the HelloMutation object of the builder.
-func (hu *HelloUpdate) Mutation() *HelloMutation {
-	return hu.mutation
+func (_u *HelloUpdate) Mutation() *HelloMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (hu *HelloUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, hu.sqlSave, hu.mutation, hu.hooks)
+func (_u *HelloUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (hu *HelloUpdate) SaveX(ctx context.Context) int {
-	affected, err := hu.Save(ctx)
+func (_u *HelloUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -61,31 +61,31 @@ func (hu *HelloUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (hu *HelloUpdate) Exec(ctx context.Context) error {
-	_, err := hu.Save(ctx)
+func (_u *HelloUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (hu *HelloUpdate) ExecX(ctx context.Context) {
-	if err := hu.Exec(ctx); err != nil {
+func (_u *HelloUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (hu *HelloUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *HelloUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(hello.Table, hello.Columns, sqlgraph.NewFieldSpec(hello.FieldID, field.TypeInt))
-	if ps := hu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := hu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(hello.FieldName, field.TypeString, value)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, hu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{hello.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -93,8 +93,8 @@ func (hu *HelloUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	hu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // HelloUpdateOne is the builder for updating a single Hello entity.
@@ -106,45 +106,45 @@ type HelloUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (huo *HelloUpdateOne) SetName(s string) *HelloUpdateOne {
-	huo.mutation.SetName(s)
-	return huo
+func (_u *HelloUpdateOne) SetName(v string) *HelloUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (huo *HelloUpdateOne) SetNillableName(s *string) *HelloUpdateOne {
-	if s != nil {
-		huo.SetName(*s)
+func (_u *HelloUpdateOne) SetNillableName(v *string) *HelloUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return huo
+	return _u
 }
 
 // Mutation returns the HelloMutation object of the builder.
-func (huo *HelloUpdateOne) Mutation() *HelloMutation {
-	return huo.mutation
+func (_u *HelloUpdateOne) Mutation() *HelloMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the HelloUpdate builder.
-func (huo *HelloUpdateOne) Where(ps ...predicate.Hello) *HelloUpdateOne {
-	huo.mutation.Where(ps...)
-	return huo
+func (_u *HelloUpdateOne) Where(ps ...predicate.Hello) *HelloUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (huo *HelloUpdateOne) Select(field string, fields ...string) *HelloUpdateOne {
-	huo.fields = append([]string{field}, fields...)
-	return huo
+func (_u *HelloUpdateOne) Select(field string, fields ...string) *HelloUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Hello entity.
-func (huo *HelloUpdateOne) Save(ctx context.Context) (*Hello, error) {
-	return withHooks(ctx, huo.sqlSave, huo.mutation, huo.hooks)
+func (_u *HelloUpdateOne) Save(ctx context.Context) (*Hello, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (huo *HelloUpdateOne) SaveX(ctx context.Context) *Hello {
-	node, err := huo.Save(ctx)
+func (_u *HelloUpdateOne) SaveX(ctx context.Context) *Hello {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -152,26 +152,26 @@ func (huo *HelloUpdateOne) SaveX(ctx context.Context) *Hello {
 }
 
 // Exec executes the query on the entity.
-func (huo *HelloUpdateOne) Exec(ctx context.Context) error {
-	_, err := huo.Save(ctx)
+func (_u *HelloUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (huo *HelloUpdateOne) ExecX(ctx context.Context) {
-	if err := huo.Exec(ctx); err != nil {
+func (_u *HelloUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (huo *HelloUpdateOne) sqlSave(ctx context.Context) (_node *Hello, err error) {
+func (_u *HelloUpdateOne) sqlSave(ctx context.Context) (_node *Hello, err error) {
 	_spec := sqlgraph.NewUpdateSpec(hello.Table, hello.Columns, sqlgraph.NewFieldSpec(hello.FieldID, field.TypeInt))
-	id, ok := huo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Hello.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := huo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, hello.FieldID)
 		for _, f := range fields {
@@ -183,20 +183,20 @@ func (huo *HelloUpdateOne) sqlSave(ctx context.Context) (_node *Hello, err error
 			}
 		}
 	}
-	if ps := huo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := huo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(hello.FieldName, field.TypeString, value)
 	}
-	_node = &Hello{config: huo.config}
+	_node = &Hello{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, huo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{hello.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -204,6 +204,6 @@ func (huo *HelloUpdateOne) sqlSave(ctx context.Context) (_node *Hello, err error
 		}
 		return nil, err
 	}
-	huo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

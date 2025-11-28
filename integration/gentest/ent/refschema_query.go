@@ -32,44 +32,44 @@ type RefSchemaQuery struct {
 }
 
 // Where adds a new predicate for the RefSchemaQuery builder.
-func (rsq *RefSchemaQuery) Where(ps ...predicate.RefSchema) *RefSchemaQuery {
-	rsq.predicates = append(rsq.predicates, ps...)
-	return rsq
+func (_q *RefSchemaQuery) Where(ps ...predicate.RefSchema) *RefSchemaQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (rsq *RefSchemaQuery) Limit(limit int) *RefSchemaQuery {
-	rsq.ctx.Limit = &limit
-	return rsq
+func (_q *RefSchemaQuery) Limit(limit int) *RefSchemaQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (rsq *RefSchemaQuery) Offset(offset int) *RefSchemaQuery {
-	rsq.ctx.Offset = &offset
-	return rsq
+func (_q *RefSchemaQuery) Offset(offset int) *RefSchemaQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (rsq *RefSchemaQuery) Unique(unique bool) *RefSchemaQuery {
-	rsq.ctx.Unique = &unique
-	return rsq
+func (_q *RefSchemaQuery) Unique(unique bool) *RefSchemaQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (rsq *RefSchemaQuery) Order(o ...refschema.OrderOption) *RefSchemaQuery {
-	rsq.order = append(rsq.order, o...)
-	return rsq
+func (_q *RefSchemaQuery) Order(o ...refschema.OrderOption) *RefSchemaQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (rsq *RefSchemaQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: rsq.config}).Query()
+func (_q *RefSchemaQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -78,7 +78,7 @@ func (rsq *RefSchemaQuery) QueryUser() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, refschema.UserTable, refschema.UserColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(rsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -86,8 +86,8 @@ func (rsq *RefSchemaQuery) QueryUser() *UserQuery {
 
 // First returns the first RefSchema entity from the query.
 // Returns a *NotFoundError when no RefSchema was found.
-func (rsq *RefSchemaQuery) First(ctx context.Context) (*RefSchema, error) {
-	nodes, err := rsq.Limit(1).All(setContextOp(ctx, rsq.ctx, ent.OpQueryFirst))
+func (_q *RefSchemaQuery) First(ctx context.Context) (*RefSchema, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +98,8 @@ func (rsq *RefSchemaQuery) First(ctx context.Context) (*RefSchema, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (rsq *RefSchemaQuery) FirstX(ctx context.Context) *RefSchema {
-	node, err := rsq.First(ctx)
+func (_q *RefSchemaQuery) FirstX(ctx context.Context) *RefSchema {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -108,9 +108,9 @@ func (rsq *RefSchemaQuery) FirstX(ctx context.Context) *RefSchema {
 
 // FirstID returns the first RefSchema ID from the query.
 // Returns a *NotFoundError when no RefSchema ID was found.
-func (rsq *RefSchemaQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *RefSchemaQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = rsq.Limit(1).IDs(setContextOp(ctx, rsq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -121,8 +121,8 @@ func (rsq *RefSchemaQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rsq *RefSchemaQuery) FirstIDX(ctx context.Context) int {
-	id, err := rsq.FirstID(ctx)
+func (_q *RefSchemaQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -132,8 +132,8 @@ func (rsq *RefSchemaQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single RefSchema entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one RefSchema entity is found.
 // Returns a *NotFoundError when no RefSchema entities are found.
-func (rsq *RefSchemaQuery) Only(ctx context.Context) (*RefSchema, error) {
-	nodes, err := rsq.Limit(2).All(setContextOp(ctx, rsq.ctx, ent.OpQueryOnly))
+func (_q *RefSchemaQuery) Only(ctx context.Context) (*RefSchema, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (rsq *RefSchemaQuery) Only(ctx context.Context) (*RefSchema, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (rsq *RefSchemaQuery) OnlyX(ctx context.Context) *RefSchema {
-	node, err := rsq.Only(ctx)
+func (_q *RefSchemaQuery) OnlyX(ctx context.Context) *RefSchema {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,9 +159,9 @@ func (rsq *RefSchemaQuery) OnlyX(ctx context.Context) *RefSchema {
 // OnlyID is like Only, but returns the only RefSchema ID in the query.
 // Returns a *NotSingularError when more than one RefSchema ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rsq *RefSchemaQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *RefSchemaQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = rsq.Limit(2).IDs(setContextOp(ctx, rsq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -176,8 +176,8 @@ func (rsq *RefSchemaQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rsq *RefSchemaQuery) OnlyIDX(ctx context.Context) int {
-	id, err := rsq.OnlyID(ctx)
+func (_q *RefSchemaQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -185,18 +185,18 @@ func (rsq *RefSchemaQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of RefSchemas.
-func (rsq *RefSchemaQuery) All(ctx context.Context) ([]*RefSchema, error) {
-	ctx = setContextOp(ctx, rsq.ctx, ent.OpQueryAll)
-	if err := rsq.prepareQuery(ctx); err != nil {
+func (_q *RefSchemaQuery) All(ctx context.Context) ([]*RefSchema, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*RefSchema, *RefSchemaQuery]()
-	return withInterceptors[[]*RefSchema](ctx, rsq, qr, rsq.inters)
+	return withInterceptors[[]*RefSchema](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (rsq *RefSchemaQuery) AllX(ctx context.Context) []*RefSchema {
-	nodes, err := rsq.All(ctx)
+func (_q *RefSchemaQuery) AllX(ctx context.Context) []*RefSchema {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -204,20 +204,20 @@ func (rsq *RefSchemaQuery) AllX(ctx context.Context) []*RefSchema {
 }
 
 // IDs executes the query and returns a list of RefSchema IDs.
-func (rsq *RefSchemaQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if rsq.ctx.Unique == nil && rsq.path != nil {
-		rsq.Unique(true)
+func (_q *RefSchemaQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, rsq.ctx, ent.OpQueryIDs)
-	if err = rsq.Select(refschema.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(refschema.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rsq *RefSchemaQuery) IDsX(ctx context.Context) []int {
-	ids, err := rsq.IDs(ctx)
+func (_q *RefSchemaQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -225,17 +225,17 @@ func (rsq *RefSchemaQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (rsq *RefSchemaQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, rsq.ctx, ent.OpQueryCount)
-	if err := rsq.prepareQuery(ctx); err != nil {
+func (_q *RefSchemaQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, rsq, querierCount[*RefSchemaQuery](), rsq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*RefSchemaQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (rsq *RefSchemaQuery) CountX(ctx context.Context) int {
-	count, err := rsq.Count(ctx)
+func (_q *RefSchemaQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -243,9 +243,9 @@ func (rsq *RefSchemaQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (rsq *RefSchemaQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, rsq.ctx, ent.OpQueryExist)
-	switch _, err := rsq.FirstID(ctx); {
+func (_q *RefSchemaQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -256,8 +256,8 @@ func (rsq *RefSchemaQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (rsq *RefSchemaQuery) ExistX(ctx context.Context) bool {
-	exist, err := rsq.Exist(ctx)
+func (_q *RefSchemaQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -266,32 +266,32 @@ func (rsq *RefSchemaQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the RefSchemaQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (rsq *RefSchemaQuery) Clone() *RefSchemaQuery {
-	if rsq == nil {
+func (_q *RefSchemaQuery) Clone() *RefSchemaQuery {
+	if _q == nil {
 		return nil
 	}
 	return &RefSchemaQuery{
-		config:     rsq.config,
-		ctx:        rsq.ctx.Clone(),
-		order:      append([]refschema.OrderOption{}, rsq.order...),
-		inters:     append([]Interceptor{}, rsq.inters...),
-		predicates: append([]predicate.RefSchema{}, rsq.predicates...),
-		withUser:   rsq.withUser.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]refschema.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.RefSchema{}, _q.predicates...),
+		withUser:   _q.withUser.Clone(),
 		// clone intermediate query.
-		sql:  rsq.sql.Clone(),
-		path: rsq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (rsq *RefSchemaQuery) WithUser(opts ...func(*UserQuery)) *RefSchemaQuery {
-	query := (&UserClient{config: rsq.config}).Query()
+func (_q *RefSchemaQuery) WithUser(opts ...func(*UserQuery)) *RefSchemaQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rsq.withUser = query
-	return rsq
+	_q.withUser = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -308,10 +308,10 @@ func (rsq *RefSchemaQuery) WithUser(opts ...func(*UserQuery)) *RefSchemaQuery {
 //		GroupBy(refschema.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (rsq *RefSchemaQuery) GroupBy(field string, fields ...string) *RefSchemaGroupBy {
-	rsq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &RefSchemaGroupBy{build: rsq}
-	grbuild.flds = &rsq.ctx.Fields
+func (_q *RefSchemaQuery) GroupBy(field string, fields ...string) *RefSchemaGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &RefSchemaGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = refschema.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -329,89 +329,89 @@ func (rsq *RefSchemaQuery) GroupBy(field string, fields ...string) *RefSchemaGro
 //	client.RefSchema.Query().
 //		Select(refschema.FieldName).
 //		Scan(ctx, &v)
-func (rsq *RefSchemaQuery) Select(fields ...string) *RefSchemaSelect {
-	rsq.ctx.Fields = append(rsq.ctx.Fields, fields...)
-	sbuild := &RefSchemaSelect{RefSchemaQuery: rsq}
+func (_q *RefSchemaQuery) Select(fields ...string) *RefSchemaSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &RefSchemaSelect{RefSchemaQuery: _q}
 	sbuild.label = refschema.Label
-	sbuild.flds, sbuild.scan = &rsq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a RefSchemaSelect configured with the given aggregations.
-func (rsq *RefSchemaQuery) Aggregate(fns ...AggregateFunc) *RefSchemaSelect {
-	return rsq.Select().Aggregate(fns...)
+func (_q *RefSchemaQuery) Aggregate(fns ...AggregateFunc) *RefSchemaSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (rsq *RefSchemaQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range rsq.inters {
+func (_q *RefSchemaQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, rsq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range rsq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !refschema.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if rsq.path != nil {
-		prev, err := rsq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		rsq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (rsq *RefSchemaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RefSchema, error) {
+func (_q *RefSchemaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RefSchema, error) {
 	var (
 		nodes       = []*RefSchema{}
-		_spec       = rsq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			rsq.withUser != nil,
+			_q.withUser != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*RefSchema).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &RefSchema{config: rsq.config}
+		node := &RefSchema{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(rsq.modifiers) > 0 {
-		_spec.Modifiers = rsq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, rsq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := rsq.withUser; query != nil {
-		if err := rsq.loadUser(ctx, query, nodes, nil,
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *RefSchema, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
-	for i := range rsq.loadTotal {
-		if err := rsq.loadTotal[i](ctx, nodes); err != nil {
+	for i := range _q.loadTotal {
+		if err := _q.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (rsq *RefSchemaQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*RefSchema, init func(*RefSchema), assign func(*RefSchema, *User)) error {
+func (_q *RefSchemaQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*RefSchema, init func(*RefSchema), assign func(*RefSchema, *User)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*RefSchema)
 	for i := range nodes {
@@ -441,27 +441,27 @@ func (rsq *RefSchemaQuery) loadUser(ctx context.Context, query *UserQuery, nodes
 	return nil
 }
 
-func (rsq *RefSchemaQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := rsq.querySpec()
-	if len(rsq.modifiers) > 0 {
-		_spec.Modifiers = rsq.modifiers
+func (_q *RefSchemaQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = rsq.ctx.Fields
-	if len(rsq.ctx.Fields) > 0 {
-		_spec.Unique = rsq.ctx.Unique != nil && *rsq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, rsq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (rsq *RefSchemaQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *RefSchemaQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(refschema.Table, refschema.Columns, sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt))
-	_spec.From = rsq.sql
-	if unique := rsq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if rsq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := rsq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, refschema.FieldID)
 		for i := range fields {
@@ -469,24 +469,24 @@ func (rsq *RefSchemaQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if rsq.withUser != nil {
+		if _q.withUser != nil {
 			_spec.Node.AddColumnOnce(refschema.FieldUserID)
 		}
 	}
-	if ps := rsq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := rsq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := rsq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := rsq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -496,33 +496,33 @@ func (rsq *RefSchemaQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (rsq *RefSchemaQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(rsq.driver.Dialect())
+func (_q *RefSchemaQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(refschema.Table)
-	columns := rsq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = refschema.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if rsq.sql != nil {
-		selector = rsq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if rsq.ctx.Unique != nil && *rsq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range rsq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range rsq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := rsq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := rsq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -535,41 +535,41 @@ type RefSchemaGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (rsgb *RefSchemaGroupBy) Aggregate(fns ...AggregateFunc) *RefSchemaGroupBy {
-	rsgb.fns = append(rsgb.fns, fns...)
-	return rsgb
+func (_g *RefSchemaGroupBy) Aggregate(fns ...AggregateFunc) *RefSchemaGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rsgb *RefSchemaGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rsgb.build.ctx, ent.OpQueryGroupBy)
-	if err := rsgb.build.prepareQuery(ctx); err != nil {
+func (_g *RefSchemaGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*RefSchemaQuery, *RefSchemaGroupBy](ctx, rsgb.build, rsgb, rsgb.build.inters, v)
+	return scanWithInterceptors[*RefSchemaQuery, *RefSchemaGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (rsgb *RefSchemaGroupBy) sqlScan(ctx context.Context, root *RefSchemaQuery, v any) error {
+func (_g *RefSchemaGroupBy) sqlScan(ctx context.Context, root *RefSchemaQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(rsgb.fns))
-	for _, fn := range rsgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*rsgb.flds)+len(rsgb.fns))
-		for _, f := range *rsgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*rsgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rsgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -583,27 +583,27 @@ type RefSchemaSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (rss *RefSchemaSelect) Aggregate(fns ...AggregateFunc) *RefSchemaSelect {
-	rss.fns = append(rss.fns, fns...)
-	return rss
+func (_s *RefSchemaSelect) Aggregate(fns ...AggregateFunc) *RefSchemaSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rss *RefSchemaSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rss.ctx, ent.OpQuerySelect)
-	if err := rss.prepareQuery(ctx); err != nil {
+func (_s *RefSchemaSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*RefSchemaQuery, *RefSchemaSelect](ctx, rss.RefSchemaQuery, rss, rss.inters, v)
+	return scanWithInterceptors[*RefSchemaQuery, *RefSchemaSelect](ctx, _s.RefSchemaQuery, _s, _s.inters, v)
 }
 
-func (rss *RefSchemaSelect) sqlScan(ctx context.Context, root *RefSchemaQuery, v any) error {
+func (_s *RefSchemaSelect) sqlScan(ctx context.Context, root *RefSchemaQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(rss.fns))
-	for _, fn := range rss.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*rss.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -611,7 +611,7 @@ func (rss *RefSchemaSelect) sqlScan(ctx context.Context, root *RefSchemaQuery, v
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rss.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()

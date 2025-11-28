@@ -23,63 +23,63 @@ type RefSchemaUpdate struct {
 }
 
 // Where appends a list predicates to the RefSchemaUpdate builder.
-func (rsu *RefSchemaUpdate) Where(ps ...predicate.RefSchema) *RefSchemaUpdate {
-	rsu.mutation.Where(ps...)
-	return rsu
+func (_u *RefSchemaUpdate) Where(ps ...predicate.RefSchema) *RefSchemaUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (rsu *RefSchemaUpdate) SetName(s string) *RefSchemaUpdate {
-	rsu.mutation.SetName(s)
-	return rsu
+func (_u *RefSchemaUpdate) SetName(v string) *RefSchemaUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (rsu *RefSchemaUpdate) SetNillableName(s *string) *RefSchemaUpdate {
-	if s != nil {
-		rsu.SetName(*s)
+func (_u *RefSchemaUpdate) SetNillableName(v *string) *RefSchemaUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return rsu
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (rsu *RefSchemaUpdate) SetUserID(i int) *RefSchemaUpdate {
-	rsu.mutation.SetUserID(i)
-	return rsu
+func (_u *RefSchemaUpdate) SetUserID(v int) *RefSchemaUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (rsu *RefSchemaUpdate) SetNillableUserID(i *int) *RefSchemaUpdate {
-	if i != nil {
-		rsu.SetUserID(*i)
+func (_u *RefSchemaUpdate) SetNillableUserID(v *int) *RefSchemaUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return rsu
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (rsu *RefSchemaUpdate) SetUser(u *User) *RefSchemaUpdate {
-	return rsu.SetUserID(u.ID)
+func (_u *RefSchemaUpdate) SetUser(v *User) *RefSchemaUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the RefSchemaMutation object of the builder.
-func (rsu *RefSchemaUpdate) Mutation() *RefSchemaMutation {
-	return rsu.mutation
+func (_u *RefSchemaUpdate) Mutation() *RefSchemaMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (rsu *RefSchemaUpdate) ClearUser() *RefSchemaUpdate {
-	rsu.mutation.ClearUser()
-	return rsu
+func (_u *RefSchemaUpdate) ClearUser() *RefSchemaUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (rsu *RefSchemaUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rsu.sqlSave, rsu.mutation, rsu.hooks)
+func (_u *RefSchemaUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rsu *RefSchemaUpdate) SaveX(ctx context.Context) int {
-	affected, err := rsu.Save(ctx)
+func (_u *RefSchemaUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -87,42 +87,42 @@ func (rsu *RefSchemaUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (rsu *RefSchemaUpdate) Exec(ctx context.Context) error {
-	_, err := rsu.Save(ctx)
+func (_u *RefSchemaUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rsu *RefSchemaUpdate) ExecX(ctx context.Context) {
-	if err := rsu.Exec(ctx); err != nil {
+func (_u *RefSchemaUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rsu *RefSchemaUpdate) check() error {
-	if _, ok := rsu.mutation.UserID(); rsu.mutation.UserCleared() && !ok {
+func (_u *RefSchemaUpdate) check() error {
+	if _, ok := _u.mutation.UserID(); _u.mutation.UserCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "RefSchema.user"`)
 	}
 	return nil
 }
 
-func (rsu *RefSchemaUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := rsu.check(); err != nil {
-		return n, err
+func (_u *RefSchemaUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(refschema.Table, refschema.Columns, sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt))
-	if ps := rsu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rsu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(refschema.FieldName, field.TypeString, value)
 	}
-	if rsu.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -135,7 +135,7 @@ func (rsu *RefSchemaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rsu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -151,7 +151,7 @@ func (rsu *RefSchemaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, rsu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{refschema.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -159,8 +159,8 @@ func (rsu *RefSchemaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	rsu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // RefSchemaUpdateOne is the builder for updating a single RefSchema entity.
@@ -172,36 +172,36 @@ type RefSchemaUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (rsuo *RefSchemaUpdateOne) SetName(s string) *RefSchemaUpdateOne {
-	rsuo.mutation.SetName(s)
+func (rsuo *RefSchemaUpdateOne) SetName(v string) *RefSchemaUpdateOne {
+	rsuo.mutation.SetName(v)
 	return rsuo
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (rsuo *RefSchemaUpdateOne) SetNillableName(s *string) *RefSchemaUpdateOne {
-	if s != nil {
-		rsuo.SetName(*s)
+func (rsuo *RefSchemaUpdateOne) SetNillableName(v *string) *RefSchemaUpdateOne {
+	if v != nil {
+		rsuo.SetName(*v)
 	}
 	return rsuo
 }
 
 // SetUserID sets the "user_id" field.
-func (rsuo *RefSchemaUpdateOne) SetUserID(i int) *RefSchemaUpdateOne {
-	rsuo.mutation.SetUserID(i)
+func (rsuo *RefSchemaUpdateOne) SetUserID(v int) *RefSchemaUpdateOne {
+	rsuo.mutation.SetUserID(v)
 	return rsuo
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (rsuo *RefSchemaUpdateOne) SetNillableUserID(i *int) *RefSchemaUpdateOne {
-	if i != nil {
-		rsuo.SetUserID(*i)
+func (rsuo *RefSchemaUpdateOne) SetNillableUserID(v *int) *RefSchemaUpdateOne {
+	if v != nil {
+		rsuo.SetUserID(*v)
 	}
 	return rsuo
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (rsuo *RefSchemaUpdateOne) SetUser(u *User) *RefSchemaUpdateOne {
-	return rsuo.SetUserID(u.ID)
+func (rsuo *RefSchemaUpdateOne) SetUser(v *User) *RefSchemaUpdateOne {
+	return rsuo.SetUserID(v.ID)
 }
 
 // Mutation returns the RefSchemaMutation object of the builder.

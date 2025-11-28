@@ -10,18 +10,18 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (nc *NoCacheQuery) CollectFields(ctx context.Context, satisfies ...string) (*NoCacheQuery, error) {
+func (_m *NoCacheQuery) CollectFields(ctx context.Context, satisfies ...string) (*NoCacheQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return nc, nil
+		return _m, nil
 	}
-	if err := nc.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := _m.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return nc, nil
+	return _m, nil
 }
 
-func (nc *NoCacheQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (_m *NoCacheQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -47,7 +47,7 @@ func (nc *NoCacheQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 		}
 	}
 	if !unknownSeen {
-		nc.Select(selectedFields...)
+		_m.Select(selectedFields...)
 	}
 	return nil
 }

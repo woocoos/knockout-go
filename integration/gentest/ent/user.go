@@ -76,7 +76,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the User fields.
-func (u *User) assignValues(columns []string, values []any) error {
+func (_m *User) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -87,34 +87,34 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			u.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case user.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				u.Name = value.String
+				_m.Name = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				u.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case user.FieldMoney:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field money", values[i])
 			} else if value.Valid {
-				u.Money = new(decimal.Decimal)
-				*u.Money = *value.S.(*decimal.Decimal)
+				_m.Money = new(decimal.Decimal)
+				*_m.Money = *value.S.(*decimal.Decimal)
 			}
 		case user.FieldAvatar:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field avatar", values[i])
 			} else if value.Valid {
-				u.Avatar = value.String
+				_m.Avatar = value.String
 			}
 		default:
-			u.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -122,76 +122,76 @@ func (u *User) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the User.
 // This includes values selected through modifiers, order, etc.
-func (u *User) Value(name string) (ent.Value, error) {
-	return u.selectValues.Get(name)
+func (_m *User) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryRefs queries the "refs" edge of the User entity.
-func (u *User) QueryRefs() *RefSchemaQuery {
-	return NewUserClient(u.config).QueryRefs(u)
+func (_m *User) QueryRefs() *RefSchemaQuery {
+	return NewUserClient(_m.config).QueryRefs(_m)
 }
 
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (u *User) Update() *UserUpdateOne {
-	return NewUserClient(u.config).UpdateOne(u)
+func (_m *User) Update() *UserUpdateOne {
+	return NewUserClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the User entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (u *User) Unwrap() *User {
-	_tx, ok := u.config.driver.(*txDriver)
+func (_m *User) Unwrap() *User {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: User is not a transactional entity")
 	}
-	u.config.driver = _tx.drv
-	return u
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (u *User) String() string {
+func (_m *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
-	builder.WriteString(u.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := u.Money; v != nil {
+	if v := _m.Money; v != nil {
 		builder.WriteString("money=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("avatar=")
-	builder.WriteString(u.Avatar)
+	builder.WriteString(_m.Avatar)
 	builder.WriteByte(')')
 	return builder.String()
 }
 
 // NamedRefs returns the Refs named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (u *User) NamedRefs(name string) ([]*RefSchema, error) {
-	if u.Edges.namedRefs == nil {
+func (_m *User) NamedRefs(name string) ([]*RefSchema, error) {
+	if _m.Edges.namedRefs == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := u.Edges.namedRefs[name]
+	nodes, ok := _m.Edges.namedRefs[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (u *User) appendNamedRefs(name string, edges ...*RefSchema) {
-	if u.Edges.namedRefs == nil {
-		u.Edges.namedRefs = make(map[string][]*RefSchema)
+func (_m *User) appendNamedRefs(name string, edges ...*RefSchema) {
+	if _m.Edges.namedRefs == nil {
+		_m.Edges.namedRefs = make(map[string][]*RefSchema)
 	}
 	if len(edges) == 0 {
-		u.Edges.namedRefs[name] = []*RefSchema{}
+		_m.Edges.namedRefs[name] = []*RefSchema{}
 	} else {
-		u.Edges.namedRefs[name] = append(u.Edges.namedRefs[name], edges...)
+		_m.Edges.namedRefs[name] = append(_m.Edges.namedRefs[name], edges...)
 	}
 }
 

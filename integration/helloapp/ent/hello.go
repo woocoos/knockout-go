@@ -41,7 +41,7 @@ func (*Hello) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Hello fields.
-func (h *Hello) assignValues(columns []string, values []any) error {
+func (_m *Hello) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -52,21 +52,21 @@ func (h *Hello) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			h.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case hello.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				h.Name = value.String
+				_m.Name = value.String
 			}
 		case hello.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				h.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		default:
-			h.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -74,38 +74,38 @@ func (h *Hello) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Hello.
 // This includes values selected through modifiers, order, etc.
-func (h *Hello) Value(name string) (ent.Value, error) {
-	return h.selectValues.Get(name)
+func (_m *Hello) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Hello.
 // Note that you need to call Hello.Unwrap() before calling this method if this Hello
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (h *Hello) Update() *HelloUpdateOne {
-	return NewHelloClient(h.config).UpdateOne(h)
+func (_m *Hello) Update() *HelloUpdateOne {
+	return NewHelloClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Hello entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (h *Hello) Unwrap() *Hello {
-	_tx, ok := h.config.driver.(*txDriver)
+func (_m *Hello) Unwrap() *Hello {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Hello is not a transactional entity")
 	}
-	h.config.driver = _tx.drv
-	return h
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (h *Hello) String() string {
+func (_m *Hello) String() string {
 	var builder strings.Builder
 	builder.WriteString("Hello(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", h.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
-	builder.WriteString(h.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", h.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteByte(')')
 	return builder.String()
 }

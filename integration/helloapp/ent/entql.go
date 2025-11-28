@@ -78,13 +78,13 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (dq *DomainQuery) addPredicate(pred func(s *sql.Selector)) {
-	dq.predicates = append(dq.predicates, pred)
+func (_q *DomainQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
 }
 
 // Filter returns a Filter implementation to apply filters on the DomainQuery builder.
-func (dq *DomainQuery) Filter() *DomainFilter {
-	return &DomainFilter{config: dq.config, predicateAdder: dq}
+func (_q *DomainQuery) Filter() *DomainFilter {
+	return &DomainFilter{config: _q.config, predicateAdder: _q}
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -133,13 +133,13 @@ func (f *DomainFilter) WhereDomainID(p entql.IntP) {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (hq *HelloQuery) addPredicate(pred func(s *sql.Selector)) {
-	hq.predicates = append(hq.predicates, pred)
+func (_q *HelloQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
 }
 
 // Filter returns a Filter implementation to apply filters on the HelloQuery builder.
-func (hq *HelloQuery) Filter() *HelloFilter {
-	return &HelloFilter{config: hq.config, predicateAdder: hq}
+func (_q *HelloQuery) Filter() *HelloFilter {
+	return &HelloFilter{config: _q.config, predicateAdder: _q}
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -183,13 +183,13 @@ func (f *HelloFilter) WhereTenantID(p entql.IntP) {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (wq *WorldQuery) addPredicate(pred func(s *sql.Selector)) {
-	wq.predicates = append(wq.predicates, pred)
+func (_q *WorldQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
 }
 
 // Filter returns a Filter implementation to apply filters on the WorldQuery builder.
-func (wq *WorldQuery) Filter() *WorldFilter {
-	return &WorldFilter{config: wq.config, predicateAdder: wq}
+func (_q *WorldQuery) Filter() *WorldFilter {
+	return &WorldFilter{config: _q.config, predicateAdder: _q}
 }
 
 // addPredicate implements the predicateAdder interface.

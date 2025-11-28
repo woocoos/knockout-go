@@ -28,40 +28,40 @@ type WorldQuery struct {
 }
 
 // Where adds a new predicate for the WorldQuery builder.
-func (wq *WorldQuery) Where(ps ...predicate.World) *WorldQuery {
-	wq.predicates = append(wq.predicates, ps...)
-	return wq
+func (_q *WorldQuery) Where(ps ...predicate.World) *WorldQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (wq *WorldQuery) Limit(limit int) *WorldQuery {
-	wq.ctx.Limit = &limit
-	return wq
+func (_q *WorldQuery) Limit(limit int) *WorldQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (wq *WorldQuery) Offset(offset int) *WorldQuery {
-	wq.ctx.Offset = &offset
-	return wq
+func (_q *WorldQuery) Offset(offset int) *WorldQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (wq *WorldQuery) Unique(unique bool) *WorldQuery {
-	wq.ctx.Unique = &unique
-	return wq
+func (_q *WorldQuery) Unique(unique bool) *WorldQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (wq *WorldQuery) Order(o ...world.OrderOption) *WorldQuery {
-	wq.order = append(wq.order, o...)
-	return wq
+func (_q *WorldQuery) Order(o ...world.OrderOption) *WorldQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first World entity from the query.
 // Returns a *NotFoundError when no World was found.
-func (wq *WorldQuery) First(ctx context.Context) (*World, error) {
-	nodes, err := wq.Limit(1).All(setContextOp(ctx, wq.ctx, ent.OpQueryFirst))
+func (_q *WorldQuery) First(ctx context.Context) (*World, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func (wq *WorldQuery) First(ctx context.Context) (*World, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (wq *WorldQuery) FirstX(ctx context.Context) *World {
-	node, err := wq.First(ctx)
+func (_q *WorldQuery) FirstX(ctx context.Context) *World {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -82,9 +82,9 @@ func (wq *WorldQuery) FirstX(ctx context.Context) *World {
 
 // FirstID returns the first World ID from the query.
 // Returns a *NotFoundError when no World ID was found.
-func (wq *WorldQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *WorldQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = wq.Limit(1).IDs(setContextOp(ctx, wq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -95,8 +95,8 @@ func (wq *WorldQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (wq *WorldQuery) FirstIDX(ctx context.Context) int {
-	id, err := wq.FirstID(ctx)
+func (_q *WorldQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -106,8 +106,8 @@ func (wq *WorldQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single World entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one World entity is found.
 // Returns a *NotFoundError when no World entities are found.
-func (wq *WorldQuery) Only(ctx context.Context) (*World, error) {
-	nodes, err := wq.Limit(2).All(setContextOp(ctx, wq.ctx, ent.OpQueryOnly))
+func (_q *WorldQuery) Only(ctx context.Context) (*World, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +122,8 @@ func (wq *WorldQuery) Only(ctx context.Context) (*World, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (wq *WorldQuery) OnlyX(ctx context.Context) *World {
-	node, err := wq.Only(ctx)
+func (_q *WorldQuery) OnlyX(ctx context.Context) *World {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (wq *WorldQuery) OnlyX(ctx context.Context) *World {
 // OnlyID is like Only, but returns the only World ID in the query.
 // Returns a *NotSingularError when more than one World ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (wq *WorldQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *WorldQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = wq.Limit(2).IDs(setContextOp(ctx, wq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -150,8 +150,8 @@ func (wq *WorldQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (wq *WorldQuery) OnlyIDX(ctx context.Context) int {
-	id, err := wq.OnlyID(ctx)
+func (_q *WorldQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,18 +159,18 @@ func (wq *WorldQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of Worlds.
-func (wq *WorldQuery) All(ctx context.Context) ([]*World, error) {
-	ctx = setContextOp(ctx, wq.ctx, ent.OpQueryAll)
-	if err := wq.prepareQuery(ctx); err != nil {
+func (_q *WorldQuery) All(ctx context.Context) ([]*World, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*World, *WorldQuery]()
-	return withInterceptors[[]*World](ctx, wq, qr, wq.inters)
+	return withInterceptors[[]*World](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (wq *WorldQuery) AllX(ctx context.Context) []*World {
-	nodes, err := wq.All(ctx)
+func (_q *WorldQuery) AllX(ctx context.Context) []*World {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -178,20 +178,20 @@ func (wq *WorldQuery) AllX(ctx context.Context) []*World {
 }
 
 // IDs executes the query and returns a list of World IDs.
-func (wq *WorldQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if wq.ctx.Unique == nil && wq.path != nil {
-		wq.Unique(true)
+func (_q *WorldQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, wq.ctx, ent.OpQueryIDs)
-	if err = wq.Select(world.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(world.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (wq *WorldQuery) IDsX(ctx context.Context) []int {
-	ids, err := wq.IDs(ctx)
+func (_q *WorldQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -199,17 +199,17 @@ func (wq *WorldQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (wq *WorldQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, wq.ctx, ent.OpQueryCount)
-	if err := wq.prepareQuery(ctx); err != nil {
+func (_q *WorldQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, wq, querierCount[*WorldQuery](), wq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*WorldQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (wq *WorldQuery) CountX(ctx context.Context) int {
-	count, err := wq.Count(ctx)
+func (_q *WorldQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -217,9 +217,9 @@ func (wq *WorldQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (wq *WorldQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, wq.ctx, ent.OpQueryExist)
-	switch _, err := wq.FirstID(ctx); {
+func (_q *WorldQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -230,8 +230,8 @@ func (wq *WorldQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (wq *WorldQuery) ExistX(ctx context.Context) bool {
-	exist, err := wq.Exist(ctx)
+func (_q *WorldQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -240,19 +240,19 @@ func (wq *WorldQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the WorldQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (wq *WorldQuery) Clone() *WorldQuery {
-	if wq == nil {
+func (_q *WorldQuery) Clone() *WorldQuery {
+	if _q == nil {
 		return nil
 	}
 	return &WorldQuery{
-		config:     wq.config,
-		ctx:        wq.ctx.Clone(),
-		order:      append([]world.OrderOption{}, wq.order...),
-		inters:     append([]Interceptor{}, wq.inters...),
-		predicates: append([]predicate.World{}, wq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]world.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.World{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  wq.sql.Clone(),
-		path: wq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
@@ -270,10 +270,10 @@ func (wq *WorldQuery) Clone() *WorldQuery {
 //		GroupBy(world.FieldCreatedBy).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (wq *WorldQuery) GroupBy(field string, fields ...string) *WorldGroupBy {
-	wq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &WorldGroupBy{build: wq}
-	grbuild.flds = &wq.ctx.Fields
+func (_q *WorldQuery) GroupBy(field string, fields ...string) *WorldGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &WorldGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = world.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -291,62 +291,62 @@ func (wq *WorldQuery) GroupBy(field string, fields ...string) *WorldGroupBy {
 //	client.World.Query().
 //		Select(world.FieldCreatedBy).
 //		Scan(ctx, &v)
-func (wq *WorldQuery) Select(fields ...string) *WorldSelect {
-	wq.ctx.Fields = append(wq.ctx.Fields, fields...)
-	sbuild := &WorldSelect{WorldQuery: wq}
+func (_q *WorldQuery) Select(fields ...string) *WorldSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &WorldSelect{WorldQuery: _q}
 	sbuild.label = world.Label
-	sbuild.flds, sbuild.scan = &wq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a WorldSelect configured with the given aggregations.
-func (wq *WorldQuery) Aggregate(fns ...AggregateFunc) *WorldSelect {
-	return wq.Select().Aggregate(fns...)
+func (_q *WorldQuery) Aggregate(fns ...AggregateFunc) *WorldSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (wq *WorldQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range wq.inters {
+func (_q *WorldQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, wq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range wq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !world.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if wq.path != nil {
-		prev, err := wq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		wq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (wq *WorldQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*World, error) {
+func (_q *WorldQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*World, error) {
 	var (
 		nodes = []*World{}
-		_spec = wq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*World).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &World{config: wq.config}
+		node := &World{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, wq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -355,24 +355,24 @@ func (wq *WorldQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*World,
 	return nodes, nil
 }
 
-func (wq *WorldQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := wq.querySpec()
-	_spec.Node.Columns = wq.ctx.Fields
-	if len(wq.ctx.Fields) > 0 {
-		_spec.Unique = wq.ctx.Unique != nil && *wq.ctx.Unique
+func (_q *WorldQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, wq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (wq *WorldQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *WorldQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(world.Table, world.Columns, sqlgraph.NewFieldSpec(world.FieldID, field.TypeInt))
-	_spec.From = wq.sql
-	if unique := wq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if wq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := wq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, world.FieldID)
 		for i := range fields {
@@ -381,20 +381,20 @@ func (wq *WorldQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := wq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := wq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := wq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := wq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -404,33 +404,33 @@ func (wq *WorldQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (wq *WorldQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(wq.driver.Dialect())
+func (_q *WorldQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(world.Table)
-	columns := wq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = world.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if wq.sql != nil {
-		selector = wq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if wq.ctx.Unique != nil && *wq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range wq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range wq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := wq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := wq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -443,41 +443,41 @@ type WorldGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (wgb *WorldGroupBy) Aggregate(fns ...AggregateFunc) *WorldGroupBy {
-	wgb.fns = append(wgb.fns, fns...)
-	return wgb
+func (_g *WorldGroupBy) Aggregate(fns ...AggregateFunc) *WorldGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (wgb *WorldGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, wgb.build.ctx, ent.OpQueryGroupBy)
-	if err := wgb.build.prepareQuery(ctx); err != nil {
+func (_g *WorldGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*WorldQuery, *WorldGroupBy](ctx, wgb.build, wgb, wgb.build.inters, v)
+	return scanWithInterceptors[*WorldQuery, *WorldGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (wgb *WorldGroupBy) sqlScan(ctx context.Context, root *WorldQuery, v any) error {
+func (_g *WorldGroupBy) sqlScan(ctx context.Context, root *WorldQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(wgb.fns))
-	for _, fn := range wgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*wgb.flds)+len(wgb.fns))
-		for _, f := range *wgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*wgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := wgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -491,27 +491,27 @@ type WorldSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ws *WorldSelect) Aggregate(fns ...AggregateFunc) *WorldSelect {
-	ws.fns = append(ws.fns, fns...)
-	return ws
+func (_s *WorldSelect) Aggregate(fns ...AggregateFunc) *WorldSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ws *WorldSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ws.ctx, ent.OpQuerySelect)
-	if err := ws.prepareQuery(ctx); err != nil {
+func (_s *WorldSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*WorldQuery, *WorldSelect](ctx, ws.WorldQuery, ws, ws.inters, v)
+	return scanWithInterceptors[*WorldQuery, *WorldSelect](ctx, _s.WorldQuery, _s, _s.inters, v)
 }
 
-func (ws *WorldSelect) sqlScan(ctx context.Context, root *WorldQuery, v any) error {
+func (_s *WorldSelect) sqlScan(ctx context.Context, root *WorldQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ws.fns))
-	for _, fn := range ws.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ws.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -519,7 +519,7 @@ func (ws *WorldSelect) sqlScan(ctx context.Context, root *WorldQuery, v any) err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ws.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()

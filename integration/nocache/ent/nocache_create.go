@@ -20,30 +20,30 @@ type NoCacheCreate struct {
 }
 
 // SetName sets the "name" field.
-func (ncc *NoCacheCreate) SetName(s string) *NoCacheCreate {
-	ncc.mutation.SetName(s)
-	return ncc
+func (_c *NoCacheCreate) SetName(v string) *NoCacheCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (ncc *NoCacheCreate) SetUserID(i int) *NoCacheCreate {
-	ncc.mutation.SetUserID(i)
-	return ncc
+func (_c *NoCacheCreate) SetUserID(v int) *NoCacheCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // Mutation returns the NoCacheMutation object of the builder.
-func (ncc *NoCacheCreate) Mutation() *NoCacheMutation {
-	return ncc.mutation
+func (_c *NoCacheCreate) Mutation() *NoCacheMutation {
+	return _c.mutation
 }
 
 // Save creates the NoCache in the database.
-func (ncc *NoCacheCreate) Save(ctx context.Context) (*NoCache, error) {
-	return withHooks(ctx, ncc.sqlSave, ncc.mutation, ncc.hooks)
+func (_c *NoCacheCreate) Save(ctx context.Context) (*NoCache, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ncc *NoCacheCreate) SaveX(ctx context.Context) *NoCache {
-	v, err := ncc.Save(ctx)
+func (_c *NoCacheCreate) SaveX(ctx context.Context) *NoCache {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -51,35 +51,35 @@ func (ncc *NoCacheCreate) SaveX(ctx context.Context) *NoCache {
 }
 
 // Exec executes the query.
-func (ncc *NoCacheCreate) Exec(ctx context.Context) error {
-	_, err := ncc.Save(ctx)
+func (_c *NoCacheCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ncc *NoCacheCreate) ExecX(ctx context.Context) {
-	if err := ncc.Exec(ctx); err != nil {
+func (_c *NoCacheCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ncc *NoCacheCreate) check() error {
-	if _, ok := ncc.mutation.Name(); !ok {
+func (_c *NoCacheCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "NoCache.name"`)}
 	}
-	if _, ok := ncc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "NoCache.user_id"`)}
 	}
 	return nil
 }
 
-func (ncc *NoCacheCreate) sqlSave(ctx context.Context) (*NoCache, error) {
-	if err := ncc.check(); err != nil {
+func (_c *NoCacheCreate) sqlSave(ctx context.Context) (*NoCache, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ncc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ncc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -87,21 +87,21 @@ func (ncc *NoCacheCreate) sqlSave(ctx context.Context) (*NoCache, error) {
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	ncc.mutation.id = &_node.ID
-	ncc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ncc *NoCacheCreate) createSpec() (*NoCache, *sqlgraph.CreateSpec) {
+func (_c *NoCacheCreate) createSpec() (*NoCache, *sqlgraph.CreateSpec) {
 	var (
-		_node = &NoCache{config: ncc.config}
+		_node = &NoCache{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(nocache.Table, sqlgraph.NewFieldSpec(nocache.FieldID, field.TypeInt))
 	)
-	if value, ok := ncc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(nocache.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := ncc.mutation.UserID(); ok {
+	if value, ok := _c.mutation.UserID(); ok {
 		_spec.SetField(nocache.FieldUserID, field.TypeInt, value)
 		_node.UserID = value
 	}

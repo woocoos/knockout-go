@@ -23,125 +23,125 @@ type WorldUpdate struct {
 }
 
 // Where appends a list predicates to the WorldUpdate builder.
-func (wu *WorldUpdate) Where(ps ...predicate.World) *WorldUpdate {
-	wu.mutation.Where(ps...)
-	return wu
+func (_u *WorldUpdate) Where(ps ...predicate.World) *WorldUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUpdatedBy sets the "updated_by" field.
-func (wu *WorldUpdate) SetUpdatedBy(i int) *WorldUpdate {
-	wu.mutation.ResetUpdatedBy()
-	wu.mutation.SetUpdatedBy(i)
-	return wu
+func (_u *WorldUpdate) SetUpdatedBy(v int) *WorldUpdate {
+	_u.mutation.ResetUpdatedBy()
+	_u.mutation.SetUpdatedBy(v)
+	return _u
 }
 
 // SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
-func (wu *WorldUpdate) SetNillableUpdatedBy(i *int) *WorldUpdate {
-	if i != nil {
-		wu.SetUpdatedBy(*i)
+func (_u *WorldUpdate) SetNillableUpdatedBy(v *int) *WorldUpdate {
+	if v != nil {
+		_u.SetUpdatedBy(*v)
 	}
-	return wu
+	return _u
 }
 
-// AddUpdatedBy adds i to the "updated_by" field.
-func (wu *WorldUpdate) AddUpdatedBy(i int) *WorldUpdate {
-	wu.mutation.AddUpdatedBy(i)
-	return wu
+// AddUpdatedBy adds value to the "updated_by" field.
+func (_u *WorldUpdate) AddUpdatedBy(v int) *WorldUpdate {
+	_u.mutation.AddUpdatedBy(v)
+	return _u
 }
 
 // ClearUpdatedBy clears the value of the "updated_by" field.
-func (wu *WorldUpdate) ClearUpdatedBy() *WorldUpdate {
-	wu.mutation.ClearUpdatedBy()
-	return wu
+func (_u *WorldUpdate) ClearUpdatedBy() *WorldUpdate {
+	_u.mutation.ClearUpdatedBy()
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (wu *WorldUpdate) SetUpdatedAt(t time.Time) *WorldUpdate {
-	wu.mutation.SetUpdatedAt(t)
-	return wu
+func (_u *WorldUpdate) SetUpdatedAt(v time.Time) *WorldUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (wu *WorldUpdate) SetNillableUpdatedAt(t *time.Time) *WorldUpdate {
-	if t != nil {
-		wu.SetUpdatedAt(*t)
+func (_u *WorldUpdate) SetNillableUpdatedAt(v *time.Time) *WorldUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return wu
+	return _u
 }
 
 // ClearUpdatedAt clears the value of the "updated_at" field.
-func (wu *WorldUpdate) ClearUpdatedAt() *WorldUpdate {
-	wu.mutation.ClearUpdatedAt()
-	return wu
+func (_u *WorldUpdate) ClearUpdatedAt() *WorldUpdate {
+	_u.mutation.ClearUpdatedAt()
+	return _u
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (wu *WorldUpdate) SetDeletedAt(t time.Time) *WorldUpdate {
-	wu.mutation.SetDeletedAt(t)
-	return wu
+func (_u *WorldUpdate) SetDeletedAt(v time.Time) *WorldUpdate {
+	_u.mutation.SetDeletedAt(v)
+	return _u
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (wu *WorldUpdate) SetNillableDeletedAt(t *time.Time) *WorldUpdate {
-	if t != nil {
-		wu.SetDeletedAt(*t)
+func (_u *WorldUpdate) SetNillableDeletedAt(v *time.Time) *WorldUpdate {
+	if v != nil {
+		_u.SetDeletedAt(*v)
 	}
-	return wu
+	return _u
 }
 
 // ClearDeletedAt clears the value of the "deleted_at" field.
-func (wu *WorldUpdate) ClearDeletedAt() *WorldUpdate {
-	wu.mutation.ClearDeletedAt()
-	return wu
+func (_u *WorldUpdate) ClearDeletedAt() *WorldUpdate {
+	_u.mutation.ClearDeletedAt()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (wu *WorldUpdate) SetName(s string) *WorldUpdate {
-	wu.mutation.SetName(s)
-	return wu
+func (_u *WorldUpdate) SetName(v string) *WorldUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (wu *WorldUpdate) SetNillableName(s *string) *WorldUpdate {
-	if s != nil {
-		wu.SetName(*s)
+func (_u *WorldUpdate) SetNillableName(v *string) *WorldUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return wu
+	return _u
 }
 
 // SetPowerBy sets the "power_by" field.
-func (wu *WorldUpdate) SetPowerBy(s string) *WorldUpdate {
-	wu.mutation.SetPowerBy(s)
-	return wu
+func (_u *WorldUpdate) SetPowerBy(v string) *WorldUpdate {
+	_u.mutation.SetPowerBy(v)
+	return _u
 }
 
 // SetNillablePowerBy sets the "power_by" field if the given value is not nil.
-func (wu *WorldUpdate) SetNillablePowerBy(s *string) *WorldUpdate {
-	if s != nil {
-		wu.SetPowerBy(*s)
+func (_u *WorldUpdate) SetNillablePowerBy(v *string) *WorldUpdate {
+	if v != nil {
+		_u.SetPowerBy(*v)
 	}
-	return wu
+	return _u
 }
 
 // ClearPowerBy clears the value of the "power_by" field.
-func (wu *WorldUpdate) ClearPowerBy() *WorldUpdate {
-	wu.mutation.ClearPowerBy()
-	return wu
+func (_u *WorldUpdate) ClearPowerBy() *WorldUpdate {
+	_u.mutation.ClearPowerBy()
+	return _u
 }
 
 // Mutation returns the WorldMutation object of the builder.
-func (wu *WorldUpdate) Mutation() *WorldMutation {
-	return wu.mutation
+func (_u *WorldUpdate) Mutation() *WorldMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (wu *WorldUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, wu.sqlSave, wu.mutation, wu.hooks)
+func (_u *WorldUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (wu *WorldUpdate) SaveX(ctx context.Context) int {
-	affected, err := wu.Save(ctx)
+func (_u *WorldUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -149,58 +149,58 @@ func (wu *WorldUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (wu *WorldUpdate) Exec(ctx context.Context) error {
-	_, err := wu.Save(ctx)
+func (_u *WorldUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wu *WorldUpdate) ExecX(ctx context.Context) {
-	if err := wu.Exec(ctx); err != nil {
+func (_u *WorldUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (wu *WorldUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *WorldUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(world.Table, world.Columns, sqlgraph.NewFieldSpec(world.FieldID, field.TypeInt))
-	if ps := wu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := wu.mutation.UpdatedBy(); ok {
+	if value, ok := _u.mutation.UpdatedBy(); ok {
 		_spec.SetField(world.FieldUpdatedBy, field.TypeInt, value)
 	}
-	if value, ok := wu.mutation.AddedUpdatedBy(); ok {
+	if value, ok := _u.mutation.AddedUpdatedBy(); ok {
 		_spec.AddField(world.FieldUpdatedBy, field.TypeInt, value)
 	}
-	if wu.mutation.UpdatedByCleared() {
+	if _u.mutation.UpdatedByCleared() {
 		_spec.ClearField(world.FieldUpdatedBy, field.TypeInt)
 	}
-	if value, ok := wu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(world.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if wu.mutation.UpdatedAtCleared() {
+	if _u.mutation.UpdatedAtCleared() {
 		_spec.ClearField(world.FieldUpdatedAt, field.TypeTime)
 	}
-	if value, ok := wu.mutation.DeletedAt(); ok {
+	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)
 	}
-	if wu.mutation.DeletedAtCleared() {
+	if _u.mutation.DeletedAtCleared() {
 		_spec.ClearField(world.FieldDeletedAt, field.TypeTime)
 	}
-	if value, ok := wu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(world.FieldName, field.TypeString, value)
 	}
-	if value, ok := wu.mutation.PowerBy(); ok {
+	if value, ok := _u.mutation.PowerBy(); ok {
 		_spec.SetField(world.FieldPowerBy, field.TypeString, value)
 	}
-	if wu.mutation.PowerByCleared() {
+	if _u.mutation.PowerByCleared() {
 		_spec.ClearField(world.FieldPowerBy, field.TypeString)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, wu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{world.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -208,8 +208,8 @@ func (wu *WorldUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	wu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // WorldUpdateOne is the builder for updating a single World entity.
@@ -221,132 +221,132 @@ type WorldUpdateOne struct {
 }
 
 // SetUpdatedBy sets the "updated_by" field.
-func (wuo *WorldUpdateOne) SetUpdatedBy(i int) *WorldUpdateOne {
-	wuo.mutation.ResetUpdatedBy()
-	wuo.mutation.SetUpdatedBy(i)
-	return wuo
+func (_u *WorldUpdateOne) SetUpdatedBy(v int) *WorldUpdateOne {
+	_u.mutation.ResetUpdatedBy()
+	_u.mutation.SetUpdatedBy(v)
+	return _u
 }
 
 // SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
-func (wuo *WorldUpdateOne) SetNillableUpdatedBy(i *int) *WorldUpdateOne {
-	if i != nil {
-		wuo.SetUpdatedBy(*i)
+func (_u *WorldUpdateOne) SetNillableUpdatedBy(v *int) *WorldUpdateOne {
+	if v != nil {
+		_u.SetUpdatedBy(*v)
 	}
-	return wuo
+	return _u
 }
 
-// AddUpdatedBy adds i to the "updated_by" field.
-func (wuo *WorldUpdateOne) AddUpdatedBy(i int) *WorldUpdateOne {
-	wuo.mutation.AddUpdatedBy(i)
-	return wuo
+// AddUpdatedBy adds value to the "updated_by" field.
+func (_u *WorldUpdateOne) AddUpdatedBy(v int) *WorldUpdateOne {
+	_u.mutation.AddUpdatedBy(v)
+	return _u
 }
 
 // ClearUpdatedBy clears the value of the "updated_by" field.
-func (wuo *WorldUpdateOne) ClearUpdatedBy() *WorldUpdateOne {
-	wuo.mutation.ClearUpdatedBy()
-	return wuo
+func (_u *WorldUpdateOne) ClearUpdatedBy() *WorldUpdateOne {
+	_u.mutation.ClearUpdatedBy()
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (wuo *WorldUpdateOne) SetUpdatedAt(t time.Time) *WorldUpdateOne {
-	wuo.mutation.SetUpdatedAt(t)
-	return wuo
+func (_u *WorldUpdateOne) SetUpdatedAt(v time.Time) *WorldUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (wuo *WorldUpdateOne) SetNillableUpdatedAt(t *time.Time) *WorldUpdateOne {
-	if t != nil {
-		wuo.SetUpdatedAt(*t)
+func (_u *WorldUpdateOne) SetNillableUpdatedAt(v *time.Time) *WorldUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return wuo
+	return _u
 }
 
 // ClearUpdatedAt clears the value of the "updated_at" field.
-func (wuo *WorldUpdateOne) ClearUpdatedAt() *WorldUpdateOne {
-	wuo.mutation.ClearUpdatedAt()
-	return wuo
+func (_u *WorldUpdateOne) ClearUpdatedAt() *WorldUpdateOne {
+	_u.mutation.ClearUpdatedAt()
+	return _u
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (wuo *WorldUpdateOne) SetDeletedAt(t time.Time) *WorldUpdateOne {
-	wuo.mutation.SetDeletedAt(t)
-	return wuo
+func (_u *WorldUpdateOne) SetDeletedAt(v time.Time) *WorldUpdateOne {
+	_u.mutation.SetDeletedAt(v)
+	return _u
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (wuo *WorldUpdateOne) SetNillableDeletedAt(t *time.Time) *WorldUpdateOne {
-	if t != nil {
-		wuo.SetDeletedAt(*t)
+func (_u *WorldUpdateOne) SetNillableDeletedAt(v *time.Time) *WorldUpdateOne {
+	if v != nil {
+		_u.SetDeletedAt(*v)
 	}
-	return wuo
+	return _u
 }
 
 // ClearDeletedAt clears the value of the "deleted_at" field.
-func (wuo *WorldUpdateOne) ClearDeletedAt() *WorldUpdateOne {
-	wuo.mutation.ClearDeletedAt()
-	return wuo
+func (_u *WorldUpdateOne) ClearDeletedAt() *WorldUpdateOne {
+	_u.mutation.ClearDeletedAt()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (wuo *WorldUpdateOne) SetName(s string) *WorldUpdateOne {
-	wuo.mutation.SetName(s)
-	return wuo
+func (_u *WorldUpdateOne) SetName(v string) *WorldUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (wuo *WorldUpdateOne) SetNillableName(s *string) *WorldUpdateOne {
-	if s != nil {
-		wuo.SetName(*s)
+func (_u *WorldUpdateOne) SetNillableName(v *string) *WorldUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return wuo
+	return _u
 }
 
 // SetPowerBy sets the "power_by" field.
-func (wuo *WorldUpdateOne) SetPowerBy(s string) *WorldUpdateOne {
-	wuo.mutation.SetPowerBy(s)
-	return wuo
+func (_u *WorldUpdateOne) SetPowerBy(v string) *WorldUpdateOne {
+	_u.mutation.SetPowerBy(v)
+	return _u
 }
 
 // SetNillablePowerBy sets the "power_by" field if the given value is not nil.
-func (wuo *WorldUpdateOne) SetNillablePowerBy(s *string) *WorldUpdateOne {
-	if s != nil {
-		wuo.SetPowerBy(*s)
+func (_u *WorldUpdateOne) SetNillablePowerBy(v *string) *WorldUpdateOne {
+	if v != nil {
+		_u.SetPowerBy(*v)
 	}
-	return wuo
+	return _u
 }
 
 // ClearPowerBy clears the value of the "power_by" field.
-func (wuo *WorldUpdateOne) ClearPowerBy() *WorldUpdateOne {
-	wuo.mutation.ClearPowerBy()
-	return wuo
+func (_u *WorldUpdateOne) ClearPowerBy() *WorldUpdateOne {
+	_u.mutation.ClearPowerBy()
+	return _u
 }
 
 // Mutation returns the WorldMutation object of the builder.
-func (wuo *WorldUpdateOne) Mutation() *WorldMutation {
-	return wuo.mutation
+func (_u *WorldUpdateOne) Mutation() *WorldMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the WorldUpdate builder.
-func (wuo *WorldUpdateOne) Where(ps ...predicate.World) *WorldUpdateOne {
-	wuo.mutation.Where(ps...)
-	return wuo
+func (_u *WorldUpdateOne) Where(ps ...predicate.World) *WorldUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (wuo *WorldUpdateOne) Select(field string, fields ...string) *WorldUpdateOne {
-	wuo.fields = append([]string{field}, fields...)
-	return wuo
+func (_u *WorldUpdateOne) Select(field string, fields ...string) *WorldUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated World entity.
-func (wuo *WorldUpdateOne) Save(ctx context.Context) (*World, error) {
-	return withHooks(ctx, wuo.sqlSave, wuo.mutation, wuo.hooks)
+func (_u *WorldUpdateOne) Save(ctx context.Context) (*World, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (wuo *WorldUpdateOne) SaveX(ctx context.Context) *World {
-	node, err := wuo.Save(ctx)
+func (_u *WorldUpdateOne) SaveX(ctx context.Context) *World {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -354,26 +354,26 @@ func (wuo *WorldUpdateOne) SaveX(ctx context.Context) *World {
 }
 
 // Exec executes the query on the entity.
-func (wuo *WorldUpdateOne) Exec(ctx context.Context) error {
-	_, err := wuo.Save(ctx)
+func (_u *WorldUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wuo *WorldUpdateOne) ExecX(ctx context.Context) {
-	if err := wuo.Exec(ctx); err != nil {
+func (_u *WorldUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (wuo *WorldUpdateOne) sqlSave(ctx context.Context) (_node *World, err error) {
+func (_u *WorldUpdateOne) sqlSave(ctx context.Context) (_node *World, err error) {
 	_spec := sqlgraph.NewUpdateSpec(world.Table, world.Columns, sqlgraph.NewFieldSpec(world.FieldID, field.TypeInt))
-	id, ok := wuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "World.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := wuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, world.FieldID)
 		for _, f := range fields {
@@ -385,47 +385,47 @@ func (wuo *WorldUpdateOne) sqlSave(ctx context.Context) (_node *World, err error
 			}
 		}
 	}
-	if ps := wuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := wuo.mutation.UpdatedBy(); ok {
+	if value, ok := _u.mutation.UpdatedBy(); ok {
 		_spec.SetField(world.FieldUpdatedBy, field.TypeInt, value)
 	}
-	if value, ok := wuo.mutation.AddedUpdatedBy(); ok {
+	if value, ok := _u.mutation.AddedUpdatedBy(); ok {
 		_spec.AddField(world.FieldUpdatedBy, field.TypeInt, value)
 	}
-	if wuo.mutation.UpdatedByCleared() {
+	if _u.mutation.UpdatedByCleared() {
 		_spec.ClearField(world.FieldUpdatedBy, field.TypeInt)
 	}
-	if value, ok := wuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(world.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if wuo.mutation.UpdatedAtCleared() {
+	if _u.mutation.UpdatedAtCleared() {
 		_spec.ClearField(world.FieldUpdatedAt, field.TypeTime)
 	}
-	if value, ok := wuo.mutation.DeletedAt(); ok {
+	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)
 	}
-	if wuo.mutation.DeletedAtCleared() {
+	if _u.mutation.DeletedAtCleared() {
 		_spec.ClearField(world.FieldDeletedAt, field.TypeTime)
 	}
-	if value, ok := wuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(world.FieldName, field.TypeString, value)
 	}
-	if value, ok := wuo.mutation.PowerBy(); ok {
+	if value, ok := _u.mutation.PowerBy(); ok {
 		_spec.SetField(world.FieldPowerBy, field.TypeString, value)
 	}
-	if wuo.mutation.PowerByCleared() {
+	if _u.mutation.PowerByCleared() {
 		_spec.ClearField(world.FieldPowerBy, field.TypeString)
 	}
-	_node = &World{config: wuo.config}
+	_node = &World{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, wuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{world.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -433,6 +433,6 @@ func (wuo *WorldUpdateOne) sqlSave(ctx context.Context) (_node *World, err error
 		}
 		return nil, err
 	}
-	wuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

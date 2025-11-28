@@ -20,36 +20,36 @@ type HelloCreate struct {
 }
 
 // SetName sets the "name" field.
-func (hc *HelloCreate) SetName(s string) *HelloCreate {
-	hc.mutation.SetName(s)
-	return hc
+func (_c *HelloCreate) SetName(v string) *HelloCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (hc *HelloCreate) SetTenantID(i int) *HelloCreate {
-	hc.mutation.SetTenantID(i)
-	return hc
+func (_c *HelloCreate) SetTenantID(v int) *HelloCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (hc *HelloCreate) SetID(i int) *HelloCreate {
-	hc.mutation.SetID(i)
-	return hc
+func (_c *HelloCreate) SetID(v int) *HelloCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // Mutation returns the HelloMutation object of the builder.
-func (hc *HelloCreate) Mutation() *HelloMutation {
-	return hc.mutation
+func (_c *HelloCreate) Mutation() *HelloMutation {
+	return _c.mutation
 }
 
 // Save creates the Hello in the database.
-func (hc *HelloCreate) Save(ctx context.Context) (*Hello, error) {
-	return withHooks(ctx, hc.sqlSave, hc.mutation, hc.hooks)
+func (_c *HelloCreate) Save(ctx context.Context) (*Hello, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (hc *HelloCreate) SaveX(ctx context.Context) *Hello {
-	v, err := hc.Save(ctx)
+func (_c *HelloCreate) SaveX(ctx context.Context) *Hello {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -57,35 +57,35 @@ func (hc *HelloCreate) SaveX(ctx context.Context) *Hello {
 }
 
 // Exec executes the query.
-func (hc *HelloCreate) Exec(ctx context.Context) error {
-	_, err := hc.Save(ctx)
+func (_c *HelloCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (hc *HelloCreate) ExecX(ctx context.Context) {
-	if err := hc.Exec(ctx); err != nil {
+func (_c *HelloCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (hc *HelloCreate) check() error {
-	if _, ok := hc.mutation.Name(); !ok {
+func (_c *HelloCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Hello.name"`)}
 	}
-	if _, ok := hc.mutation.TenantID(); !ok {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Hello.tenant_id"`)}
 	}
 	return nil
 }
 
-func (hc *HelloCreate) sqlSave(ctx context.Context) (*Hello, error) {
-	if err := hc.check(); err != nil {
+func (_c *HelloCreate) sqlSave(ctx context.Context) (*Hello, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := hc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, hc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -95,25 +95,25 @@ func (hc *HelloCreate) sqlSave(ctx context.Context) (*Hello, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = int(id)
 	}
-	hc.mutation.id = &_node.ID
-	hc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (hc *HelloCreate) createSpec() (*Hello, *sqlgraph.CreateSpec) {
+func (_c *HelloCreate) createSpec() (*Hello, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Hello{config: hc.config}
+		_node = &Hello{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(hello.Table, sqlgraph.NewFieldSpec(hello.FieldID, field.TypeInt))
 	)
-	if id, ok := hc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := hc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(hello.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := hc.mutation.TenantID(); ok {
+	if value, ok := _c.mutation.TenantID(); ok {
 		_spec.SetField(hello.FieldTenantID, field.TypeInt, value)
 		_node.TenantID = value
 	}
@@ -128,16 +128,16 @@ type HelloCreateBulk struct {
 }
 
 // Save creates the Hello entities in the database.
-func (hcb *HelloCreateBulk) Save(ctx context.Context) ([]*Hello, error) {
-	if hcb.err != nil {
-		return nil, hcb.err
+func (_c *HelloCreateBulk) Save(ctx context.Context) ([]*Hello, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(hcb.builders))
-	nodes := make([]*Hello, len(hcb.builders))
-	mutators := make([]Mutator, len(hcb.builders))
-	for i := range hcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Hello, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := hcb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*HelloMutation)
 				if !ok {
@@ -150,11 +150,11 @@ func (hcb *HelloCreateBulk) Save(ctx context.Context) ([]*Hello, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, hcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, hcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -178,7 +178,7 @@ func (hcb *HelloCreateBulk) Save(ctx context.Context) ([]*Hello, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, hcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -186,8 +186,8 @@ func (hcb *HelloCreateBulk) Save(ctx context.Context) ([]*Hello, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (hcb *HelloCreateBulk) SaveX(ctx context.Context) []*Hello {
-	v, err := hcb.Save(ctx)
+func (_c *HelloCreateBulk) SaveX(ctx context.Context) []*Hello {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -195,14 +195,14 @@ func (hcb *HelloCreateBulk) SaveX(ctx context.Context) []*Hello {
 }
 
 // Exec executes the query.
-func (hcb *HelloCreateBulk) Exec(ctx context.Context) error {
-	_, err := hcb.Save(ctx)
+func (_c *HelloCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (hcb *HelloCreateBulk) ExecX(ctx context.Context) {
-	if err := hcb.Exec(ctx); err != nil {
+func (_c *HelloCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

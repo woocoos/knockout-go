@@ -22,38 +22,38 @@ type DomainUpdate struct {
 }
 
 // Where appends a list predicates to the DomainUpdate builder.
-func (du *DomainUpdate) Where(ps ...predicate.Domain) *DomainUpdate {
-	du.mutation.Where(ps...)
-	return du
+func (_u *DomainUpdate) Where(ps ...predicate.Domain) *DomainUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (du *DomainUpdate) SetName(s string) *DomainUpdate {
-	du.mutation.SetName(s)
-	return du
+func (_u *DomainUpdate) SetName(v string) *DomainUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (du *DomainUpdate) SetNillableName(s *string) *DomainUpdate {
-	if s != nil {
-		du.SetName(*s)
+func (_u *DomainUpdate) SetNillableName(v *string) *DomainUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return du
+	return _u
 }
 
 // Mutation returns the DomainMutation object of the builder.
-func (du *DomainUpdate) Mutation() *DomainMutation {
-	return du.mutation
+func (_u *DomainUpdate) Mutation() *DomainMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (du *DomainUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, du.sqlSave, du.mutation, du.hooks)
+func (_u *DomainUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (du *DomainUpdate) SaveX(ctx context.Context) int {
-	affected, err := du.Save(ctx)
+func (_u *DomainUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -61,31 +61,31 @@ func (du *DomainUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (du *DomainUpdate) Exec(ctx context.Context) error {
-	_, err := du.Save(ctx)
+func (_u *DomainUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (du *DomainUpdate) ExecX(ctx context.Context) {
-	if err := du.Exec(ctx); err != nil {
+func (_u *DomainUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *DomainUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(domain.Table, domain.Columns, sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt))
-	if ps := du.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := du.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(domain.FieldName, field.TypeString, value)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{domain.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -93,8 +93,8 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	du.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // DomainUpdateOne is the builder for updating a single Domain entity.
@@ -106,45 +106,45 @@ type DomainUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (duo *DomainUpdateOne) SetName(s string) *DomainUpdateOne {
-	duo.mutation.SetName(s)
-	return duo
+func (_u *DomainUpdateOne) SetName(v string) *DomainUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (duo *DomainUpdateOne) SetNillableName(s *string) *DomainUpdateOne {
-	if s != nil {
-		duo.SetName(*s)
+func (_u *DomainUpdateOne) SetNillableName(v *string) *DomainUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return duo
+	return _u
 }
 
 // Mutation returns the DomainMutation object of the builder.
-func (duo *DomainUpdateOne) Mutation() *DomainMutation {
-	return duo.mutation
+func (_u *DomainUpdateOne) Mutation() *DomainMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the DomainUpdate builder.
-func (duo *DomainUpdateOne) Where(ps ...predicate.Domain) *DomainUpdateOne {
-	duo.mutation.Where(ps...)
-	return duo
+func (_u *DomainUpdateOne) Where(ps ...predicate.Domain) *DomainUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (duo *DomainUpdateOne) Select(field string, fields ...string) *DomainUpdateOne {
-	duo.fields = append([]string{field}, fields...)
-	return duo
+func (_u *DomainUpdateOne) Select(field string, fields ...string) *DomainUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Domain entity.
-func (duo *DomainUpdateOne) Save(ctx context.Context) (*Domain, error) {
-	return withHooks(ctx, duo.sqlSave, duo.mutation, duo.hooks)
+func (_u *DomainUpdateOne) Save(ctx context.Context) (*Domain, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (duo *DomainUpdateOne) SaveX(ctx context.Context) *Domain {
-	node, err := duo.Save(ctx)
+func (_u *DomainUpdateOne) SaveX(ctx context.Context) *Domain {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -152,26 +152,26 @@ func (duo *DomainUpdateOne) SaveX(ctx context.Context) *Domain {
 }
 
 // Exec executes the query on the entity.
-func (duo *DomainUpdateOne) Exec(ctx context.Context) error {
-	_, err := duo.Save(ctx)
+func (_u *DomainUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (duo *DomainUpdateOne) ExecX(ctx context.Context) {
-	if err := duo.Exec(ctx); err != nil {
+func (_u *DomainUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err error) {
+func (_u *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err error) {
 	_spec := sqlgraph.NewUpdateSpec(domain.Table, domain.Columns, sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt))
-	id, ok := duo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Domain.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := duo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, domain.FieldID)
 		for _, f := range fields {
@@ -183,20 +183,20 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			}
 		}
 	}
-	if ps := duo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := duo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(domain.FieldName, field.TypeString, value)
 	}
-	_node = &Domain{config: duo.config}
+	_node = &Domain{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, duo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{domain.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -204,6 +204,6 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 		}
 		return nil, err
 	}
-	duo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

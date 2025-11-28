@@ -16,18 +16,18 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (rs *RefSchemaQuery) CollectFields(ctx context.Context, satisfies ...string) (*RefSchemaQuery, error) {
+func (_m *RefSchemaQuery) CollectFields(ctx context.Context, satisfies ...string) (*RefSchemaQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return rs, nil
+		return _m, nil
 	}
-	if err := rs.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := _m.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return rs, nil
+	return _m, nil
 }
 
-func (rs *RefSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (_m *RefSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -40,12 +40,12 @@ func (rs *RefSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx 
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&UserClient{config: rs.config}).Query()
+				query = (&UserClient{config: _m.config}).Query()
 			)
 			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, userImplementors)...); err != nil {
 				return err
 			}
-			rs.withUser = query
+			_m.withUser = query
 			if _, ok := fieldSeen[refschema.FieldUserID]; !ok {
 				selectedFields = append(selectedFields, refschema.FieldUserID)
 				fieldSeen[refschema.FieldUserID] = struct{}{}
@@ -67,7 +67,7 @@ func (rs *RefSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx 
 		}
 	}
 	if !unknownSeen {
-		rs.Select(selectedFields...)
+		_m.Select(selectedFields...)
 	}
 	return nil
 }
@@ -102,18 +102,18 @@ func newRefSchemaPaginateArgs(rv map[string]any) *refschemaPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserQuery, error) {
+func (_m *UserQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return u, nil
+		return _m, nil
 	}
-	if err := u.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := _m.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return u, nil
+	return _m, nil
 }
 
-func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (_m *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -126,7 +126,7 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&RefSchemaClient{config: u.config}).Query()
+				query = (&RefSchemaClient{config: _m.config}).Query()
 			)
 			args := newRefSchemaPaginateArgs(fieldArgs(ctx, new(RefSchemaWhereInput), path...))
 			if err := validateFirstLast(args.first, args.last); err != nil {
@@ -144,7 +144,7 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
 				if hasPagination || ignoredEdges {
 					query := query.Clone()
-					u.loadTotal = append(u.loadTotal, func(ctx context.Context, nodes []*User) error {
+					_m.loadTotal = append(_m.loadTotal, func(ctx context.Context, nodes []*User) error {
 						ids := make([]driver.Value, len(nodes))
 						for i := range nodes {
 							ids[i] = nodes[i].ID
@@ -173,7 +173,7 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 						return nil
 					})
 				} else {
-					u.loadTotal = append(u.loadTotal, func(_ context.Context, nodes []*User) error {
+					_m.loadTotal = append(_m.loadTotal, func(_ context.Context, nodes []*User) error {
 						for i := range nodes {
 							n := len(nodes[i].Edges.Refs)
 							if nodes[i].Edges.totalCount[0] == nil {
@@ -212,7 +212,7 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			} else {
 				query = pager.applyOrder(query)
 			}
-			u.WithNamedRefs(alias, func(wq *RefSchemaQuery) {
+			_m.WithNamedRefs(alias, func(wq *RefSchemaQuery) {
 				*wq = *query
 			})
 		case "name":
@@ -242,7 +242,7 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 		}
 	}
 	if !unknownSeen {
-		u.Select(selectedFields...)
+		_m.Select(selectedFields...)
 	}
 	return nil
 }

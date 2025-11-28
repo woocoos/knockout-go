@@ -271,8 +271,8 @@ func (c *DomainClient) Update() *DomainUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *DomainClient) UpdateOne(d *Domain) *DomainUpdateOne {
-	mutation := newDomainMutation(c.config, OpUpdateOne, withDomain(d))
+func (c *DomainClient) UpdateOne(_m *Domain) *DomainUpdateOne {
+	mutation := newDomainMutation(c.config, OpUpdateOne, withDomain(_m))
 	return &DomainUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -289,8 +289,8 @@ func (c *DomainClient) Delete() *DomainDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *DomainClient) DeleteOne(d *Domain) *DomainDeleteOne {
-	return c.DeleteOneID(d.ID)
+func (c *DomainClient) DeleteOne(_m *Domain) *DomainDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -406,8 +406,8 @@ func (c *HelloClient) Update() *HelloUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *HelloClient) UpdateOne(h *Hello) *HelloUpdateOne {
-	mutation := newHelloMutation(c.config, OpUpdateOne, withHello(h))
+func (c *HelloClient) UpdateOne(_m *Hello) *HelloUpdateOne {
+	mutation := newHelloMutation(c.config, OpUpdateOne, withHello(_m))
 	return &HelloUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -424,8 +424,8 @@ func (c *HelloClient) Delete() *HelloDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *HelloClient) DeleteOne(h *Hello) *HelloDeleteOne {
-	return c.DeleteOneID(h.ID)
+func (c *HelloClient) DeleteOne(_m *Hello) *HelloDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -541,8 +541,8 @@ func (c *WorldClient) Update() *WorldUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *WorldClient) UpdateOne(w *World) *WorldUpdateOne {
-	mutation := newWorldMutation(c.config, OpUpdateOne, withWorld(w))
+func (c *WorldClient) UpdateOne(_m *World) *WorldUpdateOne {
+	mutation := newWorldMutation(c.config, OpUpdateOne, withWorld(_m))
 	return &WorldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -559,8 +559,8 @@ func (c *WorldClient) Delete() *WorldDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *WorldClient) DeleteOne(w *World) *WorldDeleteOne {
-	return c.DeleteOneID(w.ID)
+func (c *WorldClient) DeleteOne(_m *World) *WorldDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.

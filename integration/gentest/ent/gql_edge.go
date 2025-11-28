@@ -8,23 +8,23 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func (rs *RefSchema) User(ctx context.Context) (*User, error) {
-	result, err := rs.Edges.UserOrErr()
+func (_m *RefSchema) User(ctx context.Context) (*User, error) {
+	result, err := _m.Edges.UserOrErr()
 	if IsNotLoaded(err) {
-		result, err = rs.QueryUser().Only(ctx)
+		result, err = _m.QueryUser().Only(ctx)
 	}
 	return result, err
 }
 
-func (u *User) Refs(
+func (_m *User) Refs(
 	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, where *RefSchemaWhereInput,
 ) (*RefSchemaConnection, error) {
 	opts := []RefSchemaPaginateOption{
 		WithRefSchemaFilter(where.Filter),
 	}
 	alias := graphql.GetFieldContext(ctx).Field.Alias
-	totalCount, hasTotalCount := u.Edges.totalCount[0][alias]
-	if nodes, err := u.NamedRefs(alias); err == nil || hasTotalCount {
+	totalCount, hasTotalCount := _m.Edges.totalCount[0][alias]
+	if nodes, err := _m.NamedRefs(alias); err == nil || hasTotalCount {
 		pager, err := newRefSchemaPager(opts, last != nil)
 		if err != nil {
 			return nil, err
@@ -33,5 +33,5 @@ func (u *User) Refs(
 		conn.build(nodes, pager, after, first, before, last)
 		return conn, nil
 	}
-	return u.QueryRefs().Paginate(ctx, after, first, before, last, opts...)
+	return _m.QueryRefs().Paginate(ctx, after, first, before, last, opts...)
 }

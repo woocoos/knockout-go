@@ -15,8 +15,8 @@ import (
 )
 
 // GlobalID returns the global identifier for the given NoCache node.
-func (nc *NoCache) GlobalID(context.Context) (string, error) {
-	id := fmt.Sprintf("NoCache:%d", nc.ID)
+func (_m *NoCache) GlobalID(context.Context) (string, error) {
+	id := fmt.Sprintf("NoCache:%d", _m.ID)
 	return base64.StdEncoding.EncodeToString([]byte(id)), nil
 }
 

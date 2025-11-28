@@ -265,8 +265,8 @@ func (c *RefSchemaClient) Update() *RefSchemaUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *RefSchemaClient) UpdateOne(rs *RefSchema) *RefSchemaUpdateOne {
-	mutation := newRefSchemaMutation(c.config, OpUpdateOne, withRefSchema(rs))
+func (c *RefSchemaClient) UpdateOne(_m *RefSchema) *RefSchemaUpdateOne {
+	mutation := newRefSchemaMutation(c.config, OpUpdateOne, withRefSchema(_m))
 	return &RefSchemaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -283,8 +283,8 @@ func (c *RefSchemaClient) Delete() *RefSchemaDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *RefSchemaClient) DeleteOne(rs *RefSchema) *RefSchemaDeleteOne {
-	return c.DeleteOneID(rs.ID)
+func (c *RefSchemaClient) DeleteOne(_m *RefSchema) *RefSchemaDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -319,16 +319,16 @@ func (c *RefSchemaClient) GetX(ctx context.Context, id int) *RefSchema {
 }
 
 // QueryUser queries the user edge of a RefSchema.
-func (c *RefSchemaClient) QueryUser(rs *RefSchema) *UserQuery {
+func (c *RefSchemaClient) QueryUser(_m *RefSchema) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rs.ID
+		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(refschema.Table, refschema.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, refschema.UserTable, refschema.UserColumn),
 		)
-		fromV = sqlgraph.Neighbors(rs.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
@@ -414,8 +414,8 @@ func (c *UserClient) Update() *UserUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUser(u))
+func (c *UserClient) UpdateOne(_m *User) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUser(_m))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -432,8 +432,8 @@ func (c *UserClient) Delete() *UserDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
-	return c.DeleteOneID(u.ID)
+func (c *UserClient) DeleteOne(_m *User) *UserDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -468,16 +468,16 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 }
 
 // QueryRefs queries the refs edge of a User.
-func (c *UserClient) QueryRefs(u *User) *RefSchemaQuery {
+func (c *UserClient) QueryRefs(_m *User) *RefSchemaQuery {
 	query := (&RefSchemaClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
+		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(refschema.Table, refschema.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.RefsTable, user.RefsColumn),
 		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query

@@ -253,8 +253,8 @@ func (c *NoCacheClient) Update() *NoCacheUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *NoCacheClient) UpdateOne(nc *NoCache) *NoCacheUpdateOne {
-	mutation := newNoCacheMutation(c.config, OpUpdateOne, withNoCache(nc))
+func (c *NoCacheClient) UpdateOne(_m *NoCache) *NoCacheUpdateOne {
+	mutation := newNoCacheMutation(c.config, OpUpdateOne, withNoCache(_m))
 	return &NoCacheUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -271,8 +271,8 @@ func (c *NoCacheClient) Delete() *NoCacheDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *NoCacheClient) DeleteOne(nc *NoCache) *NoCacheDeleteOne {
-	return c.DeleteOneID(nc.ID)
+func (c *NoCacheClient) DeleteOne(_m *NoCache) *NoCacheDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.

@@ -43,7 +43,7 @@ func (*Domain) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Domain fields.
-func (d *Domain) assignValues(columns []string, values []any) error {
+func (_m *Domain) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -54,27 +54,27 @@ func (d *Domain) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			d.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case domain.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				d.Name = value.String
+				_m.Name = value.String
 			}
 		case domain.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				d.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case domain.FieldDomainID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field domain_id", values[i])
 			} else if value.Valid {
-				d.DomainID = int(value.Int64)
+				_m.DomainID = int(value.Int64)
 			}
 		default:
-			d.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -82,41 +82,41 @@ func (d *Domain) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Domain.
 // This includes values selected through modifiers, order, etc.
-func (d *Domain) Value(name string) (ent.Value, error) {
-	return d.selectValues.Get(name)
+func (_m *Domain) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Domain.
 // Note that you need to call Domain.Unwrap() before calling this method if this Domain
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (d *Domain) Update() *DomainUpdateOne {
-	return NewDomainClient(d.config).UpdateOne(d)
+func (_m *Domain) Update() *DomainUpdateOne {
+	return NewDomainClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Domain entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (d *Domain) Unwrap() *Domain {
-	_tx, ok := d.config.driver.(*txDriver)
+func (_m *Domain) Unwrap() *Domain {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Domain is not a transactional entity")
 	}
-	d.config.driver = _tx.drv
-	return d
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (d *Domain) String() string {
+func (_m *Domain) String() string {
 	var builder strings.Builder
 	builder.WriteString("Domain(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", d.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
-	builder.WriteString(d.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", d.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("domain_id=")
-	builder.WriteString(fmt.Sprintf("%v", d.DomainID))
+	builder.WriteString(fmt.Sprintf("%v", _m.DomainID))
 	builder.WriteByte(')')
 	return builder.String()
 }

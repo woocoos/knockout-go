@@ -20,42 +20,42 @@ type DomainCreate struct {
 }
 
 // SetName sets the "name" field.
-func (dc *DomainCreate) SetName(s string) *DomainCreate {
-	dc.mutation.SetName(s)
-	return dc
+func (_c *DomainCreate) SetName(v string) *DomainCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (dc *DomainCreate) SetTenantID(i int) *DomainCreate {
-	dc.mutation.SetTenantID(i)
-	return dc
+func (_c *DomainCreate) SetTenantID(v int) *DomainCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetDomainID sets the "domain_id" field.
-func (dc *DomainCreate) SetDomainID(i int) *DomainCreate {
-	dc.mutation.SetDomainID(i)
-	return dc
+func (_c *DomainCreate) SetDomainID(v int) *DomainCreate {
+	_c.mutation.SetDomainID(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (dc *DomainCreate) SetID(i int) *DomainCreate {
-	dc.mutation.SetID(i)
-	return dc
+func (_c *DomainCreate) SetID(v int) *DomainCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // Mutation returns the DomainMutation object of the builder.
-func (dc *DomainCreate) Mutation() *DomainMutation {
-	return dc.mutation
+func (_c *DomainCreate) Mutation() *DomainMutation {
+	return _c.mutation
 }
 
 // Save creates the Domain in the database.
-func (dc *DomainCreate) Save(ctx context.Context) (*Domain, error) {
-	return withHooks(ctx, dc.sqlSave, dc.mutation, dc.hooks)
+func (_c *DomainCreate) Save(ctx context.Context) (*Domain, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (dc *DomainCreate) SaveX(ctx context.Context) *Domain {
-	v, err := dc.Save(ctx)
+func (_c *DomainCreate) SaveX(ctx context.Context) *Domain {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -63,38 +63,38 @@ func (dc *DomainCreate) SaveX(ctx context.Context) *Domain {
 }
 
 // Exec executes the query.
-func (dc *DomainCreate) Exec(ctx context.Context) error {
-	_, err := dc.Save(ctx)
+func (_c *DomainCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (dc *DomainCreate) ExecX(ctx context.Context) {
-	if err := dc.Exec(ctx); err != nil {
+func (_c *DomainCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (dc *DomainCreate) check() error {
-	if _, ok := dc.mutation.Name(); !ok {
+func (_c *DomainCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Domain.name"`)}
 	}
-	if _, ok := dc.mutation.TenantID(); !ok {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Domain.tenant_id"`)}
 	}
-	if _, ok := dc.mutation.DomainID(); !ok {
+	if _, ok := _c.mutation.DomainID(); !ok {
 		return &ValidationError{Name: "domain_id", err: errors.New(`ent: missing required field "Domain.domain_id"`)}
 	}
 	return nil
 }
 
-func (dc *DomainCreate) sqlSave(ctx context.Context) (*Domain, error) {
-	if err := dc.check(); err != nil {
+func (_c *DomainCreate) sqlSave(ctx context.Context) (*Domain, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := dc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -104,29 +104,29 @@ func (dc *DomainCreate) sqlSave(ctx context.Context) (*Domain, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = int(id)
 	}
-	dc.mutation.id = &_node.ID
-	dc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (dc *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
+func (_c *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Domain{config: dc.config}
+		_node = &Domain{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(domain.Table, sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt))
 	)
-	if id, ok := dc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := dc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(domain.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := dc.mutation.TenantID(); ok {
+	if value, ok := _c.mutation.TenantID(); ok {
 		_spec.SetField(domain.FieldTenantID, field.TypeInt, value)
 		_node.TenantID = value
 	}
-	if value, ok := dc.mutation.DomainID(); ok {
+	if value, ok := _c.mutation.DomainID(); ok {
 		_spec.SetField(domain.FieldDomainID, field.TypeInt, value)
 		_node.DomainID = value
 	}
@@ -141,16 +141,16 @@ type DomainCreateBulk struct {
 }
 
 // Save creates the Domain entities in the database.
-func (dcb *DomainCreateBulk) Save(ctx context.Context) ([]*Domain, error) {
-	if dcb.err != nil {
-		return nil, dcb.err
+func (_c *DomainCreateBulk) Save(ctx context.Context) ([]*Domain, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(dcb.builders))
-	nodes := make([]*Domain, len(dcb.builders))
-	mutators := make([]Mutator, len(dcb.builders))
-	for i := range dcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Domain, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := dcb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DomainMutation)
 				if !ok {
@@ -163,11 +163,11 @@ func (dcb *DomainCreateBulk) Save(ctx context.Context) ([]*Domain, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -191,7 +191,7 @@ func (dcb *DomainCreateBulk) Save(ctx context.Context) ([]*Domain, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, dcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -199,8 +199,8 @@ func (dcb *DomainCreateBulk) Save(ctx context.Context) ([]*Domain, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (dcb *DomainCreateBulk) SaveX(ctx context.Context) []*Domain {
-	v, err := dcb.Save(ctx)
+func (_c *DomainCreateBulk) SaveX(ctx context.Context) []*Domain {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -208,14 +208,14 @@ func (dcb *DomainCreateBulk) SaveX(ctx context.Context) []*Domain {
 }
 
 // Exec executes the query.
-func (dcb *DomainCreateBulk) Exec(ctx context.Context) error {
-	_, err := dcb.Save(ctx)
+func (_c *DomainCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (dcb *DomainCreateBulk) ExecX(ctx context.Context) {
-	if err := dcb.Exec(ctx); err != nil {
+func (_c *DomainCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

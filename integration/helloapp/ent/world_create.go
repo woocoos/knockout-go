@@ -21,115 +21,115 @@ type WorldCreate struct {
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (wc *WorldCreate) SetCreatedBy(i int) *WorldCreate {
-	wc.mutation.SetCreatedBy(i)
-	return wc
+func (_c *WorldCreate) SetCreatedBy(v int) *WorldCreate {
+	_c.mutation.SetCreatedBy(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (wc *WorldCreate) SetCreatedAt(t time.Time) *WorldCreate {
-	wc.mutation.SetCreatedAt(t)
-	return wc
+func (_c *WorldCreate) SetCreatedAt(v time.Time) *WorldCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (wc *WorldCreate) SetNillableCreatedAt(t *time.Time) *WorldCreate {
-	if t != nil {
-		wc.SetCreatedAt(*t)
+func (_c *WorldCreate) SetNillableCreatedAt(v *time.Time) *WorldCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetUpdatedBy sets the "updated_by" field.
-func (wc *WorldCreate) SetUpdatedBy(i int) *WorldCreate {
-	wc.mutation.SetUpdatedBy(i)
-	return wc
+func (_c *WorldCreate) SetUpdatedBy(v int) *WorldCreate {
+	_c.mutation.SetUpdatedBy(v)
+	return _c
 }
 
 // SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
-func (wc *WorldCreate) SetNillableUpdatedBy(i *int) *WorldCreate {
-	if i != nil {
-		wc.SetUpdatedBy(*i)
+func (_c *WorldCreate) SetNillableUpdatedBy(v *int) *WorldCreate {
+	if v != nil {
+		_c.SetUpdatedBy(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (wc *WorldCreate) SetUpdatedAt(t time.Time) *WorldCreate {
-	wc.mutation.SetUpdatedAt(t)
-	return wc
+func (_c *WorldCreate) SetUpdatedAt(v time.Time) *WorldCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (wc *WorldCreate) SetNillableUpdatedAt(t *time.Time) *WorldCreate {
-	if t != nil {
-		wc.SetUpdatedAt(*t)
+func (_c *WorldCreate) SetNillableUpdatedAt(v *time.Time) *WorldCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (wc *WorldCreate) SetDeletedAt(t time.Time) *WorldCreate {
-	wc.mutation.SetDeletedAt(t)
-	return wc
+func (_c *WorldCreate) SetDeletedAt(v time.Time) *WorldCreate {
+	_c.mutation.SetDeletedAt(v)
+	return _c
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (wc *WorldCreate) SetNillableDeletedAt(t *time.Time) *WorldCreate {
-	if t != nil {
-		wc.SetDeletedAt(*t)
+func (_c *WorldCreate) SetNillableDeletedAt(v *time.Time) *WorldCreate {
+	if v != nil {
+		_c.SetDeletedAt(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (wc *WorldCreate) SetTenantID(i int) *WorldCreate {
-	wc.mutation.SetTenantID(i)
-	return wc
+func (_c *WorldCreate) SetTenantID(v int) *WorldCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (wc *WorldCreate) SetName(s string) *WorldCreate {
-	wc.mutation.SetName(s)
-	return wc
+func (_c *WorldCreate) SetName(v string) *WorldCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetPowerBy sets the "power_by" field.
-func (wc *WorldCreate) SetPowerBy(s string) *WorldCreate {
-	wc.mutation.SetPowerBy(s)
-	return wc
+func (_c *WorldCreate) SetPowerBy(v string) *WorldCreate {
+	_c.mutation.SetPowerBy(v)
+	return _c
 }
 
 // SetNillablePowerBy sets the "power_by" field if the given value is not nil.
-func (wc *WorldCreate) SetNillablePowerBy(s *string) *WorldCreate {
-	if s != nil {
-		wc.SetPowerBy(*s)
+func (_c *WorldCreate) SetNillablePowerBy(v *string) *WorldCreate {
+	if v != nil {
+		_c.SetPowerBy(*v)
 	}
-	return wc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (wc *WorldCreate) SetID(i int) *WorldCreate {
-	wc.mutation.SetID(i)
-	return wc
+func (_c *WorldCreate) SetID(v int) *WorldCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // Mutation returns the WorldMutation object of the builder.
-func (wc *WorldCreate) Mutation() *WorldMutation {
-	return wc.mutation
+func (_c *WorldCreate) Mutation() *WorldMutation {
+	return _c.mutation
 }
 
 // Save creates the World in the database.
-func (wc *WorldCreate) Save(ctx context.Context) (*World, error) {
-	if err := wc.defaults(); err != nil {
+func (_c *WorldCreate) Save(ctx context.Context) (*World, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, wc.sqlSave, wc.mutation, wc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (wc *WorldCreate) SaveX(ctx context.Context) *World {
-	v, err := wc.Save(ctx)
+func (_c *WorldCreate) SaveX(ctx context.Context) *World {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -137,57 +137,57 @@ func (wc *WorldCreate) SaveX(ctx context.Context) *World {
 }
 
 // Exec executes the query.
-func (wc *WorldCreate) Exec(ctx context.Context) error {
-	_, err := wc.Save(ctx)
+func (_c *WorldCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wc *WorldCreate) ExecX(ctx context.Context) {
-	if err := wc.Exec(ctx); err != nil {
+func (_c *WorldCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (wc *WorldCreate) defaults() error {
-	if _, ok := wc.mutation.CreatedAt(); !ok {
+func (_c *WorldCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if world.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized world.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := world.DefaultCreatedAt()
-		wc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := wc.mutation.PowerBy(); !ok {
+	if _, ok := _c.mutation.PowerBy(); !ok {
 		v := world.DefaultPowerBy
-		wc.mutation.SetPowerBy(v)
+		_c.mutation.SetPowerBy(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (wc *WorldCreate) check() error {
-	if _, ok := wc.mutation.CreatedBy(); !ok {
+func (_c *WorldCreate) check() error {
+	if _, ok := _c.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "World.created_by"`)}
 	}
-	if _, ok := wc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "World.created_at"`)}
 	}
-	if _, ok := wc.mutation.TenantID(); !ok {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "World.tenant_id"`)}
 	}
-	if _, ok := wc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "World.name"`)}
 	}
 	return nil
 }
 
-func (wc *WorldCreate) sqlSave(ctx context.Context) (*World, error) {
-	if err := wc.check(); err != nil {
+func (_c *WorldCreate) sqlSave(ctx context.Context) (*World, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := wc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, wc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -197,49 +197,49 @@ func (wc *WorldCreate) sqlSave(ctx context.Context) (*World, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = int(id)
 	}
-	wc.mutation.id = &_node.ID
-	wc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (wc *WorldCreate) createSpec() (*World, *sqlgraph.CreateSpec) {
+func (_c *WorldCreate) createSpec() (*World, *sqlgraph.CreateSpec) {
 	var (
-		_node = &World{config: wc.config}
+		_node = &World{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(world.Table, sqlgraph.NewFieldSpec(world.FieldID, field.TypeInt))
 	)
-	if id, ok := wc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := wc.mutation.CreatedBy(); ok {
+	if value, ok := _c.mutation.CreatedBy(); ok {
 		_spec.SetField(world.FieldCreatedBy, field.TypeInt, value)
 		_node.CreatedBy = value
 	}
-	if value, ok := wc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(world.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := wc.mutation.UpdatedBy(); ok {
+	if value, ok := _c.mutation.UpdatedBy(); ok {
 		_spec.SetField(world.FieldUpdatedBy, field.TypeInt, value)
 		_node.UpdatedBy = value
 	}
-	if value, ok := wc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(world.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := wc.mutation.DeletedAt(); ok {
+	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(world.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = value
 	}
-	if value, ok := wc.mutation.TenantID(); ok {
+	if value, ok := _c.mutation.TenantID(); ok {
 		_spec.SetField(world.FieldTenantID, field.TypeInt, value)
 		_node.TenantID = value
 	}
-	if value, ok := wc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(world.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := wc.mutation.PowerBy(); ok {
+	if value, ok := _c.mutation.PowerBy(); ok {
 		_spec.SetField(world.FieldPowerBy, field.TypeString, value)
 		_node.PowerBy = value
 	}
@@ -254,16 +254,16 @@ type WorldCreateBulk struct {
 }
 
 // Save creates the World entities in the database.
-func (wcb *WorldCreateBulk) Save(ctx context.Context) ([]*World, error) {
-	if wcb.err != nil {
-		return nil, wcb.err
+func (_c *WorldCreateBulk) Save(ctx context.Context) ([]*World, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(wcb.builders))
-	nodes := make([]*World, len(wcb.builders))
-	mutators := make([]Mutator, len(wcb.builders))
-	for i := range wcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*World, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := wcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*WorldMutation)
@@ -277,11 +277,11 @@ func (wcb *WorldCreateBulk) Save(ctx context.Context) ([]*World, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, wcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, wcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -305,7 +305,7 @@ func (wcb *WorldCreateBulk) Save(ctx context.Context) ([]*World, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, wcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -313,8 +313,8 @@ func (wcb *WorldCreateBulk) Save(ctx context.Context) ([]*World, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (wcb *WorldCreateBulk) SaveX(ctx context.Context) []*World {
-	v, err := wcb.Save(ctx)
+func (_c *WorldCreateBulk) SaveX(ctx context.Context) []*World {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -322,14 +322,14 @@ func (wcb *WorldCreateBulk) SaveX(ctx context.Context) []*World {
 }
 
 // Exec executes the query.
-func (wcb *WorldCreateBulk) Exec(ctx context.Context) error {
-	_, err := wcb.Save(ctx)
+func (_c *WorldCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (wcb *WorldCreateBulk) ExecX(ctx context.Context) {
-	if err := wcb.Exec(ctx); err != nil {
+func (_c *WorldCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -21,35 +21,35 @@ type RefSchemaCreate struct {
 }
 
 // SetName sets the "name" field.
-func (rsc *RefSchemaCreate) SetName(s string) *RefSchemaCreate {
-	rsc.mutation.SetName(s)
-	return rsc
+func (_c *RefSchemaCreate) SetName(v string) *RefSchemaCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (rsc *RefSchemaCreate) SetUserID(i int) *RefSchemaCreate {
-	rsc.mutation.SetUserID(i)
-	return rsc
+func (_c *RefSchemaCreate) SetUserID(v int) *RefSchemaCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (rsc *RefSchemaCreate) SetUser(u *User) *RefSchemaCreate {
-	return rsc.SetUserID(u.ID)
+func (_c *RefSchemaCreate) SetUser(v *User) *RefSchemaCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // Mutation returns the RefSchemaMutation object of the builder.
-func (rsc *RefSchemaCreate) Mutation() *RefSchemaMutation {
-	return rsc.mutation
+func (_c *RefSchemaCreate) Mutation() *RefSchemaMutation {
+	return _c.mutation
 }
 
 // Save creates the RefSchema in the database.
-func (rsc *RefSchemaCreate) Save(ctx context.Context) (*RefSchema, error) {
-	return withHooks(ctx, rsc.sqlSave, rsc.mutation, rsc.hooks)
+func (_c *RefSchemaCreate) Save(ctx context.Context) (*RefSchema, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (rsc *RefSchemaCreate) SaveX(ctx context.Context) *RefSchema {
-	v, err := rsc.Save(ctx)
+func (_c *RefSchemaCreate) SaveX(ctx context.Context) *RefSchema {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -57,38 +57,38 @@ func (rsc *RefSchemaCreate) SaveX(ctx context.Context) *RefSchema {
 }
 
 // Exec executes the query.
-func (rsc *RefSchemaCreate) Exec(ctx context.Context) error {
-	_, err := rsc.Save(ctx)
+func (_c *RefSchemaCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rsc *RefSchemaCreate) ExecX(ctx context.Context) {
-	if err := rsc.Exec(ctx); err != nil {
+func (_c *RefSchemaCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rsc *RefSchemaCreate) check() error {
-	if _, ok := rsc.mutation.Name(); !ok {
+func (_c *RefSchemaCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "RefSchema.name"`)}
 	}
-	if _, ok := rsc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "RefSchema.user_id"`)}
 	}
-	if _, ok := rsc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "RefSchema.user"`)}
 	}
 	return nil
 }
 
-func (rsc *RefSchemaCreate) sqlSave(ctx context.Context) (*RefSchema, error) {
-	if err := rsc.check(); err != nil {
+func (_c *RefSchemaCreate) sqlSave(ctx context.Context) (*RefSchema, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := rsc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, rsc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -96,21 +96,21 @@ func (rsc *RefSchemaCreate) sqlSave(ctx context.Context) (*RefSchema, error) {
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	rsc.mutation.id = &_node.ID
-	rsc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (rsc *RefSchemaCreate) createSpec() (*RefSchema, *sqlgraph.CreateSpec) {
+func (_c *RefSchemaCreate) createSpec() (*RefSchema, *sqlgraph.CreateSpec) {
 	var (
-		_node = &RefSchema{config: rsc.config}
+		_node = &RefSchema{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(refschema.Table, sqlgraph.NewFieldSpec(refschema.FieldID, field.TypeInt))
 	)
-	if value, ok := rsc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(refschema.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if nodes := rsc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,

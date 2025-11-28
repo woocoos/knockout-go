@@ -3,9 +3,9 @@ module github.com/woocoos/knockout-go
 go 1.24.0
 
 require (
-	ariga.io/atlas v0.31.1-0.20250212144724-069be8033e83
+	ariga.io/atlas v0.32.1-0.20250325101103-175b25e1c1b9
 	entgo.io/contrib v0.7.0
-	entgo.io/ent v0.14.4
+	entgo.io/ent v0.14.5
 	github.com/99designs/gqlgen v0.17.68
 	github.com/XSAM/otelsql v0.36.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.8
@@ -31,9 +31,9 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tsingsun/woocoo v0.7.0
-	github.com/tsingsun/woocoo/contrib/gql v0.1.3
-	github.com/tsingsun/woocoo/contrib/telemetry v0.58.2
+	github.com/tsingsun/woocoo v0.7.1-0.20251118091455-81c8671f3655
+	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251118091455-81c8671f3655
+	github.com/tsingsun/woocoo/contrib/telemetry v0.58.3
 	github.com/vektah/gqlparser/v2 v2.5.23
 	github.com/woocoos/entcache v0.3.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.33.0
@@ -46,7 +46,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4 // indirect
 	github.com/alibabacloud-go/debug v1.0.0 // indirect
@@ -56,7 +56,6 @@ require (
 	github.com/alibabacloud-go/tea-xml v1.1.3 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/aliyun/credentials-go v1.3.1 // indirect
-	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.11 // indirect
@@ -100,7 +99,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 // indirect
 	github.com/hashicorp/go-envparse v0.1.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
-	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
+	github.com/hashicorp/hcl/v2 v2.18.1 // indirect
 	github.com/jhump/protoreflect v1.10.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
@@ -114,7 +113,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

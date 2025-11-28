@@ -30,40 +30,40 @@ type NoCacheQuery struct {
 }
 
 // Where adds a new predicate for the NoCacheQuery builder.
-func (ncq *NoCacheQuery) Where(ps ...predicate.NoCache) *NoCacheQuery {
-	ncq.predicates = append(ncq.predicates, ps...)
-	return ncq
+func (_q *NoCacheQuery) Where(ps ...predicate.NoCache) *NoCacheQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (ncq *NoCacheQuery) Limit(limit int) *NoCacheQuery {
-	ncq.ctx.Limit = &limit
-	return ncq
+func (_q *NoCacheQuery) Limit(limit int) *NoCacheQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (ncq *NoCacheQuery) Offset(offset int) *NoCacheQuery {
-	ncq.ctx.Offset = &offset
-	return ncq
+func (_q *NoCacheQuery) Offset(offset int) *NoCacheQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (ncq *NoCacheQuery) Unique(unique bool) *NoCacheQuery {
-	ncq.ctx.Unique = &unique
-	return ncq
+func (_q *NoCacheQuery) Unique(unique bool) *NoCacheQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (ncq *NoCacheQuery) Order(o ...nocache.OrderOption) *NoCacheQuery {
-	ncq.order = append(ncq.order, o...)
-	return ncq
+func (_q *NoCacheQuery) Order(o ...nocache.OrderOption) *NoCacheQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first NoCache entity from the query.
 // Returns a *NotFoundError when no NoCache was found.
-func (ncq *NoCacheQuery) First(ctx context.Context) (*NoCache, error) {
-	nodes, err := ncq.Limit(1).All(setContextOp(ctx, ncq.ctx, ent.OpQueryFirst))
+func (_q *NoCacheQuery) First(ctx context.Context) (*NoCache, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,8 @@ func (ncq *NoCacheQuery) First(ctx context.Context) (*NoCache, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (ncq *NoCacheQuery) FirstX(ctx context.Context) *NoCache {
-	node, err := ncq.First(ctx)
+func (_q *NoCacheQuery) FirstX(ctx context.Context) *NoCache {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -84,9 +84,9 @@ func (ncq *NoCacheQuery) FirstX(ctx context.Context) *NoCache {
 
 // FirstID returns the first NoCache ID from the query.
 // Returns a *NotFoundError when no NoCache ID was found.
-func (ncq *NoCacheQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *NoCacheQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = ncq.Limit(1).IDs(setContextOp(ctx, ncq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -97,8 +97,8 @@ func (ncq *NoCacheQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (ncq *NoCacheQuery) FirstIDX(ctx context.Context) int {
-	id, err := ncq.FirstID(ctx)
+func (_q *NoCacheQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -108,8 +108,8 @@ func (ncq *NoCacheQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single NoCache entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one NoCache entity is found.
 // Returns a *NotFoundError when no NoCache entities are found.
-func (ncq *NoCacheQuery) Only(ctx context.Context) (*NoCache, error) {
-	nodes, err := ncq.Limit(2).All(setContextOp(ctx, ncq.ctx, ent.OpQueryOnly))
+func (_q *NoCacheQuery) Only(ctx context.Context) (*NoCache, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (ncq *NoCacheQuery) Only(ctx context.Context) (*NoCache, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (ncq *NoCacheQuery) OnlyX(ctx context.Context) *NoCache {
-	node, err := ncq.Only(ctx)
+func (_q *NoCacheQuery) OnlyX(ctx context.Context) *NoCache {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,9 +135,9 @@ func (ncq *NoCacheQuery) OnlyX(ctx context.Context) *NoCache {
 // OnlyID is like Only, but returns the only NoCache ID in the query.
 // Returns a *NotSingularError when more than one NoCache ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (ncq *NoCacheQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *NoCacheQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = ncq.Limit(2).IDs(setContextOp(ctx, ncq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -152,8 +152,8 @@ func (ncq *NoCacheQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ncq *NoCacheQuery) OnlyIDX(ctx context.Context) int {
-	id, err := ncq.OnlyID(ctx)
+func (_q *NoCacheQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,18 +161,18 @@ func (ncq *NoCacheQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of NoCaches.
-func (ncq *NoCacheQuery) All(ctx context.Context) ([]*NoCache, error) {
-	ctx = setContextOp(ctx, ncq.ctx, ent.OpQueryAll)
-	if err := ncq.prepareQuery(ctx); err != nil {
+func (_q *NoCacheQuery) All(ctx context.Context) ([]*NoCache, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*NoCache, *NoCacheQuery]()
-	return withInterceptors[[]*NoCache](ctx, ncq, qr, ncq.inters)
+	return withInterceptors[[]*NoCache](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (ncq *NoCacheQuery) AllX(ctx context.Context) []*NoCache {
-	nodes, err := ncq.All(ctx)
+func (_q *NoCacheQuery) AllX(ctx context.Context) []*NoCache {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -180,20 +180,20 @@ func (ncq *NoCacheQuery) AllX(ctx context.Context) []*NoCache {
 }
 
 // IDs executes the query and returns a list of NoCache IDs.
-func (ncq *NoCacheQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if ncq.ctx.Unique == nil && ncq.path != nil {
-		ncq.Unique(true)
+func (_q *NoCacheQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, ncq.ctx, ent.OpQueryIDs)
-	if err = ncq.Select(nocache.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(nocache.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (ncq *NoCacheQuery) IDsX(ctx context.Context) []int {
-	ids, err := ncq.IDs(ctx)
+func (_q *NoCacheQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -201,17 +201,17 @@ func (ncq *NoCacheQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (ncq *NoCacheQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, ncq.ctx, ent.OpQueryCount)
-	if err := ncq.prepareQuery(ctx); err != nil {
+func (_q *NoCacheQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, ncq, querierCount[*NoCacheQuery](), ncq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*NoCacheQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (ncq *NoCacheQuery) CountX(ctx context.Context) int {
-	count, err := ncq.Count(ctx)
+func (_q *NoCacheQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -219,9 +219,9 @@ func (ncq *NoCacheQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (ncq *NoCacheQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, ncq.ctx, ent.OpQueryExist)
-	switch _, err := ncq.FirstID(ctx); {
+func (_q *NoCacheQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -232,8 +232,8 @@ func (ncq *NoCacheQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (ncq *NoCacheQuery) ExistX(ctx context.Context) bool {
-	exist, err := ncq.Exist(ctx)
+func (_q *NoCacheQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -242,19 +242,19 @@ func (ncq *NoCacheQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the NoCacheQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (ncq *NoCacheQuery) Clone() *NoCacheQuery {
-	if ncq == nil {
+func (_q *NoCacheQuery) Clone() *NoCacheQuery {
+	if _q == nil {
 		return nil
 	}
 	return &NoCacheQuery{
-		config:     ncq.config,
-		ctx:        ncq.ctx.Clone(),
-		order:      append([]nocache.OrderOption{}, ncq.order...),
-		inters:     append([]Interceptor{}, ncq.inters...),
-		predicates: append([]predicate.NoCache{}, ncq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]nocache.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.NoCache{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  ncq.sql.Clone(),
-		path: ncq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
@@ -272,10 +272,10 @@ func (ncq *NoCacheQuery) Clone() *NoCacheQuery {
 //		GroupBy(nocache.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (ncq *NoCacheQuery) GroupBy(field string, fields ...string) *NoCacheGroupBy {
-	ncq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &NoCacheGroupBy{build: ncq}
-	grbuild.flds = &ncq.ctx.Fields
+func (_q *NoCacheQuery) GroupBy(field string, fields ...string) *NoCacheGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &NoCacheGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = nocache.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -293,99 +293,99 @@ func (ncq *NoCacheQuery) GroupBy(field string, fields ...string) *NoCacheGroupBy
 //	client.NoCache.Query().
 //		Select(nocache.FieldName).
 //		Scan(ctx, &v)
-func (ncq *NoCacheQuery) Select(fields ...string) *NoCacheSelect {
-	ncq.ctx.Fields = append(ncq.ctx.Fields, fields...)
-	sbuild := &NoCacheSelect{NoCacheQuery: ncq}
+func (_q *NoCacheQuery) Select(fields ...string) *NoCacheSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &NoCacheSelect{NoCacheQuery: _q}
 	sbuild.label = nocache.Label
-	sbuild.flds, sbuild.scan = &ncq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a NoCacheSelect configured with the given aggregations.
-func (ncq *NoCacheQuery) Aggregate(fns ...AggregateFunc) *NoCacheSelect {
-	return ncq.Select().Aggregate(fns...)
+func (_q *NoCacheQuery) Aggregate(fns ...AggregateFunc) *NoCacheSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (ncq *NoCacheQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range ncq.inters {
+func (_q *NoCacheQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, ncq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range ncq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !nocache.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if ncq.path != nil {
-		prev, err := ncq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		ncq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (ncq *NoCacheQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NoCache, error) {
+func (_q *NoCacheQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NoCache, error) {
 	var (
 		nodes = []*NoCache{}
-		_spec = ncq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*NoCache).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &NoCache{config: ncq.config}
+		node := &NoCache{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(ncq.modifiers) > 0 {
-		_spec.Modifiers = ncq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, ncq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	for i := range ncq.loadTotal {
-		if err := ncq.loadTotal[i](ctx, nodes); err != nil {
+	for i := range _q.loadTotal {
+		if err := _q.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (ncq *NoCacheQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := ncq.querySpec()
-	if len(ncq.modifiers) > 0 {
-		_spec.Modifiers = ncq.modifiers
+func (_q *NoCacheQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = ncq.ctx.Fields
-	if len(ncq.ctx.Fields) > 0 {
-		_spec.Unique = ncq.ctx.Unique != nil && *ncq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, ncq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (ncq *NoCacheQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *NoCacheQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(nocache.Table, nocache.Columns, sqlgraph.NewFieldSpec(nocache.FieldID, field.TypeInt))
-	_spec.From = ncq.sql
-	if unique := ncq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if ncq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := ncq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, nocache.FieldID)
 		for i := range fields {
@@ -394,20 +394,20 @@ func (ncq *NoCacheQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := ncq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := ncq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := ncq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := ncq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -417,33 +417,33 @@ func (ncq *NoCacheQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (ncq *NoCacheQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(ncq.driver.Dialect())
+func (_q *NoCacheQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(nocache.Table)
-	columns := ncq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = nocache.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if ncq.sql != nil {
-		selector = ncq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if ncq.ctx.Unique != nil && *ncq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range ncq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range ncq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := ncq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := ncq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -456,41 +456,41 @@ type NoCacheGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ncgb *NoCacheGroupBy) Aggregate(fns ...AggregateFunc) *NoCacheGroupBy {
-	ncgb.fns = append(ncgb.fns, fns...)
-	return ncgb
+func (_g *NoCacheGroupBy) Aggregate(fns ...AggregateFunc) *NoCacheGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ncgb *NoCacheGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ncgb.build.ctx, ent.OpQueryGroupBy)
-	if err := ncgb.build.prepareQuery(ctx); err != nil {
+func (_g *NoCacheGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*NoCacheQuery, *NoCacheGroupBy](ctx, ncgb.build, ncgb, ncgb.build.inters, v)
+	return scanWithInterceptors[*NoCacheQuery, *NoCacheGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (ncgb *NoCacheGroupBy) sqlScan(ctx context.Context, root *NoCacheQuery, v any) error {
+func (_g *NoCacheGroupBy) sqlScan(ctx context.Context, root *NoCacheQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(ncgb.fns))
-	for _, fn := range ncgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*ncgb.flds)+len(ncgb.fns))
-		for _, f := range *ncgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*ncgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ncgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -504,27 +504,27 @@ type NoCacheSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ncs *NoCacheSelect) Aggregate(fns ...AggregateFunc) *NoCacheSelect {
-	ncs.fns = append(ncs.fns, fns...)
-	return ncs
+func (_s *NoCacheSelect) Aggregate(fns ...AggregateFunc) *NoCacheSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ncs *NoCacheSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ncs.ctx, ent.OpQuerySelect)
-	if err := ncs.prepareQuery(ctx); err != nil {
+func (_s *NoCacheSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*NoCacheQuery, *NoCacheSelect](ctx, ncs.NoCacheQuery, ncs, ncs.inters, v)
+	return scanWithInterceptors[*NoCacheQuery, *NoCacheSelect](ctx, _s.NoCacheQuery, _s, _s.inters, v)
 }
 
-func (ncs *NoCacheSelect) sqlScan(ctx context.Context, root *NoCacheQuery, v any) error {
+func (_s *NoCacheSelect) sqlScan(ctx context.Context, root *NoCacheQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ncs.fns))
-	for _, fn := range ncs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ncs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -532,7 +532,7 @@ func (ncs *NoCacheSelect) sqlScan(ctx context.Context, root *NoCacheQuery, v any
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ncs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
