@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -144,6 +145,46 @@ func BuildEntComponents(cnf *conf.AppConfiguration) map[string]dialect.Driver {
 		vals[root] = drv
 	})
 	return vals
+}
+
+// BuildSchemaConfig initializes the schema configuration for the ent SchemaConfig.
+// config sample:
+//
+//		store:
+//		  schemaConfig:
+//		    portal:
+//		      Org: db_portal
+//	     # if msg is a string node means  all table use db_msg as schema
+//		    msg: db_msg
+func BuildSchemaConfig(cnf *conf.AppConfiguration, key string, schemaConfig any) error {
+	pathKey := conf.Join("store", "schemaConfig", key)
+	if !cnf.IsSet(pathKey) {
+		return fmt.Errorf("schemaConfig not found:%s", pathKey)
+	}
+	kv := cnf.Get(pathKey)
+	rv := reflect.ValueOf(schemaConfig).Elem()
+	switch val := kv.(type) {
+	case string:
+		for i := 0; i < rv.NumField(); i++ {
+			field := rv.Field(i)
+			if field.Kind() == reflect.String {
+				field.SetString(val)
+			}
+		}
+	default:
+		scf := cnf.Sub(pathKey)
+		for i := 0; i < rv.NumField(); i++ {
+			field := rv.Field(i)
+			if field.Kind() == reflect.String {
+				// 如果字段名存在scf中，则设置字段值
+				name := rv.Type().Field(i).Name
+				if scf.IsSet(name) {
+					field.SetString(scf.String(name))
+				}
+			}
+		}
+	}
+	return nil
 }
 
 type otelServer struct {

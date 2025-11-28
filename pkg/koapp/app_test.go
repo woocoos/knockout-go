@@ -1,6 +1,7 @@
 package koapp
 
 import (
+	"errors"
 	"testing"
 
 	"entgo.io/ent/dialect"
@@ -113,6 +114,90 @@ func TestBuildEntComponents(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := BuildEntComponents(tt.args.cnf)
 			tt.check(got)
+		})
+	}
+}
+
+func TestInitSchemaConfig(t *testing.T) {
+	type mockSchemaConfig struct {
+		OrgTable  string
+		UserTable string
+	}
+	type args struct {
+		cnf *conf.Configuration
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    mockSchemaConfig
+		wantErr error
+	}{
+		{
+			name: "all mapping",
+			args: args{
+				cnf: conf.NewFromStringMap(map[string]any{
+					"store.schemaConfig.portal": map[string]any{
+						"OrgTable":  "db_portal",
+						"UserTable": "db_user",
+					},
+				}),
+			},
+			want: mockSchemaConfig{
+				OrgTable:  "db_portal",
+				UserTable: "db_user",
+			},
+		},
+		{
+			name: "can not ignore case ",
+			args: args{
+				cnf: conf.NewFromStringMap(map[string]any{
+					"store.schemaConfig.portal": map[string]any{
+						"orgTable":  "db_portal",
+						"UserTable": "db_user",
+					},
+				}),
+			},
+			want: mockSchemaConfig{
+				OrgTable:  "",
+				UserTable: "db_user",
+			},
+		},
+		{
+			name: "all same",
+			args: args{
+				cnf: conf.NewFromStringMap(map[string]any{
+					"store.schemaConfig.portal": "db_portal",
+				}),
+			},
+			want: mockSchemaConfig{
+				OrgTable:  "db_portal",
+				UserTable: "db_portal",
+			},
+		},
+		{
+			name: "not config path",
+			args: args{
+				cnf: conf.NewFromStringMap(map[string]any{
+					"schemaConfig.portal": map[string]any{
+						"OrgTable":  "db_portal",
+						"UserTable": "db_user",
+					},
+				}),
+			},
+			want:    mockSchemaConfig{},
+			wantErr: errors.New("schemaConfig not found"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var mock mockSchemaConfig
+			err := BuildSchemaConfig(&conf.AppConfiguration{Configuration: tt.args.cnf}, "portal", &mock)
+			if tt.wantErr != nil {
+				assert.ErrorContains(t, err, tt.wantErr.Error())
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, mock)
 		})
 	}
 }
