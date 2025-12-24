@@ -14,6 +14,12 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
+// GlobalID returns the global identifier for the given ExGIDSchema node.
+func (_m *ExGIDSchema) GlobalID(context.Context) (string, error) {
+	id := fmt.Sprintf("ExGIDSchema:%d", _m.ID)
+	return base64.StdEncoding.EncodeToString([]byte(id)), nil
+}
+
 // GlobalID returns the global identifier for the given RefSchema node.
 func (_m *RefSchema) GlobalID(context.Context) (string, error) {
 	id := fmt.Sprintf("RefSchema:%d", _m.ID)
@@ -37,12 +43,20 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 	if len(tid) != 2 {
 		return nil, fmt.Errorf("invalid global identifier format %q", b)
 	}
+
+	switch tid[0] {
+	case "ExGIDSchema", "Test":
+		return nil, fmt.Errorf("invalid global identifier %q", s)
+	}
+
 	return &ResolvedGlobal{Type: tid[0], ID: tid[1]}, nil
 }
 
 // GlobalID returns the global identifier for the given type and id.
 func GlobalID(tp, id string) (string, error) {
 	switch tp {
+	case "ExGIDSchema":
+		break
 	case "RefSchema":
 		break
 	case "User":

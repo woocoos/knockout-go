@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"github.com/woocoos/entcache"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/exgidschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 	"golang.org/x/sync/semaphore"
@@ -24,6 +25,11 @@ import (
 type Noder interface {
 	IsNode()
 }
+
+var exgidschemaImplementors = []string{"ExGIDSchema", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*ExGIDSchema) IsNode() {}
 
 var refschemaImplementors = []string{"RefSchema", "Node"}
 
@@ -93,6 +99,15 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
+	case "ExGIDSchema":
+		query := c.ExGIDSchema.Query().
+			Where(exgidschema.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, exgidschemaImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(entcache.WithRefEntryKey(ctx, "ExGIDSchema", id))
 	case "RefSchema":
 		query := c.RefSchema.Query().
 			Where(refschema.ID(id))
@@ -184,6 +199,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case "ExGIDSchema":
+		query := c.ExGIDSchema.Query().
+			Where(exgidschema.IDIn(ids...))
+		query, err := query.CollectFields(ctx, exgidschemaImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case "RefSchema":
 		query := c.RefSchema.Query().
 			Where(refschema.IDIn(ids...))

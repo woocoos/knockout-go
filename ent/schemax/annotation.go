@@ -15,6 +15,8 @@ type Annotation struct {
 	Resources []string `json:"Resources,omitempty"`
 	// TenantField is the name of the tenant field.if you want to use a name except tenant_id
 	TenantField string `json:"TenantField,omitempty"`
+	// ExcludeNodeQuery indicator whether to exclude node query. It is for Schema
+	ExcludeNodeQuery bool `json:"ExcludeNodeQuery,omitempty"`
 }
 
 func (Annotation) Name() string {
@@ -39,6 +41,9 @@ func (a Annotation) Merge(other schema.Annotation) schema.Annotation {
 	if len(ant.Resources) != 0 {
 		a.Resources = ant.Resources
 	}
+	if ant.ExcludeNodeQuery {
+		a.ExcludeNodeQuery = true
+	}
 	return a
 }
 
@@ -53,5 +58,12 @@ func Resources(fields []string) Annotation {
 func TenantField(field string) Annotation {
 	return Annotation{
 		TenantField: field,
+	}
+}
+
+// ExcludeNodeQuery returns a new annotation with the given exclude node query.
+func ExcludeNodeQuery() Annotation {
+	return Annotation{
+		ExcludeNodeQuery: true,
 	}
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/exgidschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 	"github.com/woocoos/knockout-go/pkg/pagination"
@@ -98,6 +99,258 @@ func paginateLimit(first, last *int) int {
 		limit = *last + 1
 	}
 	return limit
+}
+
+// ExGIDSchemaEdge is the edge representation of ExGIDSchema.
+type ExGIDSchemaEdge struct {
+	Node   *ExGIDSchema `json:"node"`
+	Cursor Cursor       `json:"cursor"`
+}
+
+// ExGIDSchemaConnection is the connection containing edges to ExGIDSchema.
+type ExGIDSchemaConnection struct {
+	Edges      []*ExGIDSchemaEdge `json:"edges"`
+	PageInfo   PageInfo           `json:"pageInfo"`
+	TotalCount int                `json:"totalCount"`
+}
+
+func (c *ExGIDSchemaConnection) build(nodes []*ExGIDSchema, pager *exgidschemaPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *ExGIDSchema
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ExGIDSchema {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ExGIDSchema {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ExGIDSchemaEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ExGIDSchemaEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ExGIDSchemaPaginateOption enables pagination customization.
+type ExGIDSchemaPaginateOption func(*exgidschemaPager) error
+
+// WithExGIDSchemaOrder configures pagination ordering.
+func WithExGIDSchemaOrder(order *ExGIDSchemaOrder) ExGIDSchemaPaginateOption {
+	if order == nil {
+		order = DefaultExGIDSchemaOrder
+	}
+	o := *order
+	return func(pager *exgidschemaPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultExGIDSchemaOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithExGIDSchemaFilter configures pagination filter.
+func WithExGIDSchemaFilter(filter func(*ExGIDSchemaQuery) (*ExGIDSchemaQuery, error)) ExGIDSchemaPaginateOption {
+	return func(pager *exgidschemaPager) error {
+		if filter == nil {
+			return errors.New("ExGIDSchemaQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type exgidschemaPager struct {
+	reverse bool
+	order   *ExGIDSchemaOrder
+	filter  func(*ExGIDSchemaQuery) (*ExGIDSchemaQuery, error)
+}
+
+func newExGIDSchemaPager(opts []ExGIDSchemaPaginateOption, reverse bool) (*exgidschemaPager, error) {
+	pager := &exgidschemaPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultExGIDSchemaOrder
+	}
+	return pager, nil
+}
+
+func (p *exgidschemaPager) applyFilter(query *ExGIDSchemaQuery) (*ExGIDSchemaQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *exgidschemaPager) toCursor(_m *ExGIDSchema) Cursor {
+	return p.order.Field.toCursor(_m)
+}
+
+func (p *exgidschemaPager) applyCursors(query *ExGIDSchemaQuery, after, before *Cursor) (*ExGIDSchemaQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultExGIDSchemaOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *exgidschemaPager) applyOrder(query *ExGIDSchemaQuery) *ExGIDSchemaQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultExGIDSchemaOrder.Field {
+		query = query.Order(DefaultExGIDSchemaOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *exgidschemaPager) orderExpr(query *ExGIDSchemaQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultExGIDSchemaOrder.Field {
+			b.Comma().Ident(DefaultExGIDSchemaOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ExGIDSchema.
+func (_m *ExGIDSchemaQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ExGIDSchemaPaginateOption,
+) (*ExGIDSchemaConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newExGIDSchemaPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if _m, err = pager.applyFilter(_m); err != nil {
+		return nil, err
+	}
+	conn := &ExGIDSchemaConnection{Edges: []*ExGIDSchemaEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := _m.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if _m, err = pager.applyCursors(_m, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		_m.Limit(limit)
+	}
+	if sp, ok := pagination.SimplePaginationFromContext(ctx); ok {
+		_m.Offset(sp.Offset(first, last))
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := _m.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	_m = pager.applyOrder(_m)
+	nodes, err := _m.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ExGIDSchemaOrderField defines the ordering field of ExGIDSchema.
+type ExGIDSchemaOrderField struct {
+	// Value extracts the ordering value from the given ExGIDSchema.
+	Value    func(*ExGIDSchema) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) exgidschema.OrderOption
+	toCursor func(*ExGIDSchema) Cursor
+}
+
+// ExGIDSchemaOrder defines the ordering of ExGIDSchema.
+type ExGIDSchemaOrder struct {
+	Direction OrderDirection         `json:"direction"`
+	Field     *ExGIDSchemaOrderField `json:"field"`
+}
+
+// DefaultExGIDSchemaOrder is the default ordering of ExGIDSchema.
+var DefaultExGIDSchemaOrder = &ExGIDSchemaOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ExGIDSchemaOrderField{
+		Value: func(_m *ExGIDSchema) (ent.Value, error) {
+			return _m.ID, nil
+		},
+		column: exgidschema.FieldID,
+		toTerm: exgidschema.ByID,
+		toCursor: func(_m *ExGIDSchema) Cursor {
+			return Cursor{ID: _m.ID}
+		},
+	},
+}
+
+// ToEdge converts ExGIDSchema into ExGIDSchemaEdge.
+func (_m *ExGIDSchema) ToEdge(order *ExGIDSchemaOrder) *ExGIDSchemaEdge {
+	if order == nil {
+		order = DefaultExGIDSchemaOrder
+	}
+	return &ExGIDSchemaEdge{
+		Node:   _m,
+		Cursor: order.Field.toCursor(_m),
+	}
 }
 
 // RefSchemaEdge is the edge representation of RefSchema.

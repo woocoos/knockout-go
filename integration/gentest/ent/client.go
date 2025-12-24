@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/woocoos/entcache"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/exgidschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 )
@@ -25,6 +26,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// ExGIDSchema is the client for interacting with the ExGIDSchema builders.
+	ExGIDSchema *ExGIDSchemaClient
 	// RefSchema is the client for interacting with the RefSchema builders.
 	RefSchema *RefSchemaClient
 	// User is the client for interacting with the User builders.
@@ -42,6 +45,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.ExGIDSchema = NewExGIDSchemaClient(c.config)
 	c.RefSchema = NewRefSchemaClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -134,10 +138,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		RefSchema: NewRefSchemaClient(cfg),
-		User:      NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		ExGIDSchema: NewExGIDSchemaClient(cfg),
+		RefSchema:   NewRefSchemaClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
@@ -155,17 +160,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		RefSchema: NewRefSchemaClient(cfg),
-		User:      NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		ExGIDSchema: NewExGIDSchemaClient(cfg),
+		RefSchema:   NewRefSchemaClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		RefSchema.
+//		ExGIDSchema.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -187,6 +193,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.ExGIDSchema.Use(hooks...)
 	c.RefSchema.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -194,6 +201,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.ExGIDSchema.Intercept(interceptors...)
 	c.RefSchema.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -201,12 +209,147 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ExGIDSchemaMutation:
+		return c.ExGIDSchema.mutate(ctx, m)
 	case *RefSchemaMutation:
 		return c.RefSchema.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ExGIDSchemaClient is a client for the ExGIDSchema schema.
+type ExGIDSchemaClient struct {
+	config
+}
+
+// NewExGIDSchemaClient returns a client for the ExGIDSchema from the given config.
+func NewExGIDSchemaClient(c config) *ExGIDSchemaClient {
+	return &ExGIDSchemaClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `exgidschema.Hooks(f(g(h())))`.
+func (c *ExGIDSchemaClient) Use(hooks ...Hook) {
+	c.hooks.ExGIDSchema = append(c.hooks.ExGIDSchema, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `exgidschema.Intercept(f(g(h())))`.
+func (c *ExGIDSchemaClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ExGIDSchema = append(c.inters.ExGIDSchema, interceptors...)
+}
+
+// Create returns a builder for creating a ExGIDSchema entity.
+func (c *ExGIDSchemaClient) Create() *ExGIDSchemaCreate {
+	mutation := newExGIDSchemaMutation(c.config, OpCreate)
+	return &ExGIDSchemaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ExGIDSchema entities.
+func (c *ExGIDSchemaClient) CreateBulk(builders ...*ExGIDSchemaCreate) *ExGIDSchemaCreateBulk {
+	return &ExGIDSchemaCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ExGIDSchemaClient) MapCreateBulk(slice any, setFunc func(*ExGIDSchemaCreate, int)) *ExGIDSchemaCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ExGIDSchemaCreateBulk{err: fmt.Errorf("calling to ExGIDSchemaClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ExGIDSchemaCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ExGIDSchemaCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ExGIDSchema.
+func (c *ExGIDSchemaClient) Update() *ExGIDSchemaUpdate {
+	mutation := newExGIDSchemaMutation(c.config, OpUpdate)
+	return &ExGIDSchemaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ExGIDSchemaClient) UpdateOne(_m *ExGIDSchema) *ExGIDSchemaUpdateOne {
+	mutation := newExGIDSchemaMutation(c.config, OpUpdateOne, withExGIDSchema(_m))
+	return &ExGIDSchemaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ExGIDSchemaClient) UpdateOneID(id int) *ExGIDSchemaUpdateOne {
+	mutation := newExGIDSchemaMutation(c.config, OpUpdateOne, withExGIDSchemaID(id))
+	return &ExGIDSchemaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ExGIDSchema.
+func (c *ExGIDSchemaClient) Delete() *ExGIDSchemaDelete {
+	mutation := newExGIDSchemaMutation(c.config, OpDelete)
+	return &ExGIDSchemaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ExGIDSchemaClient) DeleteOne(_m *ExGIDSchema) *ExGIDSchemaDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ExGIDSchemaClient) DeleteOneID(id int) *ExGIDSchemaDeleteOne {
+	builder := c.Delete().Where(exgidschema.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ExGIDSchemaDeleteOne{builder}
+}
+
+// Query returns a query builder for ExGIDSchema.
+func (c *ExGIDSchemaClient) Query() *ExGIDSchemaQuery {
+	return &ExGIDSchemaQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeExGIDSchema},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ExGIDSchema entity by its id.
+func (c *ExGIDSchemaClient) Get(ctx context.Context, id int) (*ExGIDSchema, error) {
+	return c.Query().Where(exgidschema.ID(id)).Only(entcache.WithEntryKey(ctx, "ExGIDSchema", id))
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ExGIDSchemaClient) GetX(ctx context.Context, id int) *ExGIDSchema {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ExGIDSchemaClient) Hooks() []Hook {
+	return c.hooks.ExGIDSchema
+}
+
+// Interceptors returns the client interceptors.
+func (c *ExGIDSchemaClient) Interceptors() []Interceptor {
+	return c.inters.ExGIDSchema
+}
+
+func (c *ExGIDSchemaClient) mutate(ctx context.Context, m *ExGIDSchemaMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ExGIDSchemaCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ExGIDSchemaUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ExGIDSchemaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ExGIDSchemaDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ExGIDSchema mutation op: %q", m.Op())
 	}
 }
 
@@ -512,9 +655,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		RefSchema, User []ent.Hook
+		ExGIDSchema, RefSchema, User []ent.Hook
 	}
 	inters struct {
-		RefSchema, User []ent.Interceptor
+		ExGIDSchema, RefSchema, User []ent.Interceptor
 	}
 )

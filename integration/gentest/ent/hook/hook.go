@@ -9,6 +9,18 @@ import (
 	"github.com/woocoos/knockout-go/integration/gentest/ent"
 )
 
+// The ExGIDSchemaFunc type is an adapter to allow the use of ordinary
+// function as ExGIDSchema mutator.
+type ExGIDSchemaFunc func(context.Context, *ent.ExGIDSchemaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ExGIDSchemaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ExGIDSchemaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ExGIDSchemaMutation", m)
+}
+
 // The RefSchemaFunc type is an adapter to allow the use of ordinary
 // function as RefSchema mutator.
 type RefSchemaFunc func(context.Context, *ent.RefSchemaMutation) (ent.Value, error)

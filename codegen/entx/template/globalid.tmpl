@@ -25,6 +25,13 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 	if len(tid) != 2 {
 		return nil, fmt.Errorf("invalid global identifier format %q", b)
 	}
+	{{ $excludeGIDNodes := getGIDExcludedNames $gqlNodes }}
+	{{ if $excludeGIDNodes }}
+		switch tid[0] {
+		case {{ join $excludeGIDNodes `","` | printf `"%s"` }}:
+			return nil, fmt.Errorf("invalid global identifier %q", s)
+		}
+	{{ end }}
 	return &ResolvedGlobal{Type: tid[0], ID: tid[1]}, nil
 }
 

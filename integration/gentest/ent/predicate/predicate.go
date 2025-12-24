@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// ExGIDSchema is the predicate function for exgidschema builders.
+type ExGIDSchema func(*sql.Selector)
+
 // RefSchema is the predicate function for refschema builders.
 type RefSchema func(*sql.Selector)
 

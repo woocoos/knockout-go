@@ -9,6 +9,17 @@ import (
 )
 
 var (
+	// ExGidSchemasColumns holds the columns for the "ex_gid_schemas" table.
+	ExGidSchemasColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+	}
+	// ExGidSchemasTable holds the schema information for the "ex_gid_schemas" table.
+	ExGidSchemasTable = &schema.Table{
+		Name:       "ex_gid_schemas",
+		Columns:    ExGidSchemasColumns,
+		PrimaryKey: []*schema.Column{ExGidSchemasColumns[0]},
+	}
 	// RefTableColumns holds the columns for the "ref_table" table.
 	RefTableColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -45,6 +56,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ExGidSchemasTable,
 		RefTableTable,
 		UsersTable,
 	}

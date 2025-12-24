@@ -1,8 +1,12 @@
 package entx
 
 import (
-	atlas "ariga.io/atlas/sql/schema"
 	"embed"
+	"text/template"
+
+	atlas "ariga.io/atlas/sql/schema"
+	"github.com/woocoos/knockout-go/ent/schemax"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/entc"
@@ -22,7 +26,7 @@ var (
 func GlobalID() entc.Option {
 	return func(g *gen.Config) error {
 		g.Templates = append(g.Templates, gen.MustParse(gen.NewTemplate("gql_globalid").
-			Funcs(entgql.TemplateFuncs).
+			Funcs(entgql.TemplateFuncs).Funcs(GlobalIDTemplateFuncs).
 			ParseFS(_templates, "template/globalid.tmpl")))
 		return nil
 	}
@@ -118,4 +122,21 @@ func SkipTablesDiffHook(tables ...string) schema.MigrateOption {
 			return changes, nil
 		})
 	})
+}
+
+var GlobalIDTemplateFuncs = template.FuncMap{
+	"getGIDExcludedNames": func(nodes []*gen.Type) []string {
+		var names []string
+		for _, node := range nodes {
+			n := node.Annotations[schemax.AnnotationName]
+			an, ok := n.(map[string]any)
+			if ok {
+				v := an["ExcludeNodeQuery"].(bool)
+				if v {
+					names = append(names, node.Name)
+				}
+			}
+		}
+		return names
+	},
 }

@@ -10,10 +10,78 @@ import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/woocoos/knockout-go/integration/gentest/ent/exgidschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/refschema"
 	"github.com/woocoos/knockout-go/integration/gentest/ent/user"
 	"github.com/woocoos/knockout-go/pkg/pagination"
 )
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (_m *ExGIDSchemaQuery) CollectFields(ctx context.Context, satisfies ...string) (*ExGIDSchemaQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return _m, nil
+	}
+	if err := _m.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return _m, nil
+}
+
+func (_m *ExGIDSchemaQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(exgidschema.Columns))
+		selectedFields = []string{exgidschema.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "name":
+			if _, ok := fieldSeen[exgidschema.FieldName]; !ok {
+				selectedFields = append(selectedFields, exgidschema.FieldName)
+				fieldSeen[exgidschema.FieldName] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		_m.Select(selectedFields...)
+	}
+	return nil
+}
+
+type exgidschemaPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ExGIDSchemaPaginateOption
+}
+
+func newExGIDSchemaPaginateArgs(rv map[string]any) *exgidschemaPaginateArgs {
+	args := &exgidschemaPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*ExGIDSchemaWhereInput); ok {
+		args.opts = append(args.opts, WithExGIDSchemaFilter(v.Filter))
+	}
+	return args
+}
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (_m *RefSchemaQuery) CollectFields(ctx context.Context, satisfies ...string) (*RefSchemaQuery, error) {
