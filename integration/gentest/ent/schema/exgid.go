@@ -14,6 +14,7 @@ type ExGIDSchema struct {
 
 func (s ExGIDSchema) Annotations() []schema.Annotation {
 	return []schema.Annotation{
+		schemax.Resources([]string{"name"}),
 		schemax.ExcludeNodeQuery(),
 	}
 }

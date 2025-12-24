@@ -45,7 +45,7 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 	}
 
 	switch tid[0] {
-	case "ExGIDSchema", "Test":
+	case "ExGIDSchema":
 		return nil, fmt.Errorf("invalid global identifier %q", s)
 	}
 
