@@ -131,8 +131,8 @@ var GlobalIDTemplateFuncs = template.FuncMap{
 			n := node.Annotations[schemax.AnnotationName]
 			an, ok := n.(map[string]any)
 			if ok {
-				v := an["ExcludeNodeQuery"].(bool)
-				if v {
+				v, ok1 := an["ExcludeNodeQuery"].(bool)
+				if v && ok1 {
 					names = append(names, node.Name)
 				}
 			}
