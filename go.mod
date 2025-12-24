@@ -32,7 +32,7 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tsingsun/woocoo v0.7.1-0.20251118091455-81c8671f3655
-	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251118091455-81c8671f3655
+	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251224092011-d1a979536718
 	github.com/tsingsun/woocoo/contrib/telemetry v0.58.3
 	github.com/vektah/gqlparser/v2 v2.5.23
 	github.com/woocoos/entcache v0.3.0

@@ -84,7 +84,7 @@ require (
 	github.com/quic-go/quic-go v0.54.0 // indirect
 	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
-	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251118091455-81c8671f3655 // indirect
+	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251224092011-d1a979536718 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
