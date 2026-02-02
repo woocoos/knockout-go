@@ -31,6 +31,7 @@ func FromGlobalID(s string) (*ResolvedGlobal, error) {
 	if len(tid) != 2 {
 		return nil, fmt.Errorf("invalid global identifier format %q", b)
 	}
+
 	return &ResolvedGlobal{Type: tid[0], ID: tid[1]}, nil
 }
 

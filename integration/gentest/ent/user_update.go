@@ -123,10 +123,10 @@ func (_u *UserUpdate) RemoveRefIDs(ids ...int) *UserUpdate {
 }
 
 // RemoveRefs removes "refs" edges to RefSchema entities.
-func (_u *UserUpdate) RemoveRefs(r ...*RefSchema) *UserUpdate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *UserUpdate) RemoveRefs(v ...*RefSchema) *UserUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
 	return _u.RemoveRefIDs(ids...)
 }
@@ -367,10 +367,10 @@ func (uuo *UserUpdateOne) RemoveRefIDs(ids ...int) *UserUpdateOne {
 }
 
 // RemoveRefs removes "refs" edges to RefSchema entities.
-func (uuo *UserUpdateOne) RemoveRefs(r ...*RefSchema) *UserUpdateOne {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (uuo *UserUpdateOne) RemoveRefs(v ...*RefSchema) *UserUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
 	return uuo.RemoveRefIDs(ids...)
 }

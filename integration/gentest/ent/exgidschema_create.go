@@ -103,16 +103,16 @@ type ExGIDSchemaCreateBulk struct {
 }
 
 // Save creates the ExGIDSchema entities in the database.
-func (egscb *ExGIDSchemaCreateBulk) Save(ctx context.Context) ([]*ExGIDSchema, error) {
-	if egscb.err != nil {
-		return nil, egscb.err
+func (_c *ExGIDSchemaCreateBulk) Save(ctx context.Context) ([]*ExGIDSchema, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(egscb.builders))
-	nodes := make([]*ExGIDSchema, len(egscb.builders))
-	mutators := make([]Mutator, len(egscb.builders))
-	for i := range egscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*ExGIDSchema, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := egscb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ExGIDSchemaMutation)
 				if !ok {
@@ -125,11 +125,11 @@ func (egscb *ExGIDSchemaCreateBulk) Save(ctx context.Context) ([]*ExGIDSchema, e
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, egscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, egscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -153,7 +153,7 @@ func (egscb *ExGIDSchemaCreateBulk) Save(ctx context.Context) ([]*ExGIDSchema, e
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, egscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -161,8 +161,8 @@ func (egscb *ExGIDSchemaCreateBulk) Save(ctx context.Context) ([]*ExGIDSchema, e
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (egscb *ExGIDSchemaCreateBulk) SaveX(ctx context.Context) []*ExGIDSchema {
-	v, err := egscb.Save(ctx)
+func (_c *ExGIDSchemaCreateBulk) SaveX(ctx context.Context) []*ExGIDSchema {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -170,14 +170,14 @@ func (egscb *ExGIDSchemaCreateBulk) SaveX(ctx context.Context) []*ExGIDSchema {
 }
 
 // Exec executes the query.
-func (egscb *ExGIDSchemaCreateBulk) Exec(ctx context.Context) error {
-	_, err := egscb.Save(ctx)
+func (_c *ExGIDSchemaCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (egscb *ExGIDSchemaCreateBulk) ExecX(ctx context.Context) {
-	if err := egscb.Exec(ctx); err != nil {
+func (_c *ExGIDSchemaCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

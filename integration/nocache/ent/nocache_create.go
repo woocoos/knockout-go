@@ -116,16 +116,16 @@ type NoCacheCreateBulk struct {
 }
 
 // Save creates the NoCache entities in the database.
-func (nccb *NoCacheCreateBulk) Save(ctx context.Context) ([]*NoCache, error) {
-	if nccb.err != nil {
-		return nil, nccb.err
+func (_c *NoCacheCreateBulk) Save(ctx context.Context) ([]*NoCache, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(nccb.builders))
-	nodes := make([]*NoCache, len(nccb.builders))
-	mutators := make([]Mutator, len(nccb.builders))
-	for i := range nccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*NoCache, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := nccb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*NoCacheMutation)
 				if !ok {
@@ -138,11 +138,11 @@ func (nccb *NoCacheCreateBulk) Save(ctx context.Context) ([]*NoCache, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, nccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, nccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -166,7 +166,7 @@ func (nccb *NoCacheCreateBulk) Save(ctx context.Context) ([]*NoCache, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, nccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -174,8 +174,8 @@ func (nccb *NoCacheCreateBulk) Save(ctx context.Context) ([]*NoCache, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (nccb *NoCacheCreateBulk) SaveX(ctx context.Context) []*NoCache {
-	v, err := nccb.Save(ctx)
+func (_c *NoCacheCreateBulk) SaveX(ctx context.Context) []*NoCache {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -183,14 +183,14 @@ func (nccb *NoCacheCreateBulk) SaveX(ctx context.Context) []*NoCache {
 }
 
 // Exec executes the query.
-func (nccb *NoCacheCreateBulk) Exec(ctx context.Context) error {
-	_, err := nccb.Save(ctx)
+func (_c *NoCacheCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (nccb *NoCacheCreateBulk) ExecX(ctx context.Context) {
-	if err := nccb.Exec(ctx); err != nil {
+func (_c *NoCacheCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

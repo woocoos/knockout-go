@@ -356,6 +356,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/woocoos/entcache v0.3.0 h1:UzIy86c7Y4Sd4alomhkP/zdD+nePj6OWa2mvPD5hMh4=
 github.com/woocoos/entcache v0.3.0/go.mod h1:WGicpJtJzVJETrn/nL8ids3UZquQYLDNm1jpw5Et42M=
+github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c h1:ng5Pxg3OemNMbmeITGMJ36tZxfsStadOQKex+rB475I=
+github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c/go.mod h1:Fbbo34b4t7uiTwdhZDsbSDvHvCRDI8t/AvakJDpAJ94=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.30/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

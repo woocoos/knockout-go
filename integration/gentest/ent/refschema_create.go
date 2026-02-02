@@ -138,16 +138,16 @@ type RefSchemaCreateBulk struct {
 }
 
 // Save creates the RefSchema entities in the database.
-func (rscb *RefSchemaCreateBulk) Save(ctx context.Context) ([]*RefSchema, error) {
-	if rscb.err != nil {
-		return nil, rscb.err
+func (_c *RefSchemaCreateBulk) Save(ctx context.Context) ([]*RefSchema, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(rscb.builders))
-	nodes := make([]*RefSchema, len(rscb.builders))
-	mutators := make([]Mutator, len(rscb.builders))
-	for i := range rscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*RefSchema, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := rscb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RefSchemaMutation)
 				if !ok {
@@ -160,11 +160,11 @@ func (rscb *RefSchemaCreateBulk) Save(ctx context.Context) ([]*RefSchema, error)
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, rscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -188,7 +188,7 @@ func (rscb *RefSchemaCreateBulk) Save(ctx context.Context) ([]*RefSchema, error)
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, rscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -196,8 +196,8 @@ func (rscb *RefSchemaCreateBulk) Save(ctx context.Context) ([]*RefSchema, error)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rscb *RefSchemaCreateBulk) SaveX(ctx context.Context) []*RefSchema {
-	v, err := rscb.Save(ctx)
+func (_c *RefSchemaCreateBulk) SaveX(ctx context.Context) []*RefSchema {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -205,14 +205,14 @@ func (rscb *RefSchemaCreateBulk) SaveX(ctx context.Context) []*RefSchema {
 }
 
 // Exec executes the query.
-func (rscb *RefSchemaCreateBulk) Exec(ctx context.Context) error {
-	_, err := rscb.Save(ctx)
+func (_c *RefSchemaCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rscb *RefSchemaCreateBulk) ExecX(ctx context.Context) {
-	if err := rscb.Exec(ctx); err != nil {
+func (_c *RefSchemaCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
