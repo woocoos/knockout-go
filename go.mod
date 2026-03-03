@@ -7,6 +7,7 @@ require (
 	entgo.io/contrib v0.7.0
 	entgo.io/ent v0.14.5
 	github.com/99designs/gqlgen v0.17.68
+	github.com/JGLTechnologies/gin-rate-limit v1.5.4
 	github.com/XSAM/otelsql v0.36.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.8
 	github.com/alibabacloud-go/sts-20150401/v2 v2.0.2
@@ -29,6 +30,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5
+	github.com/redis/go-redis/v9 v9.0.5
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tsingsun/woocoo v0.7.1-0.20251118091455-81c8671f3655
@@ -123,7 +125,6 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.0.5 // indirect
-	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
