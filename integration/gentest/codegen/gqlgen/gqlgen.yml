@@ -9,6 +9,7 @@ resolver:
 
 exec:
   dir: .
+  worker_limit: 3
 autobind:
   - github.com/woocoos/knockout-go/integration/gentest/ent
 models:

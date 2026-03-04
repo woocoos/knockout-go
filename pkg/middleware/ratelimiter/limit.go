@@ -17,15 +17,14 @@
 //	exclude:       # 排除路径，这些路径不限流
 //	  - /health
 //	  - /metrics
-//	options:
-//	  storeKey: default  # if use cache manager.
-//	  keyFunc: user  # user, tenant, ip
-//	  includeKeys:   # 只对这些 key 应用限流（如果设置，其他 key 不限流）
-//	    - user1
-//	    - user2
-//	  excludeKeys:   # 这些 key 不限流（优先级高于 includeKeys）
-//	    - admin
-//	    - system
+//	storeKey: default  # if use cache manager.
+//	keyFunc: user  # user, tenant, ip
+//	includeKeys:   # 只对这些 key 应用限流（如果设置，其他 key 不限流）
+//	  - user1
+//	  - user2
+//	excludeKeys:   # 这些 key 不限流（优先级高于 includeKeys）
+//	  - admin
+//	  - system
 package ratelimiter
 
 import (

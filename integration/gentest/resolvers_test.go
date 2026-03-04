@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"net/http/httptest"
+	"strconv"
+	"strings"
+	"testing"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
@@ -19,10 +24,6 @@ import (
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/migrate"
 	"github.com/woocoos/knockout-go/pkg/middleware"
 	"github.com/woocoos/knockout-go/pkg/pagination"
-	"net/http/httptest"
-	"strconv"
-	"strings"
-	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
 	_ "github.com/woocoos/knockout-go/integration/gentest/ent/runtime"
@@ -342,5 +343,233 @@ func (s *TestSuite) TestResolverPlugin() {
 			}()
 			_, _ = s.mutationResolver.DeleteUser1(ent.NewContext(context.Background(), s.mutationResolver.client), 1)
 		})
+	})
+}
+
+// TestWorkerLimit tests the worker_limit configuration in gqlgen.yml.
+// The worker_limit is used to limit concurrent goroutine processing in list marshaling.
+// In gqlgen.yml, worker_limit is set to 3, which generates semaphore.NewWeighted(3) in generated.go.
+func (s *TestSuite) TestWorkerLimit() {
+	s.refreshData()
+	srv := handler.New(NewSchema(s.client))
+	srv.AddTransport(transport.POST{})
+
+	s.Run("nodes query with multiple IDs", func() {
+		w := httptest.NewRecorder()
+		// Query multiple nodes to trigger the worker_limit semaphore logic
+		ids := make([]string, 10)
+		for i := 0; i < 10; i++ {
+			ids[i] = base64.StdEncoding.EncodeToString([]byte("User:" + strconv.Itoa(i+1)))
+		}
+		gb, err := graphQLQueryToRequestBody(`
+query users($ids: [GID!]!) {
+	nodes(ids: $ids) {
+    	... on User {
+			id
+			name
+	    }
+    }
+}
+`, map[string]any{"ids": ids})
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Require().Equal(200, w.Code)
+
+		kj := koanf.New(".")
+		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+		s.Require().NoError(err)
+
+		nodes := kj.Slices("data.nodes")
+		s.Len(nodes, 10, "should return 10 nodes")
+	})
+
+	s.Run("users query with pagination", func() {
+		w := httptest.NewRecorder()
+		gb, err := graphQLQueryToRequestBody(`
+query {
+	users(first: 20) {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+		pageInfo {
+			hasNextPage
+		}
+		totalCount
+	}
+}
+`, nil)
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Require().Equal(200, w.Code)
+
+		kj := koanf.New(".")
+		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+		s.Require().NoError(err)
+
+		edges := kj.Slices("data.users.edges")
+		s.Len(edges, 20, "should return 20 edges")
+		s.Equal(float64(20), kj.Get("data.users.totalCount"))
+	})
+
+	s.Run("users query with last parameter", func() {
+		w := httptest.NewRecorder()
+		gb, err := graphQLQueryToRequestBody(`
+query {
+	users(last: 5) {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+		pageInfo {
+			hasPreviousPage
+		}
+		totalCount
+	}
+}
+`, nil)
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Require().Equal(200, w.Code)
+
+		kj := koanf.New(".")
+		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+		s.Require().NoError(err)
+
+		edges := kj.Slices("data.users.edges")
+		s.Len(edges, 5, "should return 5 edges")
+		s.Equal(true, kj.Get("data.users.pageInfo.hasPreviousPage"))
+	})
+
+	s.Run("multiple queries in single request", func() {
+		// This test verifies worker_limit works correctly when multiple list queries
+		// are executed concurrently in a single GraphQL request
+		w := httptest.NewRecorder()
+		gb, err := graphQLQueryToRequestBody(`
+query {
+	users1: users(first: 5) {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+		totalCount
+	}
+	users2: users(first: 10) {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+		totalCount
+	}
+	users3: users(last: 3) {
+		edges {
+			node {
+				id
+				name
+			}
+		}
+		totalCount
+	}
+}
+`, nil)
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Require().Equal(200, w.Code)
+
+		kj := koanf.New(".")
+		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+		s.Require().NoError(err)
+
+		// Verify users1
+		edges1 := kj.Slices("data.users1.edges")
+		s.Len(edges1, 5, "users1 should return 5 edges")
+		s.Equal(float64(20), kj.Get("data.users1.totalCount"))
+
+		// Verify users2
+		edges2 := kj.Slices("data.users2.edges")
+		s.Len(edges2, 10, "users2 should return 10 edges")
+		s.Equal(float64(20), kj.Get("data.users2.totalCount"))
+
+		// Verify users3
+		edges3 := kj.Slices("data.users3.edges")
+		s.Len(edges3, 3, "users3 should return 3 edges")
+		s.Equal(float64(20), kj.Get("data.users3.totalCount"))
+	})
+
+	s.Run("more than worker_limit queries in single request", func() {
+		// This test verifies worker_limit (3) works correctly when more than 3
+		// list queries are executed concurrently in a single GraphQL request.
+		// The semaphore should properly queue and process all queries without deadlock.
+		w := httptest.NewRecorder()
+		gb, err := graphQLQueryToRequestBody(`
+query {
+	users1: users(first: 3) {
+		edges { node { id name } }
+		totalCount
+	}
+	users2: users(first: 4) {
+		edges { node { id name } }
+		totalCount
+	}
+	users3: users(first: 5) {
+		edges { node { id name } }
+		totalCount
+	}
+	users4: users(first: 6) {
+		edges { node { id name } }
+		totalCount
+	}
+	users5: users(last: 2) {
+		edges { node { id name } }
+		totalCount
+	}
+}
+`, nil)
+		s.Require().NoError(err)
+		bd := strings.NewReader(gb)
+		r := httptest.NewRequest("POST", "/graphql/query", bd)
+		r.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, r)
+		s.Require().Equal(200, w.Code)
+
+		kj := koanf.New(".")
+		err = kj.Load(rawbytes.Provider(w.Body.Bytes()), kjson.Parser())
+		s.Require().NoError(err)
+
+		// Verify all 5 queries returned correct results
+		s.Len(kj.Slices("data.users1.edges"), 3, "users1 should return 3 edges")
+		s.Equal(float64(20), kj.Get("data.users1.totalCount"))
+
+		s.Len(kj.Slices("data.users2.edges"), 4, "users2 should return 4 edges")
+		s.Equal(float64(20), kj.Get("data.users2.totalCount"))
+
+		s.Len(kj.Slices("data.users3.edges"), 5, "users3 should return 5 edges")
+		s.Equal(float64(20), kj.Get("data.users3.totalCount"))
+
+		s.Len(kj.Slices("data.users4.edges"), 6, "users4 should return 6 edges")
+		s.Equal(float64(20), kj.Get("data.users4.totalCount"))
+
+		s.Len(kj.Slices("data.users5.edges"), 2, "users5 should return 2 edges")
+		s.Equal(float64(20), kj.Get("data.users5.totalCount"))
 	})
 }
