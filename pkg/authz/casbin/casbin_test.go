@@ -13,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/alicebob/miniredis/v2"
-	stringadapter "github.com/casbin/casbin/v2/persist/string-adapter"
+	stringadapter "github.com/casbin/casbin/v3/persist/string-adapter"
 	rediswatcher "github.com/casbin/redis-watcher/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

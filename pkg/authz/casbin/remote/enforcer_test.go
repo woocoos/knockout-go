@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/casbin/casbin/v2/model"
-	stringadapter "github.com/casbin/casbin/v2/persist/string-adapter"
+	"github.com/casbin/casbin/v3/model"
+	stringadapter "github.com/casbin/casbin/v3/persist/string-adapter"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -18,13 +18,13 @@ import (
 	"github.com/woocoos/knockout-go/pkg/authz/casbin/proto"
 	"github.com/woocoos/knockout-go/pkg/identity"
 
-	casbinv2 "github.com/casbin/casbin/v2"
+	casbinv3 "github.com/casbin/casbin/v3"
 )
 
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJzdWIiOiIxIiwiaWF0IjoxOTQyMjY5NDQ0fQ.X4E177vMh2t0whYqL0WuHgU7NqzTuBdKfIXrwA-bKwQ"
 
 type mockCasbinServer struct {
-	enforcer *casbinv2.Enforcer
+	enforcer *casbinv3.Enforcer
 	proto.UnimplementedCasbinServer
 }
 
@@ -33,7 +33,7 @@ func newMockCasbinServer(t *testing.T) *mockCasbinServer {
 	m, err := model.NewModelFromString(p.String("remote.model"))
 	require.NoError(t, err)
 	a := stringadapter.NewAdapter(p.String("remote.policy"))
-	e, err := casbinv2.NewEnforcer(m, a)
+	e, err := casbinv3.NewEnforcer(m, a)
 	require.NoError(t, err)
 	return &mockCasbinServer{
 		enforcer: e,

@@ -17,7 +17,7 @@
 //	exclude:       # 排除路径，这些路径不限流
 //	  - /health
 //	  - /metrics
-//	storeKey: default  # if use cache manager.
+//	storeKey: default  # if use cache manager, only work for redis now.
 //	keyFunc: user  # user, tenant, ip
 //	includeKeys:   # 只对这些 key 应用限流（如果设置，其他 key 不限流）
 //	  - user1

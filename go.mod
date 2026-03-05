@@ -1,6 +1,6 @@
 module github.com/woocoos/knockout-go
 
-go 1.24.0
+go 1.24.2
 
 require (
 	ariga.io/atlas v0.32.1-0.20250325101103-175b25e1c1b9
@@ -22,18 +22,18 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.3
 	github.com/aws/smithy-go v1.20.3
 	github.com/bwmarrin/snowflake v0.3.0
-	github.com/casbin/casbin/v2 v2.128.0
-	github.com/casbin/redis-watcher/v2 v2.5.0
+	github.com/casbin/casbin/v3 v3.9.0
+	github.com/casbin/redis-watcher/v2 v2.8.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5
-	github.com/redis/go-redis/v9 v9.0.5
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tsingsun/woocoo v0.7.1-0.20251118091455-81c8671f3655
+	github.com/tsingsun/woocoo v0.7.1
 	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251224092011-d1a979536718
 	github.com/tsingsun/woocoo/contrib/telemetry v0.58.3
 	github.com/vektah/gqlparser/v2 v2.5.23

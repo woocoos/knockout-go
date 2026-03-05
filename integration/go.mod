@@ -1,6 +1,6 @@
 module github.com/woocoos/knockout-go/integration
 
-go 1.24.0
+go 1.24.2
 
 replace github.com/woocoos/knockout-go => ../
 
@@ -17,9 +17,9 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tsingsun/woocoo v0.7.1-0.20251118091455-81c8671f3655
+	github.com/tsingsun/woocoo v0.7.1
 	github.com/vektah/gqlparser/v2 v2.5.23
-	github.com/woocoos/casbin-ent-adapter v0.0.0-20230511021958-49eb39a7aea2
+	github.com/woocoos/casbin-ent-adapter v0.0.0-20260305111329-eefc2af38a71
 	github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c
 	github.com/woocoos/knockout-go v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.16.0
@@ -36,9 +36,9 @@ require (
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
-	github.com/casbin/casbin/v2 v2.128.0 // indirect
+	github.com/casbin/casbin/v3 v3.9.0 // indirect
 	github.com/casbin/govaluate v1.3.0 // indirect
-	github.com/casbin/redis-watcher/v2 v2.5.0 // indirect
+	github.com/casbin/redis-watcher/v2 v2.8.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -82,7 +82,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
-	github.com/redis/go-redis/v9 v9.0.5 // indirect
+	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251224092011-d1a979536718 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

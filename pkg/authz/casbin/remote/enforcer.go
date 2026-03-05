@@ -3,7 +3,7 @@ package remote
 import (
 	"context"
 
-	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v3"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"github.com/woocoos/knockout-go/pkg/authz/casbin/proto"
 )
