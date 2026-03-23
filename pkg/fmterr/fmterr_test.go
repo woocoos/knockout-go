@@ -2,6 +2,7 @@ package fmterr
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/tsingsun/woocoo/pkg/conf"
 	"testing"
@@ -20,6 +21,17 @@ func TestParseCodeMap(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "test", codeMap[1000])
 	})
+	t.Run("new conf", func(t *testing.T) {
+		err := InitErrorHandler(conf.NewFromBytes([]byte(`
+errorMap:
+  "test": "测试"
+errorCodeMap:
+  1000: "test"
+`)))
+		assert.NoError(t, err)
+		assert.Equal(t, "test", codeMap[1000])
+		assert.Equal(t, "测试", errorMap["test"])
+	})
 }
 
 func TestNew(t *testing.T) {
@@ -32,6 +44,19 @@ func TestNew(t *testing.T) {
 		err := Newf(1000, "test %s", "string")
 		assert.NotNil(t, err.Err)
 		assert.ErrorContains(t, err.Err, "test string")
+	})
+}
+
+func TestErrorAs(t *testing.T) {
+	t.Run("fmterr.Error", func(t *testing.T) {
+		err := New(1000, errors.New("test"))
+		var ferr *Error
+		assert.True(t, errors.As(err, &ferr))
+	})
+	t.Run("gin.Error", func(t *testing.T) {
+		err := New(1000, errors.New("test"))
+		var ferr *gin.Error
+		assert.True(t, errors.As(err, &ferr))
 	})
 }
 

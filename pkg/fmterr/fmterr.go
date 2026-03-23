@@ -15,12 +15,15 @@ var UnknownError = errors.New("unknown error")
 // codeMap internal error code map
 var codeMap = make(map[uint64]string)
 
+// errorMap internal error map
+var errorMap = make(map[string]string)
+
 // Error is a wrapper for gin.Error
 type Error gin.Error
 
 // Unwrap returns the wrapped error, to allow interoperability with errors.Is(), errors.As() and errors.Unwrap()
 func (e *Error) Unwrap() error {
-	return e.Err
+	return (*gin.Error)(e)
 }
 
 // Code return the error code
@@ -124,11 +127,36 @@ func ParseCodeMap(cfg *conf.Configuration) error {
 	return cfg.Unmarshal(&codeMap)
 }
 
+// ParseErrorMap parse error map from configuration.
+// The configuration format is {string} : {string}, for example:
+//
+//	"missing jwt": "认证信息缺失"
+func ParseErrorMap(cfg *conf.Configuration) error {
+	return cfg.Unmarshal(&errorMap)
+}
+
 // InitErrorHandler pass to the error handler component
 func InitErrorHandler(cfg *conf.Configuration) error {
-	if err := ParseCodeMap(cfg); err != nil {
-		return err
+	if cfg == nil {
+		return errors.New("configuration is nil")
 	}
-	handler.SetErrorMap(codeMap, nil)
+	if cfg.IsSet("errorMap") {
+		if err := ParseErrorMap(cfg.Sub("errorMap")); err != nil {
+			return err
+		}
+	}
+	if cfg.IsSet("errorCodeMap") {
+		if err := ParseCodeMap(cfg.Sub("errorCodeMap")); err != nil {
+			return err
+		}
+	}
+	if !cfg.IsSet("errorMap") && !cfg.IsSet("errorCodeMap") {
+		{
+			if err := ParseCodeMap(cfg); err != nil {
+				return err
+			}
+		}
+	}
+	handler.SetErrorMap(codeMap, errorMap)
 	return nil
 }
