@@ -7,7 +7,7 @@ replace github.com/woocoos/knockout-go => ../
 require (
 	entgo.io/contrib v0.7.0
 	entgo.io/ent v0.14.5
-	github.com/99designs/gqlgen v0.17.68
+	github.com/99designs/gqlgen v0.17.69
 	github.com/gin-gonic/gin v1.11.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/hashicorp/go-multierror v1.1.1
