@@ -79,10 +79,12 @@ func (c *Client) decode(b []byte, v interface{}, contentType string) error {
 	if strings.Contains(contentType, "application/json") {
 		return json.Unmarshal(b, v)
 	}
+	if strings.Contains(contentType, "application/graphql-response+json") {
+		return json.Unmarshal(b, v)
+	}
 	if strings.Contains(contentType, "application/xml") {
 		return xml.Unmarshal(b, v)
 	}
-
 	return errors.New("undefined response type")
 }
 
