@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tsingsun/woocoo v0.7.1
+	github.com/tsingsun/woocoo v0.7.2
 	github.com/vektah/gqlparser/v2 v2.5.23
 	github.com/woocoos/casbin-ent-adapter v0.0.0-20260305111329-eefc2af38a71
 	github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c
@@ -84,7 +84,7 @@ require (
 	github.com/quic-go/quic-go v0.54.0 // indirect
 	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
-	github.com/tsingsun/woocoo/contrib/gql v0.1.4-0.20251224092011-d1a979536718 // indirect
+	github.com/tsingsun/woocoo/contrib/gql v0.1.4 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
