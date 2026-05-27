@@ -115,6 +115,13 @@ func (sdk *SDK) GetToken() (*oauth2.Token, error) {
 	return sdk.tokenSource.Token()
 }
 
+// HTTPClient returns the internal HTTP client.
+// The returned client shares the same Transport, connection pool, and configuration.
+// Modifying it will affect all SDK plugins and internal calls.
+func (sdk *SDK) HTTPClient() *http.Client {
+	return sdk.client
+}
+
 // RegisterPlugin registers a plugin. Plugins are used to extend the SDK.
 func (sdk *SDK) RegisterPlugin(name string, cnf *conf.Configuration) error {
 	switch name {

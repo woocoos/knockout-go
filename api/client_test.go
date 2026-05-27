@@ -4,6 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
+	"testing"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/suite"
 	"github.com/tsingsun/woocoo/pkg/cache/lfu"
@@ -14,12 +21,6 @@ import (
 	"github.com/woocoos/knockout-go/api/auth"
 	"github.com/woocoos/knockout-go/api/fs"
 	"github.com/woocoos/knockout-go/api/msg"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 // AssumeRoleResponse contains the result of successful AssumeRole request.
@@ -341,5 +342,12 @@ func (t *apiSuite) TestAuth() {
 		t.Require().NoError(err)
 		t.NotNil(ret)
 		t.Equal(200, resp.StatusCode)
+	})
+}
+
+func (t *apiSuite) TestHTTPClient() {
+	t.Run("returns non-nil client", func() {
+		client := t.sdk.HTTPClient()
+		t.NotNil(client)
 	})
 }
