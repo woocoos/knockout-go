@@ -19,3 +19,5 @@
 
 go.work*
 /api/fs/alioss/.env
+
+.qwen
