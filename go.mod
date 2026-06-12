@@ -1,6 +1,6 @@
 module github.com/woocoos/knockout-go
 
-go 1.25.0
+go 1.24.2
 
 require (
 	ariga.io/atlas v0.32.1-0.20250325101103-175b25e1c1b9
@@ -157,7 +157,7 @@ require (
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
-	golang.org/x/time v0.15.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241209162323-e6fa225c2576 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
