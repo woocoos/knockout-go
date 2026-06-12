@@ -18,4 +18,11 @@
 # vendor/
 
 go.work*
+
+# AI
+.qwen
+.claude
+
+
 /api/fs/alioss/.env
+

@@ -32,7 +32,6 @@ import (
 	"fmt"
 	"strconv"
 
-	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/tsingsun/woocoo/pkg/cache"
@@ -54,9 +53,9 @@ type Config struct {
 	// 根据Exclude产生的Path.PathSkipper
 	Skipper handler.Skipper
 	// RedisOptions store为redis时的配置
-	RedisOptions *ratelimit.RedisOptions `json:"redisOptions"`
+	RedisOptions *RedisOptions `json:"redisOptions"`
 	// InMemoryOptions store为memory时的配置
-	InMemoryOptions *ratelimit.InMemoryOptions `json:"inMemoryOptions"`
+	InMemoryOptions *InMemoryOptions `json:"inMemoryOptions"`
 	// StoreKey the key of cache manager.
 	StoreKey string `json:"storeKey"`
 	// KeyFunc
@@ -88,7 +87,7 @@ func (mid *Config) ApplyFunc(cfg *conf.Configuration) gin.HandlerFunc {
 	for _, k := range mid.ExcludeKeys {
 		mid.excludeMap[k] = struct{}{}
 	}
-	var store ratelimit.Store
+	var store Store
 	switch {
 	case mid.RedisOptions != nil:
 		// Get Redis client from cache manager
@@ -97,13 +96,13 @@ func (mid *Config) ApplyFunc(cfg *conf.Configuration) gin.HandlerFunc {
 			panic(fmt.Sprintf("redis client not found for rate limiter: %s,%v", mid.StoreKey, err))
 		}
 		mid.RedisOptions.RedisClient = client
-		store = ratelimit.RedisStore(mid.RedisOptions)
+		store = NewSafeRedisStore(mid.RedisOptions)
 	default:
 		// Default to memory store
-		store = ratelimit.InMemoryStore(mid.InMemoryOptions)
+		store = NewSafeInMemoryStore(mid.InMemoryOptions)
 	}
 
-	opts := &ratelimit.Options{}
+	opts := &Options{}
 	opts.KeyFunc = getKeyFunc(mid.KeyFunc)
 
 	handlerFunc := mid.RateLimiter(store, opts)
@@ -137,20 +136,19 @@ func (mid *Config) KeySkip(key string) bool {
 }
 
 // RateLimiter is a function to get gin.HandlerFunc.
-// Base Logic is copied from ratelimit.RateLimiter
-func (mid *Config) RateLimiter(s ratelimit.Store, options *ratelimit.Options) gin.HandlerFunc {
+func (mid *Config) RateLimiter(s Store, options *Options) gin.HandlerFunc {
 	if options == nil {
-		options = &ratelimit.Options{}
+		options = &Options{}
 	}
 	if options.ErrorHandler == nil {
-		options.ErrorHandler = func(c *gin.Context, info ratelimit.Info) {
+		options.ErrorHandler = func(c *gin.Context, info Info) {
 			c.Header("X-Rate-Limit-Limit", fmt.Sprintf("%d", info.Limit))
 			c.Header("X-Rate-Limit-Reset", fmt.Sprintf("%d", info.ResetTime.Unix()))
 			c.String(429, "Too many requests")
 		}
 	}
 	if options.BeforeResponse == nil {
-		options.BeforeResponse = func(c *gin.Context, info ratelimit.Info) {
+		options.BeforeResponse = func(c *gin.Context, info Info) {
 			c.Header("X-Rate-Limit-Limit", fmt.Sprintf("%d", info.Limit))
 			c.Header("X-Rate-Limit-Remaining", fmt.Sprintf("%v", info.RemainingHits))
 			c.Header("X-Rate-Limit-Reset", fmt.Sprintf("%d", info.ResetTime.Unix()))

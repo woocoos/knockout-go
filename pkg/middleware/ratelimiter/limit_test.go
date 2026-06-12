@@ -3,6 +3,7 @@ package ratelimiter
 import (
 	"net/http/httptest"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -311,6 +312,307 @@ keyFunc: ip
 	assert.Equal(t, 429, w2.Code)
 }
 
+func TestHandlerFunc_RedisStore_WindowReset(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+
+	driverName := "test-redis-window-reset-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	rc, err := redisc.New(conf.NewFromStringMap(map[string]any{
+		"driverName": driverName,
+	}), redisc.WithRedisClient(client))
+	require.NoError(t, err)
+	err = cache.RegisterCache(driverName, rc)
+	if err != nil {
+		require.Contains(t, err.Error(), "already registered")
+	}
+
+	// rate=1s, limit=3
+	cfgstr := `
+redisOptions:
+  rate: 1s
+  limit: 3
+storeKey: ` + driverName + `
+keyFunc: ip
+`
+	cfg := conf.NewFromBytes([]byte(cfgstr))
+	mid := &Config{}
+	h := mid.ApplyFunc(cfg)
+
+	srv := gin.New()
+	srv.ContextWithFallback = true
+	srv.GET("/", h, func(c *gin.Context) {
+		c.String(200, "ok")
+	})
+
+	// First 3 requests should succeed
+	for i := 0; i < 3; i++ {
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/", nil)
+		srv.ServeHTTP(w, req)
+		assert.Equal(t, 200, w.Code, "request %d should succeed", i+1)
+	}
+
+	// 4th request should be rate limited
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, 429, w.Code, "request 4 should be rate limited")
+
+	// Wait for window to expire
+	time.Sleep(1100 * time.Millisecond)
+
+	// After window expires, requests should succeed again
+	for i := 0; i < 3; i++ {
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/", nil)
+		srv.ServeHTTP(w, req)
+		assert.Equal(t, 200, w.Code, "request %d after reset should succeed", i+1)
+	}
+}
+
+func TestHandlerFunc_RedisStore_NoWindowSliding(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+
+	driverName := "test-redis-no-sliding-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	rc, err := redisc.New(conf.NewFromStringMap(map[string]any{
+		"driverName": driverName,
+	}), redisc.WithRedisClient(client))
+	require.NoError(t, err)
+	err = cache.RegisterCache(driverName, rc)
+	if err != nil {
+		require.Contains(t, err.Error(), "already registered")
+	}
+
+	// rate=2s, limit=3 - if window slides, 3 requests at T=0,1,2s would extend window to T=5s
+	cfgstr := `
+redisOptions:
+  rate: 2s
+  limit: 3
+storeKey: ` + driverName + `
+keyFunc: ip
+`
+	cfg := conf.NewFromBytes([]byte(cfgstr))
+	mid := &Config{}
+	h := mid.ApplyFunc(cfg)
+
+	srv := gin.New()
+	srv.ContextWithFallback = true
+	srv.GET("/", h, func(c *gin.Context) {
+		c.String(200, "ok")
+	})
+
+	// T=0: request 1 succeeds
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+
+	// T=1s: request 2 succeeds (window not expired, but tokens remain)
+	time.Sleep(1 * time.Second)
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/", nil)
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+
+	// T=1s: request 3 succeeds (window not expired, but tokens remain)
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/", nil)
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+
+	// T=1s: request 4 should be rate limited (all tokens consumed)
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/", nil)
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, 429, w.Code)
+
+	// T=2s: window should expire (started at T=0, rate=2s)
+	// If window was sliding, it would have been extended to T=1+2=3s
+	time.Sleep(1 * time.Second)
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/", nil)
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code, "window should reset at T=2s, not slide to T=3s")
+}
+
+func TestHandlerFunc_RedisStore_Concurrent(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+
+	driverName := "test-redis-concurrent-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	rc, err := redisc.New(conf.NewFromStringMap(map[string]any{
+		"driverName": driverName,
+	}), redisc.WithRedisClient(client))
+	require.NoError(t, err)
+	err = cache.RegisterCache(driverName, rc)
+	if err != nil {
+		require.Contains(t, err.Error(), "already registered")
+	}
+
+	// limit=5, rate=10s (long window to ensure all requests hit same window)
+	cfgstr := `
+redisOptions:
+  rate: 10s
+  limit: 5
+storeKey: ` + driverName + `
+keyFunc: ip
+`
+	cfg := conf.NewFromBytes([]byte(cfgstr))
+	mid := &Config{}
+	h := mid.ApplyFunc(cfg)
+
+	srv := gin.New()
+	srv.ContextWithFallback = true
+	srv.GET("/", h, func(c *gin.Context) {
+		c.String(200, "ok")
+	})
+
+	// Launch 20 concurrent requests
+	const totalRequests = 20
+	var wg sync.WaitGroup
+	results := make([]int, totalRequests)
+
+	for i := 0; i < totalRequests; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", "/", nil)
+			srv.ServeHTTP(w, req)
+			results[idx] = w.Code
+		}(i)
+	}
+
+	wg.Wait()
+
+	// Count successes and rate limits
+	successCount := 0
+	rateLimitedCount := 0
+	for _, code := range results {
+		switch code {
+		case 200:
+			successCount++
+		case 429:
+			rateLimitedCount++
+		}
+	}
+
+	// Exactly 5 should succeed, 15 should be rate limited
+	assert.Equal(t, 5, successCount, "exactly 5 requests should succeed")
+	assert.Equal(t, 15, rateLimitedCount, "exactly 15 requests should be rate limited")
+}
+
+func TestHandlerFunc_RedisStore_MultiUserConcurrent(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	client := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+
+	driverName := "test-redis-multi-user-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	rc, err := redisc.New(conf.NewFromStringMap(map[string]any{
+		"driverName": driverName,
+	}), redisc.WithRedisClient(client))
+	require.NoError(t, err)
+	err = cache.RegisterCache(driverName, rc)
+	if err != nil {
+		require.Contains(t, err.Error(), "already registered")
+	}
+
+	// limit=3 per user, rate=10s (long window so all requests hit same window)
+	cfgstr := `
+redisOptions:
+  rate: 10s
+  limit: 3
+storeKey: ` + driverName + `
+keyFunc: user
+`
+	cfg := conf.NewFromBytes([]byte(cfgstr))
+	mid := &Config{}
+	h := mid.ApplyFunc(cfg)
+
+	srv := gin.New()
+	srv.ContextWithFallback = true
+	srv.GET("/", func(c *gin.Context) {
+		user := c.Query("user")
+		ctx := security.WithContext(c.Request.Context(), security.NewGenericPrincipalByClaims(
+			jwt.MapClaims{"sub": user}))
+		c.Request = c.Request.WithContext(ctx)
+		c.Next()
+	}, h, func(c *gin.Context) {
+		c.String(200, "ok")
+	})
+
+	const (
+		numUsers       = 5
+		reqsPerUser    = 10
+		limitPerUser   = 3
+		totalRequests  = numUsers * reqsPerUser
+	)
+
+	var wg sync.WaitGroup
+	type result struct {
+		user string
+		code int
+	}
+	results := make([]result, totalRequests)
+
+	for u := 0; u < numUsers; u++ {
+		user := "user" + strconv.Itoa(u)
+		for r := 0; r < reqsPerUser; r++ {
+			wg.Add(1)
+			idx := u*reqsPerUser + r
+			go func(i int, usr string) {
+				defer wg.Done()
+				req := httptest.NewRequest("GET", "/?user="+usr, nil)
+				w := httptest.NewRecorder()
+				srv.ServeHTTP(w, req)
+				results[i] = result{user: usr, code: w.Code}
+			}(idx, user)
+		}
+	}
+
+	wg.Wait()
+
+	// Verify per-user results: each user should have exactly limitPerUser successes
+	userSuccess := make(map[string]int)
+	userLimited := make(map[string]int)
+	for _, r := range results {
+		switch r.code {
+		case 200:
+			userSuccess[r.user]++
+		case 429:
+			userLimited[r.user]++
+		}
+	}
+
+	for u := 0; u < numUsers; u++ {
+		user := "user" + strconv.Itoa(u)
+		assert.Equal(t, limitPerUser, userSuccess[user],
+			"%s: exactly %d requests should succeed", user, limitPerUser)
+		assert.Equal(t, reqsPerUser-limitPerUser, userLimited[user],
+			"%s: %d requests should be rate limited", user, reqsPerUser-limitPerUser)
+	}
+}
+
 func TestHandlerFunc_RedisStoreClientNotFound(t *testing.T) {
 	cfgstr := `
 redisOptions:
@@ -577,6 +879,53 @@ excludeKeys:
 	}
 }
 
+func TestHandlerFunc_ConcurrentRateLimit(t *testing.T) {
+	// Test that concurrent requests are properly rate limited
+	cfgstr := `
+inMemoryOptions:
+  rate: 1s
+  limit: 5
+keyFunc: ip
+`
+	cfg := conf.NewFromBytes([]byte(cfgstr))
+	mid := &Config{}
+	h := mid.ApplyFunc(cfg)
+	assert.NotNil(t, h)
+
+	srv := gin.New()
+	srv.ContextWithFallback = true
+	srv.GET("/", h, func(c *gin.Context) {
+		c.String(200, "ok")
+	})
+
+	// Send 20 concurrent requests
+	var successCount, failCount int
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			req := httptest.NewRequest("GET", "/", nil)
+			w := httptest.NewRecorder()
+			srv.ServeHTTP(w, req)
+			mu.Lock()
+			defer mu.Unlock()
+			if w.Code == 200 {
+				successCount++
+			} else if w.Code == 429 {
+				failCount++
+			}
+		}()
+	}
+	wg.Wait()
+
+	// With limit=5, exactly 5 requests should succeed
+	assert.Equal(t, 5, successCount, "Exactly 5 requests should succeed with limit=5")
+	assert.Equal(t, 15, failCount, "15 requests should be rate limited")
+}
+
 func TestRegisterMiddleware(t *testing.T) {
 	result := RegisterMiddleware()
 	cfgStr := `
@@ -613,4 +962,96 @@ engine:
 	w2 := httptest.NewRecorder()
 	webSrv.Router().Engine.ServeHTTP(w2, req2)
 	assert.Equal(t, 429, w2.Code)
+}
+
+func TestGetShard(t *testing.T) {
+	sm := newShardMap()
+
+	t.Run("空 key 返回 shard 0", func(t *testing.T) {
+		shard := sm.getShard("")
+		assert.Equal(t, &sm.shards[0], shard)
+	})
+
+	t.Run("相同 key 总是返回同一个 shard", func(t *testing.T) {
+		keys := []string{"1001", "1234", "192.168.1.1", "alice", "admin"}
+		for _, key := range keys {
+			shard1 := sm.getShard(key)
+			shard2 := sm.getShard(key)
+			assert.Equal(t, shard1, shard2, "key %q should always map to the same shard", key)
+		}
+	})
+
+	t.Run("相同前缀的用户 ID 分布到不同 shard", func(t *testing.T) {
+		// 用户 ID 都以 "1" 开头，旧算法 key[0] % 16 会全部落在 shard 1
+		userIDs := []string{"1001", "1234", "1999", "100", "101", "1500", "1888"}
+		shards := make(map[int]bool)
+		for _, id := range userIDs {
+			shard := sm.getShard(id)
+			for i := range sm.shards {
+				if shard == &sm.shards[i] {
+					shards[i] = true
+					break
+				}
+			}
+		}
+		// 至少分布到 2 个以上 shard（FNV 应该能分散）
+		assert.Greater(t, len(shards), 2, "user IDs with same prefix should be distributed across multiple shards")
+	})
+
+	t.Run("IP 地址分布到不同 shard", func(t *testing.T) {
+		ips := []string{
+			"192.168.1.1",
+			"192.168.1.2",
+			"192.168.1.100",
+			"10.0.0.1",
+			"10.0.0.2",
+			"172.16.0.1",
+		}
+		shards := make(map[int]bool)
+		for _, ip := range ips {
+			shard := sm.getShard(ip)
+			for i := range sm.shards {
+				if shard == &sm.shards[i] {
+					shards[i] = true
+					break
+				}
+			}
+		}
+		// 至少分布到 2 个以上 shard
+		assert.Greater(t, len(shards), 2, "IP addresses should be distributed across multiple shards")
+	})
+
+	t.Run("大量 key 均匀分布", func(t *testing.T) {
+		// 生成 1000 个用户 ID，检查分布均匀性
+		const totalKeys = 1000
+		shardCounts := make([]int, 16)
+
+		for i := 0; i < totalKeys; i++ {
+			key := strconv.Itoa(1000 + i) // "1000", "1001", ..., "1999"
+			shard := sm.getShard(key)
+			for j := range sm.shards {
+				if shard == &sm.shards[j] {
+					shardCounts[j]++
+					break
+				}
+			}
+		}
+
+		// 每个 shard 平均应该有 totalKeys/16 = 62.5 个 key
+		// 允许一定偏差，但不应有 shard 超过平均值的 3 倍
+		avgCount := float64(totalKeys) / 16
+		for i, count := range shardCounts {
+			assert.LessOrEqual(t, float64(count), avgCount*3,
+				"shard %d has %d keys, which is too many (avg: %.1f)", i, count, avgCount)
+		}
+
+		// 所有 shard 都应该被使用到
+		emptyShards := 0
+		for _, count := range shardCounts {
+			if count == 0 {
+				emptyShards++
+			}
+		}
+		assert.LessOrEqual(t, emptyShards, 3, "too many empty shards (%d), distribution is poor", emptyShards)
+	})
 }

@@ -7,7 +7,6 @@ require (
 	entgo.io/contrib v0.7.0
 	entgo.io/ent v0.14.5
 	github.com/99designs/gqlgen v0.17.69
-	github.com/JGLTechnologies/gin-rate-limit v1.5.4
 	github.com/XSAM/otelsql v0.36.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.8
 	github.com/alibabacloud-go/sts-20150401/v2 v2.0.2
