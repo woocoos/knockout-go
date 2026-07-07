@@ -32,11 +32,11 @@ require (
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tsingsun/woocoo v0.7.2
+	github.com/tsingsun/woocoo v0.7.3
 	github.com/tsingsun/woocoo/contrib/gql v0.1.4
 	github.com/tsingsun/woocoo/contrib/telemetry v0.58.3
 	github.com/vektah/gqlparser/v2 v2.5.23
-	github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c
+	github.com/woocoos/entcache v0.3.1
 	go.opentelemetry.io/contrib/propagators/b3 v1.33.0
 	go.opentelemetry.io/otel v1.33.0
 	golang.org/x/oauth2 v0.27.0

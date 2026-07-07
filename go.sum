@@ -337,8 +337,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tjfoc/gmsm v1.3.2 h1:7JVkAn5bvUJ7HtU08iW6UiD+UTmJTIToHCfeFzkcCxM=
 github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=
-github.com/tsingsun/woocoo v0.7.2 h1:BjhcJKUzVFbA2p1QnOrjec+Tgx6TQtWDwUAps/bW5gI=
-github.com/tsingsun/woocoo v0.7.2/go.mod h1:YB3BBWKCKTmctto3v08TyasmZg1BZ4FLh6mHjM/5n5Y=
+github.com/tsingsun/woocoo v0.7.3 h1:BYf5bgX5iQ/E9HXnrLTBHmj8c4buoOoVBhLvW44iDRc=
+github.com/tsingsun/woocoo v0.7.3/go.mod h1:YB3BBWKCKTmctto3v08TyasmZg1BZ4FLh6mHjM/5n5Y=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4 h1:qdHc73C1boIYnP1I4d0g0J8nNe6j7sslDBckK1Nipmw=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4/go.mod h1:JwB2ZZU/8+TEbhtcRQLR81HLZICclsFq9sCI+wdwmoE=
 github.com/tsingsun/woocoo/contrib/telemetry v0.58.3 h1:OsALW+YxPpguWz+DTCzSxfDpOB6Ce70QQ1IKAoEyS80=
@@ -355,8 +355,8 @@ github.com/vmihailenco/msgpack/v5 v5.3.5 h1:5gO0H1iULLWGhs2H5tbAHIZTV8/cYafcFOr9
 github.com/vmihailenco/msgpack/v5 v5.3.5/go.mod h1:7xyJ9e+0+9SaZT0Wt1RGleJXzli6Q/V5KbhBonMG9jc=
 github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
-github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c h1:ng5Pxg3OemNMbmeITGMJ36tZxfsStadOQKex+rB475I=
-github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c/go.mod h1:Fbbo34b4t7uiTwdhZDsbSDvHvCRDI8t/AvakJDpAJ94=
+github.com/woocoos/entcache v0.3.1 h1:7P24p7KqNHEhdttHV1++XleVJigshpRzxCbDY6fMeQw=
+github.com/woocoos/entcache v0.3.1/go.mod h1:Fbbo34b4t7uiTwdhZDsbSDvHvCRDI8t/AvakJDpAJ94=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.30/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

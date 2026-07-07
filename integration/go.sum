@@ -193,8 +193,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/tsingsun/woocoo v0.7.2 h1:BjhcJKUzVFbA2p1QnOrjec+Tgx6TQtWDwUAps/bW5gI=
-github.com/tsingsun/woocoo v0.7.2/go.mod h1:YB3BBWKCKTmctto3v08TyasmZg1BZ4FLh6mHjM/5n5Y=
+github.com/tsingsun/woocoo v0.7.3 h1:BYf5bgX5iQ/E9HXnrLTBHmj8c4buoOoVBhLvW44iDRc=
+github.com/tsingsun/woocoo v0.7.3/go.mod h1:YB3BBWKCKTmctto3v08TyasmZg1BZ4FLh6mHjM/5n5Y=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4 h1:qdHc73C1boIYnP1I4d0g0J8nNe6j7sslDBckK1Nipmw=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4/go.mod h1:JwB2ZZU/8+TEbhtcRQLR81HLZICclsFq9sCI+wdwmoE=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
@@ -211,8 +211,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/woocoos/casbin-ent-adapter v0.0.0-20260305111329-eefc2af38a71 h1:V8mILjfTlOs4mgArjBEt3QPGa8ARTTtW/TPQRUfPQTE=
 github.com/woocoos/casbin-ent-adapter v0.0.0-20260305111329-eefc2af38a71/go.mod h1:YzcBG6zHz4ANgKR0jcOvBNWjYP2FXSAdqyWynL93xSw=
-github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c h1:ng5Pxg3OemNMbmeITGMJ36tZxfsStadOQKex+rB475I=
-github.com/woocoos/entcache v0.3.1-0.20260202131644-50a86f0add1c/go.mod h1:Fbbo34b4t7uiTwdhZDsbSDvHvCRDI8t/AvakJDpAJ94=
+github.com/woocoos/entcache v0.3.1 h1:7P24p7KqNHEhdttHV1++XleVJigshpRzxCbDY6fMeQw=
+github.com/woocoos/entcache v0.3.1/go.mod h1:Fbbo34b4t7uiTwdhZDsbSDvHvCRDI8t/AvakJDpAJ94=
 github.com/yuin/gopher-lua v1.1.1 h1:kYKnWBjvbNP4XLT3+bPEwAXJx262OhaHDWDVOPjL46M=
 github.com/yuin/gopher-lua v1.1.1/go.mod h1:GBR0iDaNXjAgGg9zfCvksxSRnQx76gclCIb7kdAd1Pw=
 github.com/zclconf/go-cty v1.14.4 h1:uXXczd9QDGsgu0i/QFR/hzI5NYCHLf6NQw/atrbnhq8=
