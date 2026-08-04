@@ -111,6 +111,38 @@ func (d TenantMixin[T, Q]) Interceptors() []ent.Interceptor {
 	}
 }
 
+// TenantOnlyInterceptors just add tenant filter to the query
+func (d TenantMixin[T, Q]) TenantOnlyInterceptors() []ent.Interceptor {
+	return []ent.Interceptor{
+		ent.TraverseFunc(func(ctx context.Context, q ent.Query) error {
+			if IfSkipTenantPrivacy(ctx) {
+				return nil
+			}
+
+			df, err := d.newQueryFunc(q)
+			if err != nil {
+				return err
+			}
+
+			tid, ok := identity.TenantIDLoadFromContext(ctx)
+			if !ok {
+				return identity.ErrMisTenantID
+			}
+
+			var did int
+			if d.domainStorageKey != "" {
+				did, ok = identity.DomainIDLoadFromContext(ctx)
+				if !ok {
+					return identity.ErrMissDomainTenantID
+				}
+			}
+
+			d.P(df, tid, did)
+			return nil
+		}),
+	}
+}
+
 type tenant[Q Mutator] interface {
 	Query
 	Client() Q
