@@ -132,6 +132,17 @@ type GettableSilences []*GettableSilence
 
 type Matchers []*Matcher
 
+type NlogUpdate struct {
+	// AlertID Alert ID to find related Nlog records (used with receiverType)
+	AlertID int `json:"alertID,omitempty"`
+	// ErrMsg Error message to update
+	ErrMsg string `binding:"required" json:"errMsg"`
+	// MessageId Message ID to find the exact Nlog record (from email delivery callback)
+	MessageId string `json:"messageId,omitempty"`
+	// ReceiverType Receiver type to filter Nlog records (used with alertID)
+	ReceiverType string `json:"receiverType,omitempty"`
+}
+
 type PostableAlert struct {
 	// Annotations A set of labels. Labels are key/value pairs that are attached to
 	// alerts. Labels are used to specify identifying attributes of alerts,

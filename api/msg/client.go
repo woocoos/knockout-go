@@ -50,6 +50,7 @@ type APIClient struct {
 	SilenceAPI   *SilenceAPI
 	AlertAPI     *AlertAPI
 	PushAPI      *PushAPI
+	NlogAPI      *NlogAPI
 }
 
 type api struct {
@@ -71,6 +72,7 @@ func NewAPIClient(cfg *Config) *APIClient {
 	c.SilenceAPI = (*SilenceAPI)(&c.common)
 	c.AlertAPI = (*AlertAPI)(&c.common)
 	c.PushAPI = (*PushAPI)(&c.common)
+	c.NlogAPI = (*NlogAPI)(&c.common)
 
 	return c
 }

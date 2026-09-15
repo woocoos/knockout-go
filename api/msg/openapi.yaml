@@ -20,6 +20,8 @@ tags:
     description: Everything related to alerts
   - name: push
     description: Everything related to push
+  - name: nlog
+    description: Everything related to notification logs
 paths:
   /status:
     get:
@@ -344,6 +346,40 @@ paths:
             application/json:
               schema:
                 type: string
+  /nlogs/update:
+    post:
+      tags:
+        - nlog
+      description: Update notification log fields by messageId or alertID+receiverType
+      operationId: updateNlog
+      requestBody:
+        description: The request body for updating Nlog error message
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/nlogUpdate'
+        required: true
+      responses:
+        200:
+          description: Update Nlog response
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: string
+        404:
+          description: No matching Nlog found
+          content:
+            application/json:
+              schema:
+                type: string
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: string
 components:
   schemas:
     alertmanagerStatus:
@@ -628,6 +664,23 @@ components:
     pushData:
       type: object
       description: Push data is for notify clients.
+    nlogUpdate:
+      required:
+        - errMsg
+      type: object
+      properties:
+        messageId:
+          type: string
+          description: Message ID to find the exact Nlog record (from email delivery callback)
+        alertID:
+          type: integer
+          description: Alert ID to find related Nlog records (used with receiverType)
+        receiverType:
+          type: string
+          description: Receiver type to filter Nlog records (used with alertID)
+        errMsg:
+          type: string
+          description: Error message to update
   responses:
     BadRequest:
       description: Bad request
