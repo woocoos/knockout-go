@@ -32,14 +32,6 @@ func (_c *WorldCreate) SetCreatedAt(v time.Time) *WorldCreate {
 	return _c
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *WorldCreate) SetNillableCreatedAt(v *time.Time) *WorldCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
 // SetUpdatedBy sets the "updated_by" field.
 func (_c *WorldCreate) SetUpdatedBy(v int) *WorldCreate {
 	_c.mutation.SetUpdatedBy(v)
@@ -151,13 +143,6 @@ func (_c *WorldCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *WorldCreate) defaults() error {
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		if world.DefaultCreatedAt == nil {
-			return fmt.Errorf("ent: uninitialized world.DefaultCreatedAt (forgotten import ent/runtime?)")
-		}
-		v := world.DefaultCreatedAt()
-		_c.mutation.SetCreatedAt(v)
-	}
 	if _, ok := _c.mutation.PowerBy(); !ok {
 		v := world.DefaultPowerBy
 		_c.mutation.SetPowerBy(v)

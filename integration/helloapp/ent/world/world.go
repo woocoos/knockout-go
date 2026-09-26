@@ -3,8 +3,6 @@
 package world
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
@@ -65,8 +63,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks        [3]ent.Hook
 	Interceptors [2]ent.Interceptor
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
 	// DefaultPowerBy holds the default value on creation for the "power_by" field.
 	DefaultPowerBy string
 )

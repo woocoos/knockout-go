@@ -2,20 +2,24 @@ package schemax
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"strconv"
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
-	"errors"
-	"fmt"
 	"github.com/tsingsun/woocoo/pkg/security"
-	"strconv"
-	"time"
 )
 
-// AuditMixin is a mixin that adds created_at, created_by, updated_at, and updated_by fields to the schema.
+// AuditMixin 为 schema 添加 created_at, created_by, updated_at, updated_by 四个审计字段.
+// 时间戳(created_at, updated_at)由 Hook 强制设置, 不允许外部覆盖;
+// user ID(created_by, updated_by)允许外部预填, Hook 仅在未设置时从 context 中获取.
+// updated_by 为 Optional, 若其值为空则表明该记录自创建后未被更新过.
 type AuditMixin struct {
 	mixin.Schema
 	// Precision is the precision of the time.Time field.
@@ -23,7 +27,7 @@ type AuditMixin struct {
 }
 
 func (e AuditMixin) Fields() []ent.Field {
-	ca := field.Time("created_at").Immutable().Default(time.Now).Immutable()
+	ca := field.Time("created_at").Immutable()
 	ua := field.Time("updated_at").Optional()
 	if e.Precision > 0 {
 		st := map[string]string{
@@ -70,7 +74,9 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 		}
 		switch op := m.Op(); {
 		case op.Is(ent.OpCreate):
-			ml.SetCreatedAt(time.Now())
+			now := time.Now()
+			ml.SetCreatedAt(now)
+			ml.SetUpdatedAt(now)
 			if _, exists := ml.CreatedBy(); !exists {
 				uid, err := getUserID(ctx)
 				if err != nil {
@@ -95,7 +101,7 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 func getUserID(ctx context.Context) (uid int, err error) {
 	user, ok := security.FromContext(ctx)
 	if !ok {
-		return 0, errors.New("user no found")
+		return 0, errors.New("user not found")
 	}
 	uid, _ = strconv.Atoi(user.Identity().Name())
 	if uid == 0 {

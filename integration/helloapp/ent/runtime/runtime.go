@@ -3,8 +3,6 @@
 package runtime
 
 import (
-	"time"
-
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/domain"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/hello"
 	"github.com/woocoos/knockout-go/integration/helloapp/ent/schema"
@@ -36,14 +34,8 @@ func init() {
 	worldMixinInters3 := worldMixin[3].Interceptors()
 	world.Interceptors[0] = worldMixinInters2[0]
 	world.Interceptors[1] = worldMixinInters3[0]
-	worldMixinFields1 := worldMixin[1].Fields()
-	_ = worldMixinFields1
 	worldFields := schema.World{}.Fields()
 	_ = worldFields
-	// worldDescCreatedAt is the schema descriptor for created_at field.
-	worldDescCreatedAt := worldMixinFields1[1].Descriptor()
-	// world.DefaultCreatedAt holds the default value on creation for the created_at field.
-	world.DefaultCreatedAt = worldDescCreatedAt.Default.(func() time.Time)
 	// worldDescPowerBy is the schema descriptor for power_by field.
 	worldDescPowerBy := worldFields[2].Descriptor()
 	// world.DefaultPowerBy holds the default value on creation for the power_by field.

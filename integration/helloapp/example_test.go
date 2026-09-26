@@ -89,6 +89,7 @@ func Test_CreateWorld(t *testing.T) {
 	row, err := client.World.Query().All(tctx)
 	require.NoError(t, err, "expect tenant query to succeed")
 	assert.EqualValues(t, tn.Unix(), row[0].CreatedAt.Unix())
+	assert.False(t, row[0].UpdatedAt.IsZero(), "updated_at should be set by audit hook on create")
 }
 
 func Test_EntWithTenant(t *testing.T) {
