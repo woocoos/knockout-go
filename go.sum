@@ -335,8 +335,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tjfoc/gmsm v1.3.2 h1:7JVkAn5bvUJ7HtU08iW6UiD+UTmJTIToHCfeFzkcCxM=
 github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=
-github.com/tsingsun/woocoo v0.7.5 h1:gWmK/tOy7sUZIBTo6Fc3cWbILHQDG2fRhP9oU1blvms=
-github.com/tsingsun/woocoo v0.7.5/go.mod h1:6rWumdcsHS1J7JZAVNuXhlVQaKE1jIoQ9NC8ozUs6ts=
+github.com/tsingsun/woocoo v0.7.6 h1:X5XT/sdwn+/14uMXGVBWOHD37cC3UNkdsXngLTjTgrI=
+github.com/tsingsun/woocoo v0.7.6/go.mod h1:6rWumdcsHS1J7JZAVNuXhlVQaKE1jIoQ9NC8ozUs6ts=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4 h1:qdHc73C1boIYnP1I4d0g0J8nNe6j7sslDBckK1Nipmw=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4/go.mod h1:JwB2ZZU/8+TEbhtcRQLR81HLZICclsFq9sCI+wdwmoE=
 github.com/tsingsun/woocoo/contrib/telemetry v0.58.3 h1:OsALW+YxPpguWz+DTCzSxfDpOB6Ce70QQ1IKAoEyS80=

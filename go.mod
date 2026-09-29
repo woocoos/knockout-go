@@ -32,7 +32,7 @@ require (
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tsingsun/woocoo v0.7.5
+	github.com/tsingsun/woocoo v0.7.6
 	github.com/tsingsun/woocoo/contrib/gql v0.1.4
 	github.com/tsingsun/woocoo/contrib/telemetry v0.58.3
 	github.com/vektah/gqlparser/v2 v2.5.23
