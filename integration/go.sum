@@ -171,6 +171,8 @@ github.com/quic-go/quic-go v0.54.0 h1:6s1YB9QotYI6Ospeiguknbp2Znb/jZYjZLRXn9kMQB
 github.com/quic-go/quic-go v0.54.0/go.mod h1:e68ZEaCdyviluZmy44P6Iey98v/Wfz6HCjQEm+l8zTY=
 github.com/redis/go-redis/v9 v9.7.3 h1:YpPyAayJV+XErNsatSElgRZZVCwXX9QzkKYNvO7x0wM=
 github.com/redis/go-redis/v9 v9.7.3/go.mod h1:bGUrSggJ9X9GUmZpZNEOQKaANxSGgOEBRltRTZHSvrA=
+github.com/robfig/cron/v3 v3.0.1 h1:WdRxkvbJztn8LMz/QEvLN5sBU+xKpSqwwUO1Pjr4qDs=
+github.com/robfig/cron/v3 v3.0.1/go.mod h1:eQICP3HwyT7UooqI/z+Ov+PtYAWygg1TEWWzGIFLtro=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/sergi/go-diff v1.3.1 h1:xkr+Oxo4BOQKmkn/B9eMK0g5Kg/983T9DqqPHwYqD+8=
@@ -191,8 +193,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/tsingsun/woocoo v0.7.6 h1:X5XT/sdwn+/14uMXGVBWOHD37cC3UNkdsXngLTjTgrI=
-github.com/tsingsun/woocoo v0.7.6/go.mod h1:6rWumdcsHS1J7JZAVNuXhlVQaKE1jIoQ9NC8ozUs6ts=
+github.com/tsingsun/woocoo v0.7.7 h1:YxtNWTOqN4Im9aVDq6RzR2qNN8bAamqdAOzN8+RZ+qo=
+github.com/tsingsun/woocoo v0.7.7/go.mod h1:UwYmHCffxLKFfRVeq/sb+1dZl6XFvEPbR5CIBtSl8iQ=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4 h1:qdHc73C1boIYnP1I4d0g0J8nNe6j7sslDBckK1Nipmw=
 github.com/tsingsun/woocoo/contrib/gql v0.1.4/go.mod h1:JwB2ZZU/8+TEbhtcRQLR81HLZICclsFq9sCI+wdwmoE=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
